@@ -4,15 +4,16 @@
 - pypptx: pure-Python `.pptx` library (dist `pypptx`, import `pptx`); architecture + conventions in `CLAUDE.md`.
 - All Claude tooling lives in `.claude/` (inventory: `.claude/CATALOG.md`); reference docs in `.claude/context/`.
 - Package 0.4.0; v0.3.0–v0.4.0 shipped (v0.4.0 = PR #122: real-world corpus, InvalidPackageError, compatible errors).
-- Cursor v0.5.0 (transitions/animations read, custom layouts; card still an overview); then v0.6.0 … v0.7.0.
-- API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra). Only #51 open on GitHub.
+- v0.5.0 audited + PR #125 open (2026-10-14): transitions/animations read, custom layouts, handout master. On merge:
+  status shipped, package 0.5.0, cursor → v0.6.0, release-tags row. Then v0.6.0 … v0.7.0.
+- API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra). No open issues (#51 closed by PR #124).
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0).
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
 - **Actions is billing-blocked (since 2026-09-27): all evidence is local.** LF pinned; `tests.yml` covers 3.9–3.13/Win/macOS.
 
 ## Decisions        (append-only; supersede, never delete)
-- [2026-09-24..25] 10 earlier decisions (claudeBrain adoption, text styles, arcs, element-class keying, SmartArt,
-  chartex, AlternateContent, hot-path caches) — sessions/ARCHIVE-2026.md
+- [2026-09-24..29] 12 earlier decisions (claudeBrain adoption, text styles, arcs, element-class keying, SmartArt,
+  chartex, AlternateContent, hot-path caches, tag parts, 3D chart axes) — sessions/ARCHIVE-2026.md
 - [2026-09-26] Roadmap renumbered: shipped epics = v0.3.0; docs versions v0.2.1/v0.2.2 → v0.3.1/v0.3.2; stage-03 plans
   v0.3.0–v0.6.0 → v0.4.0–v0.7.0 (package versions must increase) — .meta/roadmap/stages/03-hardening-and-gaps/v0.3.0.md
 - [2026-09-26] Pin `* text=auto eol=lf` repo-wide + explicit `binary` fixtures: the snippet loaders are
@@ -20,29 +21,26 @@
 
 "`) so a CRLF tree breaks 51 tests; `osx_dirs_fixture` injects `posixpath`
   rather than skipping on Windows — sessions/2026-09-26-2219-windows-crlf-acceptance.md
-- [2026-09-29] Tags are one part PER owner, referenced from its `p:custDataLst/p:tags` (`p:nvPr` for a shape,
-  `p:cSld` for the slide), related from the slide part; slide tags resolve by that reference, not by reltype
-  — sessions/2026-09-29-1211-issue-114-shape-tags.md
-- [2026-09-29] 3D chart writers share `_Base3DChartXmlWriter`; only THREE_D_COLUMN/AREA/LINE get a `c:serAx` + perspective
-  camera. New chart XML uses POSITIVE axis ids (`unsignedInt`) — sessions/2026-09-29-2205-issue-115-3d-charts.md
 - [2026-09-30] Sphinx `|Name|` substitutions are GENERATED in docs/conf.py from pptx's classes (no hand list); enum `:ref:`
   labels live on docs/api/enum.rst; `-W` is the docs gate — sessions/2026-09-30-0353-v032-docstrings-sphinx.md
 - [2026-09-30] v0.4.0 owner decisions: Apache POI corpus files are OK for TESTING ONLY (MANIFEST.in prunes them from the sdist);
   geometry-less `p:sp` → `shape_type` AUTO_SHAPE — .meta/roadmap/stages/03-hardening-and-gaps/v0.4.0.md
-- [2026-09-30] pytest collects `and_it_*`/`but_it_*` too (59 were silently skipped). pypptx domain errors keep the
+- [2026-09-30] pytest collects `and_it_*`/`but_it_*` too (59 were silently skipped; 6 more found 2026-10-09, now
+  guarded by tests/test_test_names.py). pypptx domain errors keep the
   builtin they replaced (ShapeError etc. are ValueErrors) — sessions/2026-09-30-1642-v040-realworld-hardening.md
 - [2026-10-01] #51 perf gate counts WORK (cProfile calls into pptx/ over the corpus), not time; budget pinned to
   py3.11 (skips elsewhere), +2% tolerance; lower it whenever it drops — sessions/2026-10-01-1546-issue-51-perf.md
 
+- [2026-10-09] v0.5.0 owner decisions (all recommendations): +4 POI decks (test only); effect names only for entr/exit
+  presetID 1–31 (MsoAnimEffect values); new layout = PowerPoint Insert Layout; no layout shapes yet; transitions read as stored
+  — .meta/roadmap/stages/03-hardening-and-gaps/v0.5.0.md
+
 ## Threads          (open items; remove when closed)
-- Epic #87 human checks: master text styles rendering in PowerPoint; `apply_theme` with a real PowerPoint .thmx.
-- Epic #79 human checks: picture/tiled fill, radial gradient, elliptical arc, table insert inside a merge.
-- Epic #56 human checks: custom show plays the right slides; loop/kiosk take effect; last-embedded-font removal opens cleanly.
 - v0.3.2 docstring audit: consider adopting the factory's prose tier (`prose_budget.py`, `prose-auditor`, `/prose-review`).
-- Epic #62 human check: edited SmartArt node text shows in PowerPoint (use a PowerPoint-authored deck).
-- Epic #66 human checks: each added chartex type opens without repair (examples/modern_charts.py); data table renders.
-- Epic #75 human checks: added audio plays; trim/fade take effect; 3D model/zoom deck matches the selection pane.
-- Issue #51: all planned work merged (PR #123) or in the enum `from_xml` PR; close #51 once that merges.
+- Legacy getters write on read (from python-pptx): `Font.color` makes fill solid, `_Paragraph.alignment` adds a:pPr.
+  Candidate fix; until then use deckwalk.walk_timing (not walk) for read-then-save checks.
+- PowerPoint human checks pending for epics #56 #62 #66 #75 #79 #87, issues #114 #115 and v0.5.0 —
+  listed in .claude/context/verification-surface.md § Pending human checks.
 - `unverified` surfaces (verification-surface.md): type checker.
 - Anyone with a Windows clone predating `b64d2b9` needs `git add --renormalize .` once after pulling, or git
   reports every text file modified (its dirty check compares the size recorded in the index, not content).
@@ -50,8 +48,6 @@
   docs-only PRs wait forever; ~17 billable min/run, 10 of them the single macOS cell (x10 multiplier).
 - **Actions billing blocks every job.** Fix the spending limit/payment, or cut cost: the lone macOS cell is
   ~10 of ~17 billable min per run. Until then no PR can be CI-verified.
-- #115 human check: new 3D charts (column/bar/line/pie/area) open without repair; camera/walls visibly change. No `series_axis` API.
-- #114 human check: shape-tagged deck opens in PowerPoint without repair. Follow-up idea: `has_tags` (reading creates a part).
 
 ## Log              (append-only pointers)
 - 2026-09-24 1505 | Consolidate into .claude/ + adopt claudeBrain assets | sessions/2026-09-24-1505-adopt-claudebrain-assets.md
@@ -75,3 +71,6 @@
 - 2026-10-01 | v0.4.0 shipped (PR #122, 2c64b2d): package 0.4.0, cursor → v0.5.0 | .meta/version
 - 2026-10-01 1546 | #51: P6 getters, placeholder caching (corpus read −32%), work-count gate | sessions/2026-10-01-1546-issue-51-perf.md
 - 2026-10-01 | #51 last item: enum `from_xml` dict lookup; v0.6.0 card records the #51 outcomes | .claude/context/performance.md
+- 2026-10-09 | #51 closed (PR #124); v0.5.0 card expanded from a 511-deck pilot | .meta/roadmap/stages/03-hardening-and-gaps/v0.5.0.md
+- 2026-10-09 1630 | v0.5.0 built: transitions/animations read, layouts, handout master; import_slide id fix | sessions/2026-10-09-1630-v050-transitions-animations-layouts.md
+- 2026-10-14 | v0.5.0 PR #125 opened (local evidence: 4368 pass, 94% cov, -W clean, pyright no new) | .meta/version
