@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import IO, TYPE_CHECKING, Iterator
+from typing import IO, TYPE_CHECKING, Iterator, cast
 
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.package import OpcPackage
@@ -15,6 +15,8 @@ from pptx.parts.media import MediaPart
 from pptx.util import lazyproperty
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from pptx.media import Audio, Video
 
 
@@ -51,14 +53,31 @@ class Package(OpcPackage):
     def comment_authors(self) -> CommentAuthorsPart:
         """Instance of |CommentAuthorsPart| holding comment authors.
 
-        Creates a default comment authors part if one is not present.
+        Creates a default comment authors part if one is not present. The part is related from
+        the presentation part, the only place PowerPoint looks for it; a deck with the
+        relationship anywhere else does not open.
         """
+        presentation_part = self.main_document_part
         try:
-            return self.part_related_by(RT.COMMENT_AUTHORS)
+            return cast(CommentAuthorsPart, presentation_part.part_related_by(RT.COMMENT_AUTHORS))
         except KeyError:
             authors_part = CommentAuthorsPart.default(self)
-            self.relate_to(authors_part, RT.COMMENT_AUTHORS)
+            presentation_part.relate_to(authors_part, RT.COMMENT_AUTHORS)
             return authors_part
+
+    def _load(self) -> Self:
+        """Return the package after loading it, repairing a misplaced comment-authors link.
+
+        pypptx 0.5.0 and earlier related the comment-authors part from the package root rather
+        than from the presentation part, which makes PowerPoint refuse the deck. PowerPoint
+        never writes that package-level relationship, so it is always safe to move.
+        """
+        super()._load()
+        misplaced = [rel for rel in self._rels.values() if rel.reltype == RT.COMMENT_AUTHORS]
+        for rel in misplaced:
+            self.drop_rel(rel.rId)
+            self.main_document_part.relate_to(rel.target_part, RT.COMMENT_AUTHORS)
+        return self
 
     def get_or_add_image_part(self, image_file: str | IO[bytes]) -> ImagePart:
         """Return |ImagePart| containing the image in `image_file`, reusing if present."""
