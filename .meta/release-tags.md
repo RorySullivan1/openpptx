@@ -14,6 +14,7 @@ only, the merge of its PR. Found by walking `main`'s first-parent history
 | `v0.3.1` | `99e2ef72a9fb3d4b29faa4138b9750244e207d23` | 2026-09-27 | PR #117 | 0.3.1 | Marks v0.3.1 shipped and bumps the package; the examples themselves merged in PR #116 (`1657988`) |
 | `v0.3.2` | `cb8a179c3346cf75f1759c445df31f1ef244dd51` | 2026-09-30 | PR #121 | 0.3.2 | Marks v0.3.2 shipped and bumps the package; docs work merged in PR #120 (`33a3e02`). Also carries #114 and #115 |
 | `v0.4.0` | `aceb359ebfd89df5f51e903b8eabde501554037c` | 2026-10-01 | PR #123 | 0.4.0 | **The ship commit itself, not a merge:** PR #123 also carries #51's P6 (`iterchildren` getters), which is not part of v0.4.0. This commit's parent is the v0.4.0 merge (`2c64b2d`, PR #122), so its tree is exactly v0.4.0 plus the ship bookkeeping |
+| `v0.5.0` | `070704d2656a3298ec0b9a3cc4dd3e2096fffe3b` | 2026-10-13 | — (direct to `main`) | 0.5.0 | **HELD — do not tag yet:** #126/#127/#128 mean glow, legacy comments and every chartex type write decks PowerPoint refuses to open, and all three ship inside this package version. Tag once they are fixed (or tag a later fix commit instead). **The ship commit itself, not a merge:** v0.5.0's work merged as `b4b1c38` (PR #125) and this commit adds only the ship bookkeeping |
 
 ## Commands
 
@@ -29,6 +30,9 @@ git tag -a v0.3.2 cb8a179c3346cf75f1759c445df31f1ef244dd51 -m "v0.3.2"
 git tag -a v0.4.0 aceb359ebfd89df5f51e903b8eabde501554037c -m "v0.4.0"
 git push origin v0.1.0 v0.2.0 v0.3.0 v0.3.1 v0.3.2 v0.4.0
 ```
+
+v0.5.0 is intentionally absent from the commands above: its row is recorded, but the tag is held until
+#126/#127/#128 are fixed — tagging it now would stamp a release whose decks PowerPoint refuses to open.
 
 A GitHub Release can then be drafted from each tag; the version cards under
 `.meta/roadmap/stages/` hold the goals and acceptance for its notes.
