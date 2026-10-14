@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, cast
 from pptx.chart.chartex import ChartEx
 from pptx.opc.constants import CONTENT_TYPE as CT
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.opc.package import LazyXmlPart
+from pptx.opc.package import LazyXmlPart, XmlPart
+from pptx.oxml import parse_from_template
 from pptx.oxml.ns import qn
 from pptx.parts.embeddedpackage import EmbeddedXlsxPart
 
@@ -34,7 +35,8 @@ class ChartExPart(LazyXmlPart):
         """Return a new |ChartExPart| depicting `chart_data` as a chart of `chart_type`.
 
         The chart's data is also written to a new embedded workbook related to the part, so the
-        chart can be edited in PowerPoint.
+        chart can be edited in PowerPoint. The part also gets the chart-style and color-style
+        parts PowerPoint requires of every chartex chart; it refuses a deck lacking either.
         """
         from pptx.chart.chartexwriter import ChartExWorkbookWriter, ChartExXmlWriter
 
@@ -50,6 +52,21 @@ class ChartExPart(LazyXmlPart):
         externalData = chartData.get_or_add_externalData()
         externalData.rId = rId
         externalData.set(qn("cx:autoUpdate"), "0")
+        # -- the style parts are the ones PowerPoint writes for a new chart of `chart_type` --
+        style_part = XmlPart(
+            package.next_partname("/ppt/charts/style%d.xml"),
+            CT.OFC_CHART_STYLE,
+            package,
+            parse_from_template("chartex_style_%s" % chart_type.name.lower()),
+        )
+        chart_part.relate_to(style_part, RT.CHART_STYLE)
+        colors_part = XmlPart(
+            package.next_partname("/ppt/charts/colors%d.xml"),
+            CT.OFC_CHART_COLORS,
+            package,
+            parse_from_template("chartex_colors"),
+        )
+        chart_part.relate_to(colors_part, RT.CHART_COLOR_STYLE)
         return chart_part
 
     @property

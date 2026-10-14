@@ -4,19 +4,25 @@
 
 from __future__ import annotations
 
+import pytest
+
 from pptx import Presentation
 from pptx.chart.chartex import ChartEx
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE
 from pptx.opc.constants import CONTENT_TYPE as CT
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.package import PartFactory
 from pptx.opc.packuri import PackURI
+from pptx.oxml import parse_xml
 from pptx.oxml.ns import qn
 from pptx.parts.chartex import ChartExPart
 from pptx.parts.embeddedpackage import EmbeddedXlsxPart
 
 from ..unitutil.chartex import WATERFALL_XML, xlsx_column
 from ..unitutil.mock import function_mock, instance_mock
+
+_CS_NS = "http://schemas.microsoft.com/office/drawing/2012/chartStyle"
 
 
 class DescribeChartExPart:
@@ -41,6 +47,40 @@ class DescribeChartExPart:
         externalData = part.chartSpace.xpath("./cx:chartData/cx:externalData")[0]
         assert externalData.get(qn("cx:autoUpdate")) == "0"
         assert part.chartex.chart_type is XL_CHART_TYPE.WATERFALL
+
+    @pytest.mark.parametrize(
+        ("chart_type", "style_id"),
+        [
+            (XL_CHART_TYPE.WATERFALL, "395"),
+            (XL_CHART_TYPE.HISTOGRAM, "366"),
+            (XL_CHART_TYPE.BOX_WHISKER, "406"),
+            (XL_CHART_TYPE.TREEMAP, "410"),
+            (XL_CHART_TYPE.SUNBURST, "381"),
+            (XL_CHART_TYPE.FUNNEL, "419"),
+        ],
+    )
+    def it_adds_the_style_parts_powerpoint_requires(self, chart_type, style_id: str):
+        # -- PowerPoint refuses a chartex chart lacking either part (#128); the ids are the ones
+        # -- PowerPoint itself writes for a new chart of each type
+        package = Presentation().part.package
+        chart_data = CategoryChartData()
+        chart_data.categories = ["A", "B"]
+        chart_data.add_series("S1", (10, 12))
+
+        part = ChartExPart.new(chart_type, chart_data, package)
+
+        style_part = part.part_related_by(RT.CHART_STYLE)
+        assert style_part.partname == PackURI("/ppt/charts/style1.xml")
+        assert style_part.content_type == CT.OFC_CHART_STYLE
+        style = parse_xml(style_part.blob)
+        assert style.tag == "{%s}chartStyle" % _CS_NS
+        assert style.get("id") == style_id
+        colors_part = part.part_related_by(RT.CHART_COLOR_STYLE)
+        assert colors_part.partname == PackURI("/ppt/charts/colors1.xml")
+        assert colors_part.content_type == CT.OFC_CHART_COLORS
+        colors = parse_xml(colors_part.blob)
+        assert colors.tag == "{%s}colorStyle" % _CS_NS
+        assert colors.get("id") == "10"
 
     def it_provides_access_to_the_chart(self, request):
         package_ = instance_mock(request, "pptx.package.Package")

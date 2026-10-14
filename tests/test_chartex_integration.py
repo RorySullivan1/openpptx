@@ -3,12 +3,16 @@ shape-tree operations on the `mc:AlternateContent` wrapper a chartex chart lives
 
 from __future__ import annotations
 
+import io
+import zipfile
+
 import pytest
 
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE
 from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.oxml import parse_xml
 from pptx.oxml.ns import qn
 from pptx.oxml.shapes.shared import tree_elm
 from pptx.parts.chartex import ChartExPart
@@ -128,6 +132,37 @@ class DescribeAddingChartexCharts:
         assert choice.get("Requires") == "cx1"
         assert fallback.xpath("./p:sp/p:nvSpPr/p:cNvPr/@id") == [str(frame.shape_id)]
         assert list(slide.shapes) == [frame]
+
+    def it_gives_each_chart_its_own_style_parts_in_the_saved_deck(self):
+        # -- regression for #128: PowerPoint refuses a chartex chart without both parts --
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        for chart_type in (XL_CHART_TYPE.WATERFALL, XL_CHART_TYPE.FUNNEL):
+            slide.shapes.add_chart(
+                chart_type, Inches(1), Inches(1), Inches(4), Inches(3), _waterfall_data()
+            )
+        stream = io.BytesIO()
+        prs.save(stream)
+
+        pkg = zipfile.ZipFile(stream)
+        content_types = {
+            o.get("PartName"): o.get("ContentType")
+            for o in parse_xml(pkg.read("[Content_Types].xml"))
+            if o.get("PartName")
+        }
+        for n in (1, 2):
+            rels = parse_xml(pkg.read("ppt/charts/_rels/chartEx%d.xml.rels" % n))
+            targets = {rel.get("Type").rsplit("/", 1)[1]: rel.get("Target") for rel in rels}
+            assert targets["chartStyle"] == "style%d.xml" % n
+            assert targets["chartColorStyle"] == "colors%d.xml" % n
+            assert "ppt/charts/style%d.xml" % n in pkg.namelist()
+            assert "ppt/charts/colors%d.xml" % n in pkg.namelist()
+            assert content_types["/ppt/charts/style%d.xml" % n] == (
+                "application/vnd.ms-office.chartstyle+xml"
+            )
+            assert content_types["/ppt/charts/colors%d.xml" % n] == (
+                "application/vnd.ms-office.chartcolorstyle+xml"
+            )
 
     def but_it_rejects_chart_data_the_chart_type_cannot_show(self):
         prs = Presentation()
