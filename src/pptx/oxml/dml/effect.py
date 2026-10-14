@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING, Callable, cast
 
-from pptx.enum.dml import MSO_RECT_ALIGNMENT
+from pptx.enum.dml import MSO_RECT_ALIGNMENT, MSO_THEME_COLOR
 from pptx.oxml.simpletypes import (
     ST_Angle,
     ST_PositiveCoordinate,
@@ -15,9 +15,13 @@ from pptx.oxml.xmlchemy import (
     BaseOxmlElement,
     Choice,
     OptionalAttribute,
+    OxmlElement,
     ZeroOrOne,
     ZeroOrOneChoice,
 )
+
+if TYPE_CHECKING:
+    from pptx.oxml.dml.color import CT_SchemeColor
 
 
 class CT_OuterShadowEffect(BaseOxmlElement):
@@ -122,8 +126,12 @@ class CT_ReflectionEffect(BaseOxmlElement):
 class CT_GlowEffect(BaseOxmlElement):
     """`a:glow` element, specifying a glow effect.
 
-    Contains a single color child element (e.g. `a:srgbClr`, `a:schemeClr`).
+    Contains a single color child element (e.g. `a:srgbClr`, `a:schemeClr`). The schema
+    requires that child and PowerPoint refuses to open a deck whose glow lacks it, so
+    `ensure_color()` must run on any glow this library creates or edits.
     """
+
+    get_or_change_to_schemeClr: Callable[[], CT_SchemeColor]
 
     _tag_seq = (
         "a:scrgbClr",
@@ -149,6 +157,18 @@ class CT_GlowEffect(BaseOxmlElement):
     rad: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "rad", ST_PositiveCoordinate
     )
+
+    def ensure_color(self) -> None:
+        """Add the default glow color when this glow has no color child.
+
+        The default is PowerPoint's own first glow preset, "Accent color 1": theme color
+        `accent1` at 40% opacity. An existing color child is left untouched.
+        """
+        if self.eg_colorChoice is not None:
+            return
+        schemeClr = self.get_or_change_to_schemeClr()
+        schemeClr.val = MSO_THEME_COLOR.ACCENT_1
+        schemeClr.get_or_add_alpha().val = 0.4
 
 
 class CT_SoftEdgesEffect(BaseOxmlElement):
@@ -199,3 +219,9 @@ class CT_EffectList(BaseOxmlElement):
         "a:softEdge", successors=()
     )
     del _tag_seq
+
+    def _new_glow(self) -> CT_GlowEffect:
+        """Return a new `a:glow` element that already carries its required color child."""
+        glow = cast(CT_GlowEffect, OxmlElement("a:glow"))
+        glow.ensure_color()
+        return glow

@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import io
+
 import pytest
 
+from pptx import Presentation
 from pptx.dml.color import ColorFormat, RGBColor
 from pptx.dml.effect import GlowFormat, ReflectionFormat, ShadowFormat, SoftEdgeFormat
-from pptx.enum.dml import MSO_RECT_ALIGNMENT, MSO_SHADOW_TYPE
+from pptx.enum.dml import MSO_RECT_ALIGNMENT, MSO_SHADOW_TYPE, MSO_THEME_COLOR
+from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 from pptx.util import Emu, Pt
 
 from ..unitutil.cxml import element, xml
@@ -220,11 +224,65 @@ class DescribeGlowFormat:
         glow = GlowFormat(element(spPr_cxml))
         assert glow.radius == expected_value
 
-    def it_can_change_its_radius(self):
+    def it_adds_a_default_color_when_it_creates_a_glow(self):
+        # -- `CT_GlowEffect` requires a color child; PowerPoint refuses a deck without one (#126)
         spPr = element("p:spPr{a:b=c}")
         glow = GlowFormat(spPr)
         glow.radius = 63500
-        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:glow{rad=63500}")
+        assert spPr.xml == xml(
+            "p:spPr{a:b=c}/a:effectLst/a:glow{rad=63500}/a:schemeClr{val=accent1}/a:alpha{val=40000}"
+        )
+
+    def it_keeps_an_existing_color_when_it_changes_its_radius(self):
+        spPr = element("p:spPr/a:effectLst/a:glow{rad=63500}/a:srgbClr{val=FFC000}")
+        glow = GlowFormat(spPr)
+        glow.radius = 127000
+        assert spPr.xml == xml("p:spPr/a:effectLst/a:glow{rad=127000}/a:srgbClr{val=FFC000}")
+
+    def it_repairs_a_colorless_glow_when_it_changes_its_radius(self):
+        spPr = element("p:spPr/a:effectLst/a:glow{rad=63500}")
+        glow = GlowFormat(spPr)
+        glow.radius = 127000
+        assert spPr.xml == xml(
+            "p:spPr/a:effectLst/a:glow{rad=127000}/a:schemeClr{val=accent1}/a:alpha{val=40000}"
+        )
+
+    def it_provides_access_to_its_color(self):
+        glow = GlowFormat(element("p:spPr/a:effectLst/a:glow{rad=63500}/a:srgbClr{val=FFC000}"))
+        assert isinstance(glow.color, ColorFormat)
+        assert glow.color.rgb == RGBColor(0xFF, 0xC0, 0x00)
+
+    def it_can_change_its_color(self):
+        spPr = element("p:spPr{a:b=c}")
+        glow = GlowFormat(spPr)
+        glow.color.rgb = RGBColor(0xFF, 0xC0, 0x00)
+        assert glow.enabled is True
+        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:glow/a:srgbClr{val=FFC000}")
+
+    def it_round_trips_a_glow_through_a_saved_deck(self):
+        # -- regression for #126: the deck from the issue's repro must carry a glow color --
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        box = slide.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.RECTANGLE, Emu(914400), Emu(1828800), Emu(2743200), Emu(1371600)
+        )
+        box.glow.radius = Pt(10)
+        other = slide.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.OVAL, Emu(914400), Emu(3657600), Emu(2743200), Emu(1371600)
+        )
+        other.glow.radius = Pt(5)
+        other.glow.color.rgb = RGBColor(0xFF, 0xC0, 0x00)
+        stream = io.BytesIO()
+        prs.save(stream)
+
+        stream.seek(0)
+        shapes = Presentation(stream).slides[0].shapes
+        reloaded_box, reloaded_other = shapes[-2], shapes[-1]
+        assert reloaded_box.glow.radius == Pt(10)
+        assert reloaded_box.glow.color.theme_color == MSO_THEME_COLOR.ACCENT_1
+        assert reloaded_box.glow.color.alpha == pytest.approx(0.4)
+        assert reloaded_other.glow.radius == Pt(5)
+        assert reloaded_other.glow.color.rgb == RGBColor(0xFF, 0xC0, 0x00)
 
     def it_can_clear_itself(self):
         spPr = element("p:spPr/a:effectLst/a:glow{rad=63500}")

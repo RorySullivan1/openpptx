@@ -216,18 +216,35 @@ class GlowFormat:
 
     @radius.setter
     def radius(self, value: Length | None) -> None:
-        effectLst = self._element.get_or_add_effectLst()
         if value is None:
-            effectLst._remove_glow()
+            self._element.get_or_add_effectLst()._remove_glow()
             return
-        glow = effectLst.get_or_add_glow()
-        glow.rad = value
+        self._get_or_add_glow().rad = value
+
+    @property
+    def color(self) -> ColorFormat:
+        """Color of the glow, including transparency.
+
+        Read/write via the returned |ColorFormat| object. Setting ``.rgb`` or
+        ``.theme_color`` chooses the glow color; ``.alpha`` sets its opacity. A glow
+        created without an explicit color gets PowerPoint's default, theme color
+        ``accent1`` at 40% opacity.
+
+        Accessing this property creates a glow element if none exists.
+        """
+        return ColorFormat.from_colorchoice_parent(self._get_or_add_glow())
 
     def clear(self) -> None:
         """Remove any explicitly-defined glow effect."""
         effectLst = self._element.effectLst
         if effectLst is not None:
             effectLst._remove_glow()
+
+    def _get_or_add_glow(self) -> CT_GlowEffect:
+        """Return the `a:glow` element, created if needed and always carrying a color."""
+        glow = self._element.get_or_add_effectLst().get_or_add_glow()
+        glow.ensure_color()
+        return glow
 
 
 class ReflectionFormat:
