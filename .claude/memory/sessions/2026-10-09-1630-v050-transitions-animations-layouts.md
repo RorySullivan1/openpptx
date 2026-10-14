@@ -31,6 +31,8 @@
 - Work-count budget 1,009,255 (28 decks, walk includes timing reads).
 
 ## Open threads
+- Shipped 2026-10-13: PR #125 merged (`b4b1c38`); package bumped to 0.5.0, roadmap cursor moved to v0.6.0.
+  The v0.5.0 TAG is deliberately withheld until #126/#127/#128 are fixed (PowerPoint refuses those decks).
 - Human checks: custom_layouts.py output in PowerPoint (gallery, no repair, "1_" naming); transition/animation values
   vs PowerPoint panes (customGeo, bug68703); whether master/layout transitions apply to slides.
 - Follow-up candidates: make Font.color / paragraph.alignment read-only on read; layout non-placeholder shapes (v0.5.x).

@@ -2,13 +2,13 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- Package 0.4.0; v0.3.0–v0.4.0 shipped (v0.4.0 = PR #122: real-world corpus, InvalidPackageError, compatible errors).
-- **v0.5.0 PR #125 MERGED 2026-10-14 02:26Z (`b4b1c38`)**: transitions/animations read, custom layouts, handout master.
-  Owed: `.meta/version` in-progress → shipped, `__version__` → 0.5.0, cursor → v0.6.0, tags row. **Hold the v0.5.0 tag until #126–#128 are fixed.**
+- Package 0.5.0; v0.3.0–v0.5.0 shipped (v0.5.0 = PR #125: transitions/animations read, custom layouts, handout master).
+- **Cursor v0.6.0** (performance & DX — #51's work already landed; the card records its outcomes). v0.5.0 closed out
+  2026-10-13 (PR #125 `b4b1c38`). **The v0.5.0 TAG is withheld until #126–#128 are fixed** — everything else is done.
 - API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra). #51 closed by PR #124.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - **Open bugs #126/#127/#128: glow, legacy comments, all 6 chartex types write decks PowerPoint REFUSES to open** — diagnosed, fixes proved, no code yet — sessions/2026-10-13-2217….md
-- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0).
+- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0 ready; v0.5.0's row is recorded but HELD).
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
 - **Actions RUNS again (2026-10-14 01:48Z, #125 ran 7/7 green)** — the 2026-09-27 billing block is cleared; PRs can be CI-verified. LF pinned; `tests.yml` covers 3.9–3.13/Win/macOS.
 
@@ -77,3 +77,4 @@
 - 2026-10-13 2217 | PowerPoint checks for #119–#125 run on Windows; #115/#122/#125 pass; 3 bugs filed #126–#128 | sessions/2026-10-13-2217-powerpoint-verification-pr119-125.md
 - 2026-10-13 2228 | Actions unblocked (7/7 green); #125 merged ahead of #126–#128, tag held; local memory merged with origin | sessions/2026-10-13-2228-pr125-merge-order-ci-unblocked.md
 - 2026-10-14 | v0.5.0 PR #125 opened (4368 pass, 94% cov, -W clean, pyright no new), then MERGED `b4b1c38` | .meta/version
+- 2026-10-13 | v0.5.0 shipped (PR #125, `b4b1c38`): package 0.5.0, cursor → v0.6.0; tag held for #126–#128 | .meta/version
