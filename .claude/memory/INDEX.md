@@ -4,8 +4,8 @@
 - pypptx: pure-Python `.pptx` library (dist `pypptx`, import `pptx`); architecture + conventions in `CLAUDE.md`.
 - All Claude tooling lives in `.claude/` (inventory: `.claude/CATALOG.md`); reference docs in `.claude/context/`.
 - Package 0.4.0; v0.3.0–v0.4.0 shipped (v0.4.0 = PR #122: real-world corpus, InvalidPackageError, compatible errors).
-- v0.5.0 BUILT (2026-10-09, unmerged on the session branch): transitions/animations read, custom layouts, handout
-  master. Awaiting acceptance audit + PR. Then v0.6.0 … v0.7.0.
+- v0.5.0 audited + PR #125 open (2026-10-14): transitions/animations read, custom layouts, handout master. On merge:
+  status shipped, package 0.5.0, cursor → v0.6.0, release-tags row. Then v0.6.0 … v0.7.0.
 - API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra). No open issues (#51 closed by PR #124).
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0).
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
@@ -73,3 +73,4 @@
 - 2026-10-01 | #51 last item: enum `from_xml` dict lookup; v0.6.0 card records the #51 outcomes | .claude/context/performance.md
 - 2026-10-09 | #51 closed (PR #124); v0.5.0 card expanded from a 511-deck pilot | .meta/roadmap/stages/03-hardening-and-gaps/v0.5.0.md
 - 2026-10-09 1630 | v0.5.0 built: transitions/animations read, layouts, handout master; import_slide id fix | sessions/2026-10-09-1630-v050-transitions-animations-layouts.md
+- 2026-10-14 | v0.5.0 PR #125 opened (local evidence: 4368 pass, 94% cov, -W clean, pyright no new) | .meta/version
