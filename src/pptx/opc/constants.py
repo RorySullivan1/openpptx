@@ -214,6 +214,7 @@ class RELATIONSHIP_TYPE:
     CHARTSHEET = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet"
     CHART_COLOR_STYLE = "http://schemas.microsoft.com/office/2011/relationships/chartColorStyle"
     CHART_EX = "http://schemas.microsoft.com/office/2014/relationships/chartEx"
+    CHART_STYLE = "http://schemas.microsoft.com/office/2011/relationships/chartStyle"
     CHART_USER_SHAPES = (
         "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartUserShapes"
     )

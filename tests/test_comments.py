@@ -5,10 +5,13 @@
 from __future__ import annotations
 
 import datetime as dt
+import io
+import zipfile
 
 import pytest
 
 from pptx import Presentation
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml import parse_xml
 from pptx.oxml.ns import nsdecls
 from pptx.parts.comments import (
@@ -370,3 +373,55 @@ class DescribeThreadedComments:
         slide = prs.slides.add_slide(prs.slide_layouts[6])
         with pytest.raises(IndexError):
             slide.threaded_comments[0]
+
+
+class DescribeCommentAuthorsRelationship:
+    """Where the legacy comment-authors part is related from (#127).
+
+    PowerPoint finds `ppt/commentAuthors.xml` only through a relationship from
+    `ppt/presentation.xml`; with the relationship anywhere else it refuses the deck.
+    """
+
+    def it_relates_the_authors_part_from_the_presentation_in_the_saved_deck(self):
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        slide.comments.add("Alice", "AJ", "Please review.", x=100, y=200)
+        stream = io.BytesIO()
+        prs.save(stream)
+
+        pkg = zipfile.ZipFile(stream)
+        assert _targets_of(pkg, "ppt/_rels/presentation.xml.rels", RT.COMMENT_AUTHORS) == [
+            "commentAuthors.xml"
+        ]
+        assert _targets_of(pkg, "_rels/.rels", RT.COMMENT_AUTHORS) == []
+        assert "ppt/commentAuthors.xml" in pkg.namelist()
+
+    def it_repairs_a_deck_that_relates_the_authors_part_from_the_package(self):
+        # -- pypptx 0.5.0 and earlier related the part from the package root; opening such a
+        # -- deck moves the relationship, so re-saving it repairs it even if comments go unread
+        prs = Presentation()
+        package = prs.part.package
+        authors_part = CommentAuthorsPart.default(package)
+        authors_part.get_or_add_author("Alice", "AJ")
+        package.relate_to(authors_part, RT.COMMENT_AUTHORS)
+        prs.slides.add_slide(prs.slide_layouts[5])
+        old_deck = io.BytesIO()
+        prs.save(old_deck)
+
+        reopened = Presentation(old_deck)
+        repaired_deck = io.BytesIO()
+        reopened.save(repaired_deck)
+
+        pkg = zipfile.ZipFile(repaired_deck)
+        assert _targets_of(pkg, "ppt/_rels/presentation.xml.rels", RT.COMMENT_AUTHORS) == [
+            "commentAuthors.xml"
+        ]
+        assert _targets_of(pkg, "_rels/.rels", RT.COMMENT_AUTHORS) == []
+        authors = Presentation(repaired_deck).part.package.comment_authors
+        assert [author.name for author in authors.authors] == ["Alice"]
+
+
+def _targets_of(pkg: zipfile.ZipFile, rels_name: str, reltype: str) -> list[str]:
+    """Targets of the `reltype` relationships in the `rels_name` member of `pkg`."""
+    rels = parse_xml(pkg.read(rels_name))
+    return [rel.get("Target") for rel in rels if rel.get("Type") == reltype]
