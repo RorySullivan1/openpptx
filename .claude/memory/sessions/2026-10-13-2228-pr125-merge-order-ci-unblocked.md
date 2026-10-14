@@ -27,20 +27,29 @@
   and must win on conflict; commit the local memory edits before merging `origin/main`, do not pull first.
 - `.meta/version` on `origin/main` was already updated for #125 (commit `8dc6982`) but the local clone is
   behind — don't re-derive the cursor from the local file until main is pulled.
-- Deliberately did NOT merge, pull, or commit anything: the question asked was advisory, and the
-  memory-file divergence above makes an unattended pull destructive.
+- The divergence WAS then resolved by hand (commit `b61a414` first, then merge `a1dd050`), not by taking a
+  side: `origin/main` held content the local copy lacked — the "legacy getters write on read" thread and its
+  consolidation of the per-epic human checks into verification-surface.md — while local held the newer #125/#126–#128
+  facts. ARCHIVE-2026.md had BOTH sides archiving the same decisions under rival headings (`archived 2026-10-09`
+  vs `2026-10-13`); kept both events. A blind `-X ours` would have silently dropped the origin-only thread.
+- INDEX.md came out of the merge at 87 lines (cap ~80) with the 2026-10-09 decision stranded after the 10-13 ones
+  and a stray blank line — a merged memory index needs a re-read, not just conflict resolution.
 
 ## State at end
-- `main` on the remote is `b4b1c38` (#125 merged); local `main` still at `7535b1d`, memory edits uncommitted.
+- `main` = `e6382be`, pushed, clean, in sync with origin. v0.5.0 is CLOSED OUT: `.meta/version` + card `shipped`
+  (2026-10-13), roadmap cursor moved to v0.6.0, `pyproject.toml` and `pptx.__version__` at 0.5.0, release-tags
+  row recorded and marked HELD. Verified on the merged tree: 4367 passed / 1 skipped (py3.11-pinned perf gate)
+  / 11 deselected, `sphinx-build -W` clean, `pptx.__version__ == "0.5.0"`.
+- `docs/conf.py` derives `release`/`version` from `pptx.__version__`, so a package bump needs no docs edit.
 - Three bugs open and unfixed: #126 (glow without colour child), #127 (orphaned `commentAuthors.xml`),
   #128 (chartex without `chartStyle` + `chartColorStyle`). Each diagnosed with a proved fix, no code written.
 - CI can verify PRs again, so the "all evidence is local" constraint on every open thread is lifted.
 
 ## Open threads
-- Pull `origin/main` locally, resolving the memory conflicts in favour of the working tree.
-- v0.5.0 close-out still owed: `.meta/version` → shipped, package 0.5.0, cursor → v0.6.0, release-tags row.
+- **Next: fix #126/#127/#128.** Nothing else blocks v0.6.0 (performance & DX), whose #51 work already landed.
 - Fix #126/#127/#128, each with a regression test that fails against today's code, plus the COM
   "opens without repair" check (`DisplayAlerts = ppAlertsNone` → `0x80070570`) from the 2217 session.
-- Hold the v0.5.0 tag until those three are fixed and re-verified in PowerPoint.
+- The v0.5.0 TAG is the one thing still withheld — its release-tags row says so explicitly, and it is kept out of
+  that file's runnable `git tag` block on purpose. Tag `070704d` (or a later fix commit) once the three are fixed.
 - `tests.yml` cost caveat still stands now that runs actually bill: ~17 billable min/run, ~10 of them the
   single macOS cell (x10 multiplier).
