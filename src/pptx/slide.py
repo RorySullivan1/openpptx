@@ -21,12 +21,15 @@ from pptx.shapes.shapetree import (
 )
 from pptx.shared import ElementProxy, ParentedElementProxy, PartElementProxy
 from pptx.theme import Theme
+from pptx.transition import SlideTransition
 from pptx.util import lazyproperty
 
 if TYPE_CHECKING:
+    from pptx.animation import SlideAnimations
     from pptx.oxml.presentation import CT_SlideIdList, CT_SlideMasterIdList
     from pptx.oxml.slide import (
         CT_CommonSlideData,
+        CT_HandoutMaster,
         CT_NotesMaster,
         CT_NotesSlide,
         CT_Slide,
@@ -105,6 +108,16 @@ class _BaseMaster(_BaseSlide):
         appearing on this slide.
         """
         return MasterShapes(self._element.spTree, self)
+
+
+class HandoutMaster(_BaseMaster):
+    """The handout master, which lays out the pages printed as audience handouts. Read only.
+
+    Obtained from `Presentation.handout_master`. Provides access to its shapes and placeholders
+    (header, date, footer and page number), as |SlideMaster| does.
+    """
+
+    _element: CT_HandoutMaster  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
 class NotesMaster(_BaseMaster):
@@ -202,6 +215,16 @@ class Slide(_BaseSlide):
     part: SlidePart  # pyright: ignore[reportIncompatibleMethodOverride]
 
     @property
+    def animations(self) -> SlideAnimations:
+        """|SlideAnimations| of the animation effects on this slide, in play order. Read only.
+
+        Empty when the slide has no animations.
+        """
+        from pptx.animation import SlideAnimations
+
+        return SlideAnimations(self._element, self)
+
+    @property
     def comments(self) -> SlideComments:
         """Access to comments on this slide.
 
@@ -283,6 +306,15 @@ class Slide(_BaseSlide):
     def shapes(self) -> SlideShapes:
         """Sequence of shape objects appearing on this slide."""
         return SlideShapes(self._element.spTree, self)
+
+    @property
+    def transition(self) -> SlideTransition:
+        """|SlideTransition| describing the transition into this slide, read only.
+
+        Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
+        slide has no transition.
+        """
+        return SlideTransition(self._element)
 
     @property
     def slide_id(self) -> int:
@@ -479,6 +511,17 @@ class SlideLayout(_BaseSlide):
         return self.part.slide_master
 
     @property
+    def transition(self) -> SlideTransition:
+        """|SlideTransition| describing the transition into this layout, read only.
+
+        Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
+        layout has no transition.
+        This is the transition stored on the layout itself; pypptx does not resolve whether
+        PowerPoint applies it to slides that have none.
+        """
+        return SlideTransition(self._element)
+
+    @property
     def used_by_slides(self) -> tuple[Slide, ...]:
         """Tuple of slide objects based on this slide layout."""
         # ---getting Slides collection requires going around the horn a bit---
@@ -489,10 +532,12 @@ class SlideLayout(_BaseSlide):
 class SlideLayouts(ParentedElementProxy):
     """Sequence of slide layouts belonging to a slide-master.
 
-    Supports indexed access, len(), iteration, index() and remove().
+    Supports indexed access, len(), iteration, index(), remove(), add_slide_layout() and
+    duplicate().
     """
 
     part: SlideMasterPart  # pyright: ignore[reportIncompatibleMethodOverride]
+    parent: SlideMaster  # pyright: ignore[reportIncompatibleMethodOverride]
 
     def __init__(self, sldLayoutIdLst: CT_SlideLayoutIdList, parent: SlideMaster):
         super(SlideLayouts, self).__init__(sldLayoutIdLst, parent)
@@ -514,6 +559,46 @@ class SlideLayouts(ParentedElementProxy):
     def __len__(self) -> int:
         """Support len() built-in function, e.g. `len(slides) == 4`."""
         return len(self._sldLayoutIdLst)
+
+    def add_slide_layout(self, name: str, *, blank: bool = False) -> SlideLayout:
+        """Add a new layout named `name` to the end of this master's layouts and return it.
+
+        Like PowerPoint's *Insert Layout*, the new layout has a title placeholder and date,
+        footer and slide-number placeholders, each taking its position from the master's
+        placeholder of that type (one the master lacks is left out). With `blank=True` it has no
+        placeholders. Add more with `layout.shapes.add_placeholder()`, then add slides on the
+        layout with `prs.slides.add_slide(layout)`. The layout is kept even while no slide uses
+        it.
+        """
+        slide_layout = self.part.add_slide_layout_part(name).slide_layout
+        if not blank:
+            master_placeholders = self.parent.placeholders
+            for ph_type in (
+                PP_PLACEHOLDER.TITLE,
+                PP_PLACEHOLDER.DATE,
+                PP_PLACEHOLDER.FOOTER,
+                PP_PLACEHOLDER.SLIDE_NUMBER,
+            ):
+                if master_placeholders.get(ph_type) is not None:
+                    slide_layout.shapes.add_placeholder(ph_type)
+        return slide_layout
+
+    def duplicate(self, slide_layout: SlideLayout, name: str | None = None) -> SlideLayout:
+        """Add a copy of `slide_layout`, one of these layouts, directly after it; return it.
+
+        The copy is named `name`, by default PowerPoint's "1_<name>" (or "2_<name>" and so on,
+        until the name is free). It shares the original's images, and has its own copy of its
+        placeholders and other shapes, so changing one layout leaves the other as it was. Raises
+        |SlideError| when `slide_layout` belongs to another master.
+        """
+        self.index(slide_layout)
+        if name is None:
+            names = {layout.name for layout in self}
+            n = 1
+            while "%d_%s" % (n, slide_layout.name) in names:
+                n += 1
+            name = "%d_%s" % (n, slide_layout.name)
+        return self.part.duplicate_slide_layout_part(slide_layout.part, name).slide_layout
 
     def get_by_name(self, name: str, default: SlideLayout | None = None) -> SlideLayout | None:
         """Return SlideLayout object having `name`, or `default` if not found."""
@@ -595,6 +680,17 @@ class SlideMaster(_BaseMaster):
         if theme_part is None:
             return None
         return Theme(theme_part._element)
+
+    @property
+    def transition(self) -> SlideTransition:
+        """|SlideTransition| describing the transition into this master, read only.
+
+        Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
+        master has no transition.
+        This is the transition stored on the master itself; pypptx does not resolve whether
+        PowerPoint applies it to slides that have none.
+        """
+        return SlideTransition(self._element)
 
     def apply_theme(
         self, source: Presentation | SlideMaster | str | os.PathLike[str] | IO[bytes]

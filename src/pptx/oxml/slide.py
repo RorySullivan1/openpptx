@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Callable, cast
 from pptx.oxml import parse_from_template, parse_xml
 from pptx.oxml.dml.fill import CT_GradientFillProperties
 from pptx.oxml.ns import nsdecls, qn
-from pptx.oxml.simpletypes import XsdBoolean, XsdString
+from pptx.oxml.simpletypes import ST_SlideLayoutId, XsdBoolean, XsdString
 from pptx.oxml.tags import CT_CustomerDataList, CustDataLstOwnerMixin
 from pptx.oxml.xmlchemy import (
     BaseOxmlElement,
@@ -196,6 +196,17 @@ class CT_HeaderFooter(BaseOxmlElement):
     )
 
 
+class CT_HandoutMaster(_BaseSlideElement):
+    """`p:handoutMaster` element, root of a handout master part."""
+
+    _tag_seq = ("p:cSld", "p:clrMap", "p:hf", "p:extLst")
+    cSld: CT_CommonSlideData = OneAndOnlyOne("p:cSld")  # pyright: ignore[reportAssignmentType]
+    hf: CT_HeaderFooter | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "p:hf", successors=_tag_seq[3:]
+    )
+    del _tag_seq
+
+
 class CT_NotesMaster(_BaseSlideElement):
     """`p:notesMaster` element, root of a notes master part."""
 
@@ -374,6 +385,37 @@ class CT_SlideLayout(_BaseSlideElement):
         "p:hf", successors=_tag_seq[5:]
     )
     del _tag_seq
+    # -- `preserve` keeps PowerPoint from deleting the layout while no slide uses it;
+    # -- `userDrawn` marks a layout a user made rather than one from the theme --
+    preserve: bool = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "preserve", XsdBoolean, default=False
+    )
+    userDrawn: bool = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "userDrawn", XsdBoolean, default=False
+    )
+
+    @classmethod
+    def new(cls, name: str) -> CT_SlideLayout:
+        """A new `p:sldLayout` named `name`, as PowerPoint writes a layout a user adds.
+
+        It has no shapes, is marked `preserve` and `userDrawn`, has no `type` (so the default,
+        a custom layout) and takes its color mapping from the master.
+        """
+        sldLayout = cast(
+            CT_SlideLayout,
+            parse_xml(
+                f'<p:sldLayout {nsdecls("a", "p", "r")} preserve="1" userDrawn="1">'
+                "<p:cSld><p:spTree>"
+                '<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>'
+                "<p:grpSpPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"0\" cy=\"0\"/>"
+                "<a:chOff x=\"0\" y=\"0\"/><a:chExt cx=\"0\" cy=\"0\"/></a:xfrm></p:grpSpPr>"
+                "</p:spTree></p:cSld>"
+                "<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>"
+                "</p:sldLayout>"
+            ),
+        )
+        sldLayout.cSld.name = name
+        return sldLayout
 
 
 class CT_SlideLayoutIdList(BaseOxmlElement):
@@ -387,9 +429,19 @@ class CT_SlideLayoutIdList(BaseOxmlElement):
 
     sldLayoutId = ZeroOrMore("p:sldLayoutId")
 
-    def add_sldLayoutId(self, rId: str) -> CT_SlideLayoutIdListEntry:
-        """Create and return a new `p:sldLayoutId` child element with `rId`."""
-        return self._add_sldLayoutId(rId=rId)
+    def add_sldLayoutId(
+        self, rId: str, id: int | None = None, after: CT_SlideLayoutIdListEntry | None = None
+    ) -> CT_SlideLayoutIdListEntry:
+        """Create and return a new `p:sldLayoutId` child element with `rId` and `id`.
+
+        It is appended, or placed directly after the `after` entry when one is given.
+        """
+        sldLayoutId = self._add_sldLayoutId(rId=rId)
+        if id is not None:
+            sldLayoutId.id = id
+        if after is not None:
+            after.addnext(sldLayoutId)
+        return sldLayoutId
 
 
 class CT_SlideLayoutIdListEntry(BaseOxmlElement):
@@ -399,6 +451,7 @@ class CT_SlideLayoutIdListEntry(BaseOxmlElement):
     """
 
     rId: str = RequiredAttribute("r:id", XsdString)  # pyright: ignore[reportAssignmentType]
+    id: int | None = OptionalAttribute("id", ST_SlideLayoutId)  # pyright: ignore
 
 
 class CT_SlideMaster(_BaseSlideElement):
@@ -452,77 +505,4 @@ class CT_SlideMasterTextStyles(BaseOxmlElement):
     otherStyle: CT_TextListStyle | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
         "p:otherStyle", successors=_tag_seq[3:]
     )
-    del _tag_seq
-
-
-class CT_SlideTiming(BaseOxmlElement):
-    """`p:timing` element, specifying animations and timed behaviors."""
-
-    _tag_seq = ("p:tnLst", "p:bldLst", "p:extLst")
-    tnLst = ZeroOrOne("p:tnLst", successors=_tag_seq[1:])
-    del _tag_seq
-
-
-class CT_TimeNodeList(BaseOxmlElement):
-    """`p:tnLst` or `p:childTnList` element."""
-
-    def add_video(self, shape_id):
-        """Add a new `p:video` child element for movie having *shape_id*."""
-        video_xml = (
-            "<p:video %s>\n"
-            '  <p:cMediaNode vol="80000">\n'
-            '    <p:cTn id="%d" fill="hold" display="0">\n'
-            "      <p:stCondLst>\n"
-            '        <p:cond delay="indefinite"/>\n'
-            "      </p:stCondLst>\n"
-            "    </p:cTn>\n"
-            "    <p:tgtEl>\n"
-            '      <p:spTgt spid="%d"/>\n'
-            "    </p:tgtEl>\n"
-            "  </p:cMediaNode>\n"
-            "</p:video>\n" % (nsdecls("p"), self._next_cTn_id, shape_id)
-        )
-        video = parse_xml(video_xml)
-        self.append(video)
-
-    def add_audio(self, shape_id):
-        """Add a new `p:audio` child element for audio clip having *shape_id*."""
-        audio_xml = (
-            "<p:audio %s>\n"
-            '  <p:cMediaNode vol="80000">\n'
-            '    <p:cTn id="%d" fill="hold" display="0">\n'
-            "      <p:stCondLst>\n"
-            '        <p:cond delay="indefinite"/>\n'
-            "      </p:stCondLst>\n"
-            "    </p:cTn>\n"
-            "    <p:tgtEl>\n"
-            '      <p:spTgt spid="%d"/>\n'
-            "    </p:tgtEl>\n"
-            "  </p:cMediaNode>\n"
-            "</p:audio>\n" % (nsdecls("p"), self._next_cTn_id, shape_id)
-        )
-        audio = parse_xml(audio_xml)
-        self.append(audio)
-
-    @property
-    def _next_cTn_id(self):
-        """Return the next available unique ID (int) for p:cTn element."""
-        cTn_id_strs = self.xpath("/p:sld/p:timing//p:cTn/@id")
-        ids = [int(id_str) for id_str in cTn_id_strs]
-        return max(ids) + 1
-
-
-class CT_TLMediaNodeVideo(BaseOxmlElement):
-    """`p:video` element, specifying video media details."""
-
-    _tag_seq = ("p:cMediaNode",)
-    cMediaNode = OneAndOnlyOne("p:cMediaNode")
-    del _tag_seq
-
-
-class CT_TLMediaNodeAudio(BaseOxmlElement):
-    """`p:audio` element, specifying audio media details."""
-
-    _tag_seq = ("p:cMediaNode",)
-    cMediaNode = OneAndOnlyOne("p:cMediaNode")
     del _tag_seq

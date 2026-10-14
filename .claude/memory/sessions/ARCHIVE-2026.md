@@ -24,15 +24,18 @@ Decisions folded out of INDEX.md to keep it in budget. Still in force unless sup
 - [2026-09-25] Hot-path caching: `qn` is lru_cached; `BaseOxmlElement.xpath` evaluates per-thread cached compiled XPath
   (`xmlchemy.compiled_xpath`) — sessions/2026-09-25-1630-issue-51-perf-caches.md
 
-## Decisions archived 2026-10-13
+## Decisions archived 2026-10-09
 
-- [2026-09-26] Roadmap renumbered: shipped epics = v0.3.0; docs versions v0.2.1/v0.2.2 → v0.3.1/v0.3.2; stage-03 plans
-  v0.3.0–v0.6.0 → v0.4.0–v0.7.0 (package versions must increase) — .meta/roadmap/stages/03-hardening-and-gaps/v0.3.0.md
 - [2026-09-29] Tags are one part PER owner, referenced from its `p:custDataLst/p:tags` (`p:nvPr` for a shape,
   `p:cSld` for the slide), related from the slide part; slide tags resolve by that reference, not by reltype
   — sessions/2026-09-29-1211-issue-114-shape-tags.md
 - [2026-09-29] 3D chart writers share `_Base3DChartXmlWriter`; only THREE_D_COLUMN/AREA/LINE get a `c:serAx` + perspective
   camera. New chart XML uses POSITIVE axis ids (`unsignedInt`) — sessions/2026-09-29-2205-issue-115-3d-charts.md
+
+## Decisions archived 2026-10-13
+
+- [2026-09-26] Roadmap renumbered: shipped epics = v0.3.0; docs versions v0.2.1/v0.2.2 → v0.3.1/v0.3.2; stage-03 plans
+  v0.3.0–v0.6.0 → v0.4.0–v0.7.0 (package versions must increase) — .meta/roadmap/stages/03-hardening-and-gaps/v0.3.0.md
 - [2026-09-30] Sphinx `|Name|` substitutions are GENERATED in docs/conf.py from pptx's classes (no hand list); enum `:ref:`
   labels live on docs/api/enum.rst; `-W` is the docs gate — sessions/2026-09-30-0353-v032-docstrings-sphinx.md
 
