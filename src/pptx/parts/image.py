@@ -26,6 +26,8 @@ class ImagePart(Part):
     An image part generally has a partname matching the regex `ppt/media/image[1-9][0-9]*.*`.
     """
 
+    _blob_caches = ("sha1",)
+
     def __init__(
         self,
         partname: PackURI,

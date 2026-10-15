@@ -5,7 +5,7 @@
 - Package 0.5.1 SHIPPED (PR #133 merged `51a8cd1`); v0.5.1 tag row recorded; owner tags v0.5.0 + v0.5.1 by hand.
   **In flight: v0.6.0 on branch `v0.6.0`** — perf remainder only: lazy binary blobs + caching audit (`.meta/version`).
   Card expanded + branch-open baseline recorded (performance.md § v0.6.0 branch-open reference; `images_100` holds
-  5,169 KiB after open). Next step: L2 (stale `sha1`), then L1 (stale name index), then lazy blobs A1–A6.
+  5,169 KiB after open). L2 FIXED (`Part._blob_caches`). Next step: L1 (stale name index), then lazy blobs A1–A6.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0 ready; v0.5.0's row is recorded but HELD).
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.

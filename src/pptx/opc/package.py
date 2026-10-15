@@ -307,6 +307,10 @@ class Part(_RelatableMixin):
     given specific behaviors.
     """
 
+    # -- names of the `@lazyproperty` values a subclass derives from its blob, e.g. `sha1`.
+    # -- Assigning `blob` drops them so they are recomputed from the new bytes.
+    _blob_caches: tuple[str, ...] = ()
+
     def __init__(
         self, partname: PackURI, content_type: str, package: Package, blob: bytes | None = None
     ):
@@ -342,6 +346,8 @@ class Part(_RelatableMixin):
         demand. This works fine for binary parts though.
         """
         self._blob = blob
+        for name in self._blob_caches:
+            self.__dict__.pop(name, None)
 
     @lazyproperty
     def content_type(self) -> str:

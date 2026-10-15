@@ -15,6 +15,8 @@ class MediaPart(Part):
     `ppt/media/media[1-9][0-9]*.*`.
     """
 
+    _blob_caches = ("sha1",)
+
     @classmethod
     def new(cls, package, media):
         """Return new |MediaPart| instance containing `media`.

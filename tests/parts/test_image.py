@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import io
 
 import pytest
@@ -80,6 +81,14 @@ class DescribeImagePart:
         image_part = ImagePart(None, None, None, blob)
 
         assert image_part._px_size == (204, 204)
+
+    def it_recomputes_its_sha1_after_its_blob_is_replaced(self):
+        image_part = ImagePart(None, None, None, b"old-bytes")
+        assert image_part.sha1 == hashlib.sha1(b"old-bytes").hexdigest()
+
+        image_part.blob = b"new-bytes"
+
+        assert image_part.sha1 == hashlib.sha1(b"new-bytes").hexdigest()
 
     # fixture components ---------------------------------------------
 
