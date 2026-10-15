@@ -2,9 +2,9 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- **v0.5.1 in flight on branch `v0.5.1`.** Merged: #126 (PR #129), #127+#128 (PR #130, main `1c132d7`). Open, in scope:
-  **#131** shadow w/o colour child, **#132** 0.5.0 chartex decks unrepaired on re-save. One close-out PR fixes both,
-  bumps package + `.meta/version` to v0.5.1, records v0.5.0/v0.5.1 tag rows. Cursor after: v0.6.0 (thin card, see Threads).
+- Package **0.5.1**. v0.5.1 close-out PR (branch `v0.5.1`) carries #131 shadow + #132 chartex repair + bump; PowerPoint-COM
+  verified. **After merge:** add v0.5.1's row to `.meta/release-tags.md` (its merge commit); owner tags v0.5.0 (hold lifted)
+  and v0.5.1. Cursor then v0.6.0 (thin card, see Threads).
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0 ready; v0.5.0's row is recorded but HELD).
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
@@ -26,6 +26,10 @@
   Hold the **tag**, not the merge: merging publishes nothing (owner tags by hand) — sessions/2026-10-13-2228-pr125-merge-order-ci-unblocked.md
 - [2026-10-15] Owner: #131 (shadow) and #132 (chartex re-save repair) ship IN v0.5.1, one close-out PR with the version
   bump — not deferred to v0.6.0 — sessions/2026-10-15-0834-v051-followups-filed.md
+- [2026-10-15] Owner: default shadow colour = `prstClr black` @ 40% (PowerPoint "Outer Offset"); chartex style repair runs
+  ON LOAD. Templateless types (Pareto/region map/None) get the histogram style — same log
+- [2026-10-15] Load-time repairs live in `OpcPackage._repair_loaded_parts(parts)` (Package overrides), scanning the
+  loader's part dict: an `iter_parts()` walk cost +1.7% work count, near the 2% gate — same log
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
@@ -60,3 +64,4 @@
 - 2026-10-14 | v0.5.1 fixes written (unlogged sessions): #126 merged via PR #129; #127+#128 in PR #130 | gh pr view 130
 - 2026-10-15 | Memory reconciled: PR #130 merged 2026-10-14 (`1c132d7`); version bump + tags are all that's left of v0.5.1 | gh pr view 130
 - 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
+- 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md

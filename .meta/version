@@ -1,22 +1,13 @@
-# version: v0.5.0
+# version: v0.5.1
 status: shipped
-started: 2026-10-09
-branch: claude/epic-87-closeout-hfo5vj
-pr: https://github.com/RorySullivan1/pypptx/pull/125
-shipped: 2026-10-13
-
-Branch note: the convention is `v0.5.0` (CLAUDE.md § Roadmap), but this session can push only
-to its assigned branch, so the work lands there.
+started: 2026-10-13
+branch: v0.5.1
+pr: https://github.com/RorySullivan1/pypptx/pull/129, https://github.com/RorySullivan1/pypptx/pull/130 and the close-out PR
+shipped: 2026-10-15
 
 ## Goals
-- Read-only transitions: `SlideTransition` on slides, layouts and masters, resolving
-  `mc:AlternateContent` (`p14`, `p15`, `p159` Morph).
-- Read-only animations: `Slide.animations` in play order, with trigger, timing, target and preset
-  IDs; `effect_type` only for entrance/exit IDs 1–31.
-- Custom layouts: `SlideLayouts.add_slide_layout`, `LayoutShapes.add_placeholder`,
-  `SlideLayouts.duplicate`, and correct `p:sldLayoutId@id` allocation (also for `import_slide`).
-- Read-only handout master: `Presentation.handout_master`.
-- Four more POI decks in the test-only corpus.
+- Fix every defect that makes PowerPoint refuse a pypptx deck: #126 glow, #127 comment authors,
+  #128 chartex style parts, #131 shadow colour, #132 repair of 0.5.0 chartex decks on load.
 
 ## Objectives / acceptance
-- See the card, `.meta/roadmap/stages/03-hardening-and-gaps/v0.5.0.md`, "Objectives / acceptance".
+- See the card, `.meta/roadmap/stages/03-hardening-and-gaps/v0.5.1.md`, "Objectives / acceptance".
