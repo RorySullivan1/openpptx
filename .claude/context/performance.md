@@ -57,10 +57,11 @@ The v0.6.0 card sets the boundaries this work honors:
 ## What already exists (verify, do not reimplement)
 
 - **Shape name / ID indexes** — `_BaseShapes._get_name_index` / `_get_id_index`
-  (`src/pptx/shapes/shapetree.py`): built lazily on first lookup, dict-cached, and cleared only by
-  the shape collection's own add/insert methods. `bench_lookup.py` checks lookups stay flat across
-  10 / 100 / 1000 shapes. **Stale after a rename or a raw-XML removal** (v0.6.0 lead L1): after
-  `shape.name = "B"`, `get_by_name("B")` is `None`.
+  (`src/pptx/shapes/shapetree.py`): built lazily on first lookup, dict-cached, and cleared by
+  the shape collection's own add/insert methods. Until v0.6.0 they went stale after a rename or a
+  raw-XML removal (lead L1). Since then each hit is checked: the element must still be a member
+  with that name or id, and a stale hit or a miss rebuilds the index once (`_shape_elm_named`).
+  `bench_lookup.py` checks lookups stay flat across 10 / 100 / 1000 shapes (~5 µs, 1.02×).
 - **Lazy part loading** — `_ZipPkgReader` (`src/pptx/opc/serialized.py`) reads each part's
   bytes on demand; `LazyXmlPart` (`src/pptx/opc/package.py`) defers parsing for parts usually
   left untouched (presProps, tableStyles, diagram and chartex parts).

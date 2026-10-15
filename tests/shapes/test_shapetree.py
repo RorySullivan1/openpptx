@@ -217,6 +217,58 @@ class Describe_BaseShapes:
         assert "Shape B" in shapes
         assert "Shape C" not in shapes
 
+    def it_finds_a_renamed_shape_by_its_new_name(self):
+        spTree = element(
+            "p:spTree/(p:sp/p:nvSpPr/p:cNvPr{id=2,name=Shape A},"
+            "p:sp/p:nvSpPr/p:cNvPr{id=3,name=Shape B})"
+        )
+        shapes = _BaseShapes(spTree, None)
+        shape = shapes.get_by_name("Shape A")
+        assert shape is not None
+
+        shape.name = "Renamed"
+
+        renamed = shapes.get_by_name("Renamed")
+        assert renamed is not None
+        assert renamed.shape_id == 2
+        assert shapes.get_by_name("Shape A") is None
+        assert "Renamed" in shapes
+        assert "Shape A" not in shapes
+
+    def it_does_not_find_a_shape_removed_from_the_xml(self):
+        spTree = element(
+            "p:spTree/(p:sp/p:nvSpPr/p:cNvPr{id=2,name=Shape A},"
+            "p:sp/p:nvSpPr/p:cNvPr{id=3,name=Shape B})"
+        )
+        shapes = _BaseShapes(spTree, None)
+        shape = shapes.get_by_name("Shape A")
+        assert shape is not None
+        assert shapes.get_by_id(2) is not None
+
+        sp = shape.element
+        sp.getparent().remove(sp)
+
+        assert shapes.get_by_name("Shape A") is None
+        assert "Shape A" not in shapes
+        assert shapes.get_by_id(2) is None
+        assert shapes.get_by_name("Shape B") is not None
+
+    def it_finds_a_shape_by_an_id_changed_in_the_xml(self):
+        spTree = element(
+            "p:spTree/(p:sp/p:nvSpPr/p:cNvPr{id=2,name=Shape A},"
+            "p:sp/p:nvSpPr/p:cNvPr{id=3,name=Shape B})"
+        )
+        shapes = _BaseShapes(spTree, None)
+        shape = shapes.get_by_id(2)
+        assert shape is not None
+
+        shape.element.nvSpPr.cNvPr.id = 9
+
+        moved = shapes.get_by_id(9)
+        assert moved is not None
+        assert moved.name == "Shape A"
+        assert shapes.get_by_id(2) is None
+
     def it_caches_name_and_id_indices(self):
         spTree = element(
             "p:spTree/(p:sp/p:nvSpPr/p:cNvPr{id=2,name=Shape A},"
