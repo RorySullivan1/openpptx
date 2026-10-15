@@ -2,7 +2,7 @@
 status: shipped
 started: 2026-10-13
 branch: v0.5.1
-pr: https://github.com/RorySullivan1/pypptx/pull/129, https://github.com/RorySullivan1/pypptx/pull/130 and the close-out PR
+pr: https://github.com/RorySullivan1/pypptx/pull/129, https://github.com/RorySullivan1/pypptx/pull/130, https://github.com/RorySullivan1/pypptx/pull/133
 shipped: 2026-10-15
 
 ## Goals
