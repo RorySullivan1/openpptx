@@ -8,11 +8,15 @@ Scope (owner decision 2026-10-15): the performance remainder only. Four of the c
 early (#107/#109/#123, `ShapeRange`). Streaming save is dropped unless the lazy-blob measurement shows that
 save, not load, holds the memory. Cross-run text stays v0.7.0.
 
+Source policy (owner decision 2026-10-15): lazy blobs for PATH sources only (zip reopened per read,
+CRC/size checked, no lingering handle); stream and directory sources stay eager. Implementation
+detail and the two confirmed audit leads (L1 stale shape-name index, L2 stale `sha1`) are in the card.
+
 ## Goals
 - Lazy binary blobs: image and media parts (and other binary parts) keep a reference into the
   package zip and read their bytes only when `.blob` is first accessed. Today every part's bytes are
   read when the deck loads.
-- Caching audit: review all 206 `@lazyproperty` uses (47 files) for soundness, meaning no stale
+- Caching audit: review all 204 `@lazyproperty` uses (45 files; recounted 2026-10-15) for soundness, meaning no stale
   value after a mutation the API allows. Add a cache only where a hot path recomputes a derived
   collection, and only with a measured win (#51 showed `paragraphs`/`runs` caching is a loss).
 
@@ -23,5 +27,5 @@ save, not load, holds the memory. Cross-run text stays v0.7.0.
 - `tests/perf` baseline re-run at branch close: no tracked operation slower than its baseline;
   the work-count gate passes without raising its budget.
 - Full suite green; `tests/perf` under 60 s on CI.
-- Card `.meta/roadmap/stages/03-hardening-and-gaps/v0.6.0.md` expanded with implementation detail
-  before code lands.
+- [x] Card `.meta/roadmap/stages/03-hardening-and-gaps/v0.6.0.md` expanded with implementation detail
+  before code lands (2026-10-15).
