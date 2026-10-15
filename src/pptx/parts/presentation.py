@@ -255,10 +255,7 @@ class PresentationPart(XmlPart):
         # --- for image/media parts, check if an identical part already exists ---
         source_blob = source_part.blob
         for existing_part in self.package.iter_parts():
-            if (
-                existing_part.content_type == source_part.content_type
-                and existing_part.blob == source_blob
-            ):
+            if _holds_blob(existing_part, source_part.content_type, source_blob):
                 return existing_part
 
         # --- create a new part with appropriate partname ---
@@ -564,10 +561,7 @@ class _PartCopier:
     def _find_identical(self, source_part: Part) -> Part | None:
         source_blob = source_part.blob
         for existing_part in self._package.iter_parts():
-            if (
-                existing_part.content_type == source_part.content_type
-                and existing_part.blob == source_blob
-            ):
+            if _holds_blob(existing_part, source_part.content_type, source_blob):
                 return existing_part
         return None
 
@@ -592,6 +586,15 @@ class _PartCopier:
             partname = tmpl % n
         self._taken.add(partname)
         return PackURI(partname)
+
+
+def _holds_blob(part: Part, content_type: str, blob: bytes) -> bool:
+    """True when `part` has `content_type` and holds exactly `blob`.
+
+    A part whose bytes are still in its source file, and known to be another size, is ruled out
+    without reading them.
+    """
+    return part.content_type == content_type and part._may_hold(len(blob)) and part.blob == blob
 
 
 def _shape_tags_rIds(slide_part: SlidePart) -> set[str]:

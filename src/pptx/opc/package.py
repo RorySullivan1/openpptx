@@ -7,6 +7,8 @@ presentations to and from a .pptx file.
 from __future__ import annotations
 
 import collections
+import contextlib
+import os
 from typing import IO, TYPE_CHECKING, DefaultDict, Iterator, Mapping, Set, cast
 
 from pptx.exc import InvalidPackageError, PackageError
@@ -14,7 +16,7 @@ from pptx.opc.constants import RELATIONSHIP_TARGET_MODE as RTM
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.oxml import CT_Relationships, serialize_part_xml
 from pptx.opc.packuri import CONTENT_TYPES_URI, PACKAGE_URI, PackURI
-from pptx.opc.serialized import PackageReader, PackageWriter
+from pptx.opc.serialized import PackageReader, PackageWriter, ZipArchive, ZipMember
 from pptx.opc.shared import CaseInsensitiveDict
 from pptx.oxml import parse_xml
 from pptx.util import lazyproperty
@@ -159,8 +161,26 @@ class OpcPackage(_RelatableMixin):
         """Save this package to `pkg_file`.
 
         `file` can be either a path to a file (a string) or a file-like object.
+
+        A binary part loaded from a path still has its bytes in that file. They are copied into
+        memory first when `pkg_file` is that same file, since writing it truncates it. Every
+        other source file is held open for the length of the save, then released.
         """
-        PackageWriter.write(pkg_file, self._rels, tuple(self.iter_parts()))
+        parts = tuple(self.iter_parts())
+        archives: dict[ZipArchive, list[Part]] = {}
+        for part in parts:
+            if part._blob_source is not None:
+                archives.setdefault(part._blob_source.archive, []).append(part)
+
+        with contextlib.ExitStack() as open_archives:
+            for archive, archive_parts in archives.items():
+                if _is_same_file(pkg_file, archive.path):
+                    with archive.batch():
+                        for part in archive_parts:
+                            part._read_blob_into_memory()
+                else:
+                    open_archives.enter_context(archive.batch())
+            PackageWriter.write(pkg_file, self._rels, parts)
 
     def _load(self) -> Self:
         """Return the package after loading all parts and relationships."""
@@ -206,7 +226,12 @@ class _PackageLoader:
 
     def _load(self) -> tuple[CT_Relationships, dict[PackURI, Part]]:
         """Return (pkg_xml_rels, parts) pair resulting from loading pkg_file."""
-        parts, xml_rels = self._parts, self._xml_rels
+        try:
+            parts, xml_rels = self._parts, self._xml_rels
+        finally:
+            # -- release the file now rather than at garbage collection; on Windows an open
+            # -- file cannot be moved or deleted --
+            self._package_reader.close()
 
         for partname, part in parts.items():
             part.load_rels_from_xml(xml_rels[partname], parts)
@@ -249,7 +274,11 @@ class _PackageLoader:
                 partname,
                 content_types[partname],
                 package,
-                blob=package_reader[partname],
+                blob=(
+                    package_reader.blob_source_for(partname)
+                    if PartFactory.loads_lazily(content_types[partname])
+                    else package_reader[partname]
+                ),
             )
             for partname in (p for p in self._xml_rels if p != "/")
             # -- invalid partnames can arise in some packages; ignore those rather than raise an
@@ -311,6 +340,11 @@ class Part(_RelatableMixin):
     # -- Assigning `blob` drops them so they are recomputed from the new bytes.
     _blob_caches: tuple[str, ...] = ()
 
+    # -- a part loaded from a path keeps its bytes in that file (`_blob_source`) until assigned
+    # -- or saved over; otherwise they are held in `_blob_bytes` --
+    _blob_bytes: bytes | None = None
+    _blob_source: ZipMember | None = None
+
     def __init__(
         self, partname: PackURI, content_type: str, package: Package, blob: bytes | None = None
     ):
@@ -328,6 +362,15 @@ class Part(_RelatableMixin):
         for an example.
         """
         return cls(partname, content_type, package, blob)
+
+    @classmethod
+    def load_lazily(
+        cls, partname: PackURI, content_type: str, package: Package, source: ZipMember
+    ) -> Self:
+        """Return `cls` instance whose bytes stay in `source` until they are used."""
+        part = cls(partname, content_type, package, None)
+        part._blob_source = source
+        return part
 
     @property
     def blob(self) -> bytes:
@@ -399,6 +442,34 @@ class Part(_RelatableMixin):
         if callable(getattr(file, "seek")):
             file.seek(0)
         return file.read()
+
+    @property
+    def _blob(self) -> bytes | None:
+        """This part's bytes. A part with a source reads them from it on every access.
+
+        Keeping no copy holds memory flat while a save, or a search for a matching image, reads
+        every part. What a subclass derives from them, such as `sha1`, it caches itself.
+        """
+        if self._blob_source is not None:
+            return self._blob_source.read()
+        return self._blob_bytes
+
+    @_blob.setter
+    def _blob(self, blob: bytes | None) -> None:
+        self._blob_bytes = blob
+        self._blob_source = None
+
+    def _may_hold(self, size: int) -> bool:
+        """False when this part is known, without reading its bytes, not to be `size` bytes long.
+
+        Lets a search for matching bytes skip a lazy part of another size without reading it.
+        """
+        return self._blob_source is None or self._blob_source.size == size
+
+    def _read_blob_into_memory(self) -> None:
+        """Hold this part's bytes in memory from now on, ahead of its source file being replaced."""
+        if self._blob_source is not None:
+            self._blob_bytes, self._blob_source = self._blob_source.read(), None
 
     @lazyproperty
     def _rels(self) -> _Relationships:
@@ -521,9 +592,23 @@ class PartFactory:
 
     part_type_for: dict[str, type[Part]] = {}
 
-    def __new__(cls, partname: PackURI, content_type: str, package: Package, blob: bytes) -> Part:
+    def __new__(
+        cls, partname: PackURI, content_type: str, package: Package, blob: bytes | ZipMember
+    ) -> Part:
         PartClass = cls._part_cls_for(content_type)
+        if isinstance(blob, ZipMember):
+            return PartClass.load_lazily(partname, content_type, package, blob)
         return PartClass.load(partname, content_type, package, blob)
+
+    @classmethod
+    def loads_lazily(cls, content_type: str) -> bool:
+        """True when the part class for `content_type` can leave its bytes in the source file.
+
+        Only a class that loads through `Part.load()` itself can. A class with its own `load()`,
+        like every |XmlPart|, parses or inspects its bytes as it loads.
+        """
+        load = getattr(cls._part_cls_for(content_type).load, "__func__", None)
+        return load is getattr(Part.load, "__func__", None)
 
     @classmethod
     def _part_cls_for(cls, content_type: str) -> type[Part]:
@@ -858,6 +943,13 @@ class _Relationship:
             return self._target
 
         return self.target_partname.relative_ref(self._base_uri)
+
+
+def _is_same_file(pkg_file: str | IO[bytes], path: str) -> bool:
+    """True when `pkg_file` is a path naming the existing file at `path`."""
+    if not isinstance(pkg_file, str) or not (os.path.exists(pkg_file) and os.path.exists(path)):
+        return False
+    return os.path.samefile(pkg_file, path)
 
 
 def _is_fragment(target_ref: str) -> bool:

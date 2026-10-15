@@ -118,6 +118,40 @@ The Baseline section at the end is regenerated and will not keep them.
   reference cycles keep the deck alive until GC runs. Use the "deck held open" table for
   lazy-blob comparisons.
 
+## v0.6.0 lazy blobs, after (2026-10-15)
+
+A binary part loaded from a path now leaves its bytes in the zip until used (card steps A1–A6).
+These numbers come from the same box as the branch-open reference.
+
+| deck held open (tracemalloc, KiB) | before | after |
+| --- | --- | --- |
+| `images_100` current after open | 5,169.1 | 355.9 (−93%) |
+| `images_100` peak during save | 5,881.4 | 1,319.5 (−78%) |
+| `large` current after open | 255.4 | 236.5 |
+| `large` peak during save | 807.9 | 936.3 (+128) |
+
+- **Save peak on decks with few images rises by about 128 KiB.** During a save, the source zip
+  stays open and its central directory is parsed, one `ZipInfo` for each of `large`'s 237 zip
+  entries. That memory is released when the save ends.
+- **Wall-clock**, comparing the previous commit with this change, two interleaved rounds, medians
+  of 15 runs:
+
+  | deck | open | save |
+  | --- | --- | --- |
+  | `images_100` | 20.7 → 15.2 ms (−27%) | 103.3 → 108.6 ms (+5%) |
+  | `large` | 30.0 → 30.3 ms | 31.4 → 32.3 ms |
+
+  Decompressing the images moved from open to save, so open plus save is unchanged. `zipfile` has
+  no public way to copy a compressed member raw, so untouched images are still decompressed and
+  recompressed on save (out of scope on the card).
+- **Reopening costs about 0.55 ms per zip open** (336-entry `images_100`). Save therefore holds
+  one handle for its whole duration (`ZipArchive.batch()`): reading 100 images took 69.5 ms with a
+  reopen for each and 11.6 ms through one handle.
+- **Work count** (3.13): 1,007,593 → 1,014,774 (+0.7%), from the per-part load and read calls.
+- **A latent lock is gone.** Before this change, a deck opened from a path kept its file open
+  until garbage collection closed the zip, so on Windows the file could not be moved or deleted.
+  The loader now closes it as soon as loading ends.
+
 ## Harness
 
 - `tests/perf/corpus.py` — synthetic deck generator (slides, shapes/slide, paragraphs/shape,
@@ -141,7 +175,7 @@ python -m tests.perf.run_baseline    # refresh baseline.json and the section bel
 
 ## Baseline
 
-Captured: `2026-10-15T17:57:54.818668+00:00`
+Captured: `2026-10-15T21:02:29.089872+00:00`
 Platform: `CPython 3.13.13` on `Windows / AMD64`
 
 ### Corpus
@@ -164,19 +198,19 @@ Open is median of 5 cold opens.
 
 | fixture | open | iter1x | iter10x | save |
 | --- | --- | --- | --- | --- |
-| small | 2.96 | 0.37 | 1.22 | 3.02 |
-| medium | 9.30 | 6.43 | 38.72 | 7.82 |
-| large | 26.99 | 40.46 | 272.28 | 26.71 |
-| images_100 | 17.67 | 2.07 | 3.58 | 91.38 |
+| small | 3.17 | 0.41 | 1.31 | 3.76 |
+| medium | 9.96 | 7.03 | 41.36 | 9.40 |
+| large | 29.27 | 44.89 | 291.60 | 30.65 |
+| images_100 | 13.61 | 2.09 | 3.72 | 104.97 |
 
 ### Memory on open (KiB, tracemalloc)
 
 | fixture | current | peak |
 | --- | --- | --- |
-| small | 108.2 | 154.2 |
-| medium | 102.9 | 221.1 |
-| large | 227.0 | 427.0 |
-| images_100 | 5120.5 | 5401.4 |
+| small | 85.0 | 143.8 |
+| medium | 165.3 | 205.0 |
+| large | 196.6 | 388.2 |
+| images_100 | 321.5 | 581.5 |
 
 ### Memory with the deck held open (KiB, tracemalloc)
 
@@ -185,40 +219,40 @@ open deck holds. `save peak` is the peak from the start of the save to its end, 
 
 | fixture | current after open | peak on open | save peak |
 | --- | --- | --- | --- |
-| small | 116.8 | 160.9 | 469.8 |
-| medium | 214.9 | 233.1 | 629.7 |
-| large | 255.4 | 455.5 | 807.9 |
-| images_100 | 5169.1 | 5450.0 | 5881.4 |
+| small | 93.9 | 150.9 | 487.5 |
+| medium | 186.4 | 217.9 | 668.7 |
+| large | 236.5 | 427.5 | 936.3 |
+| images_100 | 355.9 | 616.0 | 1319.5 |
 
 ### cProfile top 20 (medium fixture, open + iterate + save)
 
 ```
-335357 function calls (334076 primitive calls) in 0.118 seconds
+338043 function calls (336762 primitive calls) in 0.128 seconds
 
    Ordered by: cumulative time
-   List reduced from 330 to 20 due to restriction <20>
+   List reduced from 362 to 20 due to restriction <20>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    0.009    0.009    0.091    0.091 run_baseline.py:71(_bench_iterate_text)
-    18000    0.009    0.000    0.039    0.000 text.py:910(runs)
-    22610    0.020    0.000    0.022    0.000 xmlchemy.py:404(get_child_element_list)
-    18000    0.003    0.000    0.020    0.000 text.py:1024(text)
-    18000    0.004    0.000    0.018    0.000 text.py:71(text)
-     4500    0.004    0.000    0.017    0.000 text.py:222(paragraphs)
-    18060    0.013    0.000    0.014    0.000 xmlchemy.py:500(get_child_element)
-        1    0.000    0.000    0.014    0.014 presentation.py:103(save)
-        1    0.000    0.000    0.014    0.014 presentation.py:476(save)
-        1    0.000    0.000    0.014    0.014 package.py:158(save)
-2831/1817    0.001    0.000    0.014    0.000 util.py:166(__get__)
-    36000    0.006    0.000    0.013    0.000 text.py:913(<genexpr>)
-        1    0.000    0.000    0.013    0.013 serialized.py:71(write)
-        1    0.000    0.000    0.013    0.013 serialized.py:82(_write)
-        1    0.000    0.000    0.012    0.012 api.py:22(Presentation)
-        1    0.000    0.000    0.012    0.012 package.py:80(open)
-        1    0.000    0.000    0.012    0.012 package.py:165(_load)
-        1    0.000    0.000    0.012    0.012 package.py:192(load)
-        1    0.000    0.000    0.012    0.012 package.py:207(_load)
-        1    0.000    0.000    0.012    0.012 serialized.py:100(_write_parts)
+        1    0.009    0.009    0.097    0.097 run_baseline.py:71(_bench_iterate_text)
+    18000    0.010    0.000    0.040    0.000 text.py:910(runs)
+    22610    0.022    0.000    0.023    0.000 xmlchemy.py:404(get_child_element_list)
+    18000    0.003    0.000    0.021    0.000 text.py:1024(text)
+    18000    0.004    0.000    0.019    0.000 text.py:71(text)
+     4500    0.004    0.000    0.018    0.000 text.py:222(paragraphs)
+        1    0.000    0.000    0.016    0.016 presentation.py:103(save)
+        1    0.000    0.000    0.016    0.016 presentation.py:473(save)
+        1    0.000    0.000    0.016    0.016 package.py:160(save)
+2833/1819    0.001    0.000    0.015    0.000 util.py:166(__get__)
+    18060    0.014    0.000    0.015    0.000 xmlchemy.py:500(get_child_element)
+        1    0.000    0.000    0.015    0.015 api.py:22(Presentation)
+        1    0.000    0.000    0.014    0.014 package.py:82(open)
+        1    0.000    0.000    0.014    0.014 package.py:185(_load)
+        1    0.000    0.000    0.014    0.014 serialized.py:84(write)
+        1    0.000    0.000    0.014    0.014 serialized.py:95(_write)
+        1    0.000    0.000    0.014    0.014 package.py:212(load)
+        1    0.000    0.000    0.014    0.014 package.py:227(_load)
+    36000    0.006    0.000    0.014    0.000 text.py:913(<genexpr>)
+        1    0.000    0.000    0.013    0.013 serialized.py:113(_write_parts)
 ```
 
 ### Reproducing

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "captured_at": "2026-10-15T17:57:54.818668+00:00",
+  "captured_at": "2026-10-15T21:02:29.089872+00:00",
   "platform": {
     "python": "3.13.13",
     "implementation": "CPython",
@@ -39,68 +39,68 @@
   },
   "timings_seconds": {
     "small": {
-      "open_median_s": 0.0029562999989138916,
-      "iter_text_single_s": 0.0003665999975055456,
-      "iter_text_repeated_s": 0.0012237999908393249,
-      "save_s": 0.003020100004505366
+      "open_median_s": 0.0031710999901406467,
+      "iter_text_single_s": 0.0004105999832972884,
+      "iter_text_repeated_s": 0.0013144999975338578,
+      "save_s": 0.0037607999984174967
     },
     "medium": {
-      "open_median_s": 0.009304999999585561,
-      "iter_text_single_s": 0.006428399996366352,
-      "iter_text_repeated_s": 0.03872290000435896,
-      "save_s": 0.007821000006515533
+      "open_median_s": 0.009958300011930987,
+      "iter_text_single_s": 0.007025200000498444,
+      "iter_text_repeated_s": 0.041357999987667426,
+      "save_s": 0.009400899987667799
     },
     "large": {
-      "open_median_s": 0.02698650000093039,
-      "iter_text_single_s": 0.040455399997881614,
-      "iter_text_repeated_s": 0.2722751999972388,
-      "save_s": 0.02671089999785181
+      "open_median_s": 0.0292704000021331,
+      "iter_text_single_s": 0.04488950001541525,
+      "iter_text_repeated_s": 0.2915997999953106,
+      "save_s": 0.03065119998063892
     },
     "images_100": {
-      "open_median_s": 0.017670300003373995,
-      "iter_text_single_s": 0.002065799999400042,
-      "iter_text_repeated_s": 0.0035780000034719706,
-      "save_s": 0.09137740000733174
+      "open_median_s": 0.01361150000593625,
+      "iter_text_single_s": 0.0020898999937344342,
+      "iter_text_repeated_s": 0.0037233000039123,
+      "save_s": 0.10497039998881519
     }
   },
   "memory_bytes_on_open": {
     "small": {
-      "current_bytes": 110804,
-      "peak_bytes": 157860
+      "current_bytes": 87088,
+      "peak_bytes": 147217
     },
     "medium": {
-      "current_bytes": 105402,
-      "peak_bytes": 226424
+      "current_bytes": 169266,
+      "peak_bytes": 209879
     },
     "large": {
-      "current_bytes": 232445,
-      "peak_bytes": 437248
+      "current_bytes": 201274,
+      "peak_bytes": 397484
     },
     "images_100": {
-      "current_bytes": 5243434,
-      "peak_bytes": 5530986
+      "current_bytes": 329187,
+      "peak_bytes": 595427
     }
   },
   "memory_bytes_held": {
     "small": {
-      "open_current_bytes": 119588,
-      "open_peak_bytes": 164804,
-      "save_peak_bytes": 481043
+      "open_current_bytes": 96184,
+      "open_peak_bytes": 154473,
+      "save_peak_bytes": 499214
     },
     "medium": {
-      "open_current_bytes": 220069,
-      "open_peak_bytes": 238672,
-      "save_peak_bytes": 644803
+      "open_current_bytes": 190834,
+      "open_peak_bytes": 223087,
+      "save_peak_bytes": 684755
     },
     "large": {
-      "open_current_bytes": 261565,
-      "open_peak_bytes": 466480,
-      "save_peak_bytes": 827329
+      "open_current_bytes": 242130,
+      "open_peak_bytes": 437804,
+      "save_peak_bytes": 958817
     },
     "images_100": {
-      "open_current_bytes": 5293194,
-      "open_peak_bytes": 5580786,
-      "save_peak_bytes": 6022602
+      "open_current_bytes": 364395,
+      "open_peak_bytes": 630747,
+      "save_peak_bytes": 1351119
     }
   },
   "iter_repeat_access_count": 10,
