@@ -166,7 +166,15 @@ class OpcPackage(_RelatableMixin):
         """Return the package after loading all parts and relationships."""
         pkg_xml_rels, parts = _PackageLoader.load(self._pkg_file, cast("Package", self))
         self._rels.load_from_xml(PACKAGE_URI, pkg_xml_rels, parts)
+        self._repair_loaded_parts(list(parts.values()))
         return self
+
+    def _repair_loaded_parts(self, parts: list[Part]) -> None:
+        """Fix known defects in a just-loaded package; `parts` is every part it holds.
+
+        Runs once, after all parts and relationships are loaded. The base implementation does
+        nothing; a subclass overrides it to repair what it knows to be wrong.
+        """
 
     @lazyproperty
     def _rels(self) -> _Relationships:
