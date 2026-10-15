@@ -21,11 +21,18 @@ from pptx.oxml.xmlchemy import (
 )
 
 if TYPE_CHECKING:
-    from pptx.oxml.dml.color import CT_SchemeColor
+    from pptx.oxml.dml.color import CT_PresetColor, CT_SchemeColor
 
 
 class CT_OuterShadowEffect(BaseOxmlElement):
-    """`a:outerShdw` element, specifying an outer shadow effect."""
+    """`a:outerShdw` element, specifying an outer shadow effect.
+
+    Contains a single color child element (e.g. `a:srgbClr`, `a:prstClr`). The schema
+    requires that child and PowerPoint refuses to open a deck whose shadow lacks it, so
+    `ensure_color()` must run on any outer shadow this library creates or edits.
+    """
+
+    get_or_change_to_prstClr: Callable[[], CT_PresetColor]
 
     _tag_seq = (
         "a:scrgbClr",
@@ -63,6 +70,18 @@ class CT_OuterShadowEffect(BaseOxmlElement):
     rotWithShape: bool | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "rotWithShape", XsdBoolean
     )
+
+    def ensure_color(self) -> None:
+        """Add the default shadow color when this shadow has no color child.
+
+        The default is the color of PowerPoint's own "Outer Offset" shadow preset: preset
+        color `black` at 40% opacity. An existing color child is left untouched.
+        """
+        if self.eg_colorChoice is not None:
+            return
+        prstClr = self.get_or_change_to_prstClr()
+        prstClr.val = "black"
+        prstClr.get_or_add_alpha().val = 0.4
 
 
 class CT_InnerShadowEffect(BaseOxmlElement):
@@ -225,3 +244,9 @@ class CT_EffectList(BaseOxmlElement):
         glow = cast(CT_GlowEffect, OxmlElement("a:glow"))
         glow.ensure_color()
         return glow
+
+    def _new_outerShdw(self) -> CT_OuterShadowEffect:
+        """Return a new `a:outerShdw` element that already carries its required color child."""
+        outerShdw = cast(CT_OuterShadowEffect, OxmlElement("a:outerShdw"))
+        outerShdw.ensure_color()
+        return outerShdw

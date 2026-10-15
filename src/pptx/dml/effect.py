@@ -170,9 +170,10 @@ class ShadowFormat:
         return None
 
     def _get_or_add_outerShdw(self) -> CT_OuterShadowEffect:
-        """Return the `a:outerShdw` element, creating effectLst and outerShdw if needed."""
-        effectLst = self._element.get_or_add_effectLst()
-        return effectLst.get_or_add_outerShdw()
+        """Return the `a:outerShdw` element, created if needed and always carrying a color."""
+        outerShdw = self._element.get_or_add_effectLst().get_or_add_outerShdw()
+        outerShdw.ensure_color()
+        return outerShdw
 
     @property
     def _innerShdw(self) -> CT_InnerShadowEffect | None:

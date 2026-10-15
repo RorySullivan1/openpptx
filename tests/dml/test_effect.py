@@ -33,7 +33,7 @@ class DescribeShadowFormat:
         spPr = element("p:spPr{a:b=c}")
         shadow = ShadowFormat(spPr)
         shadow.blur_radius = 50800
-        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:outerShdw{blurRad=50800}")
+        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:outerShdw{blurRad=50800}/a:prstClr{val=black}/a:alpha{val=40000}")
 
     @pytest.mark.parametrize(
         ("spPr_cxml", "expected_value"),
@@ -50,7 +50,7 @@ class DescribeShadowFormat:
         spPr = element("p:spPr{a:b=c}")
         shadow = ShadowFormat(spPr)
         shadow.distance = 38100
-        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:outerShdw{dist=38100}")
+        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:outerShdw{dist=38100}/a:prstClr{val=black}/a:alpha{val=40000}")
 
     @pytest.mark.parametrize(
         ("spPr_cxml", "expected_value"),
@@ -67,7 +67,7 @@ class DescribeShadowFormat:
         spPr = element("p:spPr{a:b=c}")
         shadow = ShadowFormat(spPr)
         shadow.direction = 45.0
-        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:outerShdw{dir=2700000}")
+        assert spPr.xml == xml("p:spPr{a:b=c}/a:effectLst/a:outerShdw{dir=2700000}/a:prstClr{val=black}/a:alpha{val=40000}")
 
     @pytest.mark.parametrize(
         ("spPr_cxml", "expected_value"),
@@ -103,6 +103,64 @@ class DescribeShadowFormat:
         shadow, value, expected_xml = inherit_set_fixture
         shadow.inherit = value
         assert shadow._element.xml == expected_xml
+
+    @pytest.mark.parametrize(
+        ("prop_name", "value", "attr"),
+        [
+            ("blur_radius", Emu(50800), "blurRad=50800"),
+            ("distance", Emu(38100), "dist=38100"),
+            ("direction", 45.0, "dir=2700000"),
+            ("alignment", MSO_RECT_ALIGNMENT.BOTTOM_LEFT, "algn=bl"),
+            ("rotate_with_shape", False, "rotWithShape=0"),
+        ],
+    )
+    def it_adds_a_default_color_when_it_creates_a_shadow(self, prop_name, value, attr):
+        # -- `CT_OuterShadowEffect` requires a color child; PowerPoint refuses a deck without one (#131)
+        spPr = element("p:spPr{a:b=c}")
+        setattr(ShadowFormat(spPr), prop_name, value)
+        assert spPr.xml == xml(
+            "p:spPr{a:b=c}/a:effectLst/a:outerShdw{%s}/a:prstClr{val=black}/a:alpha{val=40000}" % attr
+        )
+
+    def it_keeps_an_existing_color_when_it_changes_a_shadow(self):
+        spPr = element("p:spPr/a:effectLst/a:outerShdw{blurRad=50800}/a:srgbClr{val=FF0000}")
+        ShadowFormat(spPr).blur_radius = Emu(101600)
+        assert spPr.xml == xml(
+            "p:spPr/a:effectLst/a:outerShdw{blurRad=101600}/a:srgbClr{val=FF0000}"
+        )
+
+    def it_repairs_a_colorless_shadow_when_it_changes_it(self):
+        spPr = element("p:spPr/a:effectLst/a:outerShdw{blurRad=50800}")
+        ShadowFormat(spPr).distance = Emu(38100)
+        assert spPr.xml == xml(
+            "p:spPr/a:effectLst/a:outerShdw{blurRad=50800,dist=38100}"
+            "/a:prstClr{val=black}/a:alpha{val=40000}"
+        )
+
+    def it_round_trips_a_shadow_through_a_saved_deck(self):
+        # -- regression for #131: the deck from the issue's repro must carry a shadow color --
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        box = slide.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.RECTANGLE, Emu(914400), Emu(914400), Emu(2743200), Emu(1828800)
+        )
+        box.shadow.blur_radius = Pt(8)
+        other = slide.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.OVAL, Emu(914400), Emu(3657600), Emu(2743200), Emu(1371600)
+        )
+        other.shadow.color.rgb = RGBColor(0x00, 0x80, 0xFF)
+        other.shadow.distance = Pt(4)
+        stream = io.BytesIO()
+        prs.save(stream)
+
+        stream.seek(0)
+        shapes = Presentation(stream).slides[0].shapes
+        reloaded_box, reloaded_other = shapes[-2], shapes[-1]
+        assert reloaded_box.shadow.blur_radius == Pt(8)
+        assert reloaded_box.shadow.color.alpha == pytest.approx(0.4)
+        assert reloaded_box.shadow._outerShdw.xpath("a:prstClr/@val") == ["black"]
+        assert reloaded_other.shadow.distance == Pt(4)
+        assert reloaded_other.shadow.color.rgb == RGBColor(0x00, 0x80, 0xFF)
 
     def it_provides_access_to_shadow_color(self):
         from pptx.oxml import parse_xml
