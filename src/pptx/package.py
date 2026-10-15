@@ -7,6 +7,7 @@ from typing import IO, TYPE_CHECKING, Iterator, cast
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.package import OpcPackage
 from pptx.opc.packuri import PackURI
+from pptx.parts.chartex import ChartExPart
 from pptx.parts.comments import CommentAuthorsPart
 from pptx.parts.coreprops import CorePropertiesPart
 from pptx.parts.custprops import CustomPropertiesPart
@@ -15,9 +16,8 @@ from pptx.parts.media import MediaPart
 from pptx.util import lazyproperty
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
-
     from pptx.media import Audio, Video
+    from pptx.opc.package import Part
 
 
 class Package(OpcPackage):
@@ -65,19 +65,22 @@ class Package(OpcPackage):
             presentation_part.relate_to(authors_part, RT.COMMENT_AUTHORS)
             return authors_part
 
-    def _load(self) -> Self:
-        """Return the package after loading it, repairing a misplaced comment-authors link.
+    def _repair_loaded_parts(self, parts: list[Part]) -> None:
+        """Repair what pypptx 0.5.0 and earlier wrote wrong; PowerPoint refuses either defect.
 
-        pypptx 0.5.0 and earlier related the comment-authors part from the package root rather
-        than from the presentation part, which makes PowerPoint refuse the deck. PowerPoint
-        never writes that package-level relationship, so it is always safe to move.
+        - The comment-authors part was related from the package root rather than from the
+          presentation part. PowerPoint never writes that package-level relationship, so it is
+          always safe to move.
+        - Chartex charts had no chart-style or color-style part. Each missing part is added as
+          PowerPoint writes it for a new chart of that type.
         """
-        super()._load()
         misplaced = [rel for rel in self._rels.values() if rel.reltype == RT.COMMENT_AUTHORS]
         for rel in misplaced:
             self.drop_rel(rel.rId)
             self.main_document_part.relate_to(rel.target_part, RT.COMMENT_AUTHORS)
-        return self
+        for part in parts:
+            if isinstance(part, ChartExPart):
+                part.ensure_style_parts()
 
     def get_or_add_image_part(self, image_file: str | IO[bytes]) -> ImagePart:
         """Return |ImagePart| containing the image in `image_file`, reusing if present."""

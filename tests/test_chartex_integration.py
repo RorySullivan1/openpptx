@@ -4,6 +4,7 @@ shape-tree operations on the `mc:AlternateContent` wrapper a chartex chart lives
 from __future__ import annotations
 
 import io
+import re
 import zipfile
 
 import pytest
@@ -36,6 +37,28 @@ def _waterfall_data() -> CategoryChartData:
     chart_data.categories = ["Start", "Q1", "Q2", "End"]
     chart_data.add_series("Flow", (100, -20, 35, 115))
     return chart_data
+
+
+def _without_chart_style_parts(stream: io.BytesIO) -> io.BytesIO:
+    """Return a copy of the saved deck in `stream` shaped as pypptx 0.5.0 wrote it.
+
+    That is, with no chart-style or color-style parts, relationships or content types.
+    """
+    stream.seek(0)
+    out = io.BytesIO()
+    with zipfile.ZipFile(stream) as zin, zipfile.ZipFile(out, "w") as zout:
+        for item in zin.infolist():
+            name = item.filename
+            if re.fullmatch(r"ppt/charts/(style|colors)\d+\.xml", name):
+                continue
+            data = zin.read(name)
+            if name == "[Content_Types].xml" or re.fullmatch(
+                r"ppt/charts/_rels/chartEx\d+\.xml\.rels", name
+            ):
+                data = re.sub(rb"<[^<>]*chart(color)?style[^<>]*/>", b"", data, flags=re.IGNORECASE)
+            zout.writestr(item, data)
+    out.seek(0)
+    return out
 
 
 def _slide_with_chartex():
@@ -161,6 +184,39 @@ class DescribeAddingChartexCharts:
                 "application/vnd.ms-office.chartstyle+xml"
             )
             assert content_types["/ppt/charts/colors%d.xml" % n] == (
+                "application/vnd.ms-office.chartcolorstyle+xml"
+            )
+
+    def it_repairs_a_chart_saved_without_style_parts_when_the_deck_is_reloaded(self):
+        # -- regression for #132: a pypptx 0.5.0 chartex deck must open after a plain re-save --
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        for chart_type in (XL_CHART_TYPE.WATERFALL, XL_CHART_TYPE.FUNNEL):
+            slide.shapes.add_chart(
+                chart_type, Inches(1), Inches(1), Inches(4), Inches(3), _waterfall_data()
+            )
+        stream = io.BytesIO()
+        prs.save(stream)
+        old_deck = _without_chart_style_parts(stream)
+
+        resaved = io.BytesIO()
+        Presentation(old_deck).save(resaved)
+
+        pkg = zipfile.ZipFile(resaved)
+        content_types = {
+            o.get("PartName"): o.get("ContentType")
+            for o in parse_xml(pkg.read("[Content_Types].xml"))
+            if o.get("PartName")
+        }
+        for n, style_id in ((1, "395"), (2, "419")):
+            rels = parse_xml(pkg.read("ppt/charts/_rels/chartEx%d.xml.rels" % n))
+            targets = {rel.get("Type").rsplit("/", 1)[1]: rel.get("Target") for rel in rels}
+            style_name = "ppt/charts/%s" % targets["chartStyle"]
+            colors_name = "ppt/charts/%s" % targets["chartColorStyle"]
+            assert parse_xml(pkg.read(style_name)).get("id") == style_id
+            assert parse_xml(pkg.read(colors_name)).get("id") == "10"
+            assert content_types["/" + style_name] == "application/vnd.ms-office.chartstyle+xml"
+            assert content_types["/" + colors_name] == (
                 "application/vnd.ms-office.chartcolorstyle+xml"
             )
 

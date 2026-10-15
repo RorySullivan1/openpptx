@@ -12,7 +12,7 @@ from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE
 from pptx.opc.constants import CONTENT_TYPE as CT
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.opc.package import PartFactory
+from pptx.opc.package import Part, PartFactory
 from pptx.opc.packuri import PackURI
 from pptx.oxml import parse_xml
 from pptx.oxml.ns import qn
@@ -81,6 +81,77 @@ class DescribeChartExPart:
         colors = parse_xml(colors_part.blob)
         assert colors.tag == "{%s}colorStyle" % _CS_NS
         assert colors.get("id") == "10"
+
+    @pytest.mark.parametrize(
+        ("chart_type", "style_id"),
+        [(XL_CHART_TYPE.WATERFALL, "395"), (XL_CHART_TYPE.FUNNEL, "419")],
+    )
+    def it_adds_the_style_parts_a_loaded_chart_is_missing(self, chart_type, style_id: str):
+        # -- a chartex chart written by pypptx 0.5.0 has neither part; PowerPoint refuses it (#132)
+        package = Presentation().part.package
+        blob = WATERFALL_XML.replace('layoutId="waterfall"', 'layoutId="%s"' % (
+            "waterfall" if chart_type is XL_CHART_TYPE.WATERFALL else "funnel"
+        ))
+        part = ChartExPart.load(
+            PackURI("/ppt/charts/chartEx1.xml"), CT.OFC_CHART_EX, package, blob.encode("utf-8")
+        )
+
+        part.ensure_style_parts()
+
+        style_part = part.part_related_by(RT.CHART_STYLE)
+        assert style_part.content_type == CT.OFC_CHART_STYLE
+        assert parse_xml(style_part.blob).get("id") == style_id
+        colors_part = part.part_related_by(RT.CHART_COLOR_STYLE)
+        assert colors_part.content_type == CT.OFC_CHART_COLORS
+        assert parse_xml(colors_part.blob).get("id") == "10"
+
+    def it_adds_style_parts_even_when_its_chart_type_is_unknown(self):
+        # -- a chart pypptx can't classify must still open in PowerPoint --
+        package = Presentation().part.package
+        blob = (
+            b'<cx:chartSpace xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"'
+            b"/>"
+        )
+        part = ChartExPart.load(
+            PackURI("/ppt/charts/chartEx1.xml"), CT.OFC_CHART_EX, package, blob
+        )
+
+        part.ensure_style_parts()
+
+        style = parse_xml(part.part_related_by(RT.CHART_STYLE).blob)
+        assert style.tag == "{%s}chartStyle" % _CS_NS
+        colors = parse_xml(part.part_related_by(RT.CHART_COLOR_STYLE).blob)
+        assert colors.tag == "{%s}colorStyle" % _CS_NS
+
+    def it_leaves_style_parts_that_are_already_there_alone(self):
+        package = Presentation().part.package
+        chart_data = CategoryChartData()
+        chart_data.categories = ["A", "B"]
+        chart_data.add_series("S1", (10, 12))
+        part = ChartExPart.new(XL_CHART_TYPE.WATERFALL, chart_data, package)
+        rels_before = dict(part.rels)
+
+        part.ensure_style_parts()
+
+        assert dict(part.rels) == rels_before
+
+    def it_does_not_parse_a_chart_whose_style_parts_are_present(self, request):
+        parse_xml_ = function_mock(request, "pptx.opc.package.parse_xml")
+        package_ = instance_mock(request, "pptx.package.Package")
+        part = ChartExPart.load(
+            PackURI("/ppt/charts/chartEx1.xml"),
+            CT.OFC_CHART_EX,
+            package_,
+            WATERFALL_XML.encode("utf-8"),
+        )
+        style_part_ = instance_mock(request, Part)
+        colors_part_ = instance_mock(request, Part)
+        part.relate_to(style_part_, RT.CHART_STYLE)
+        part.relate_to(colors_part_, RT.CHART_COLOR_STYLE)
+
+        part.ensure_style_parts()
+
+        parse_xml_.assert_not_called()
 
     def it_provides_access_to_the_chart(self, request):
         package_ = instance_mock(request, "pptx.package.Package")
