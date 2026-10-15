@@ -5,7 +5,7 @@
 - Package 0.5.1 SHIPPED (PR #133 merged `51a8cd1`); v0.5.1 tag row recorded; owner tags v0.5.0 + v0.5.1 by hand.
   **In flight: v0.6.0 on branch `v0.6.0`** — perf remainder only: lazy binary blobs + caching audit (`.meta/version`).
   Card expanded + branch-open baseline recorded (performance.md § v0.6.0 branch-open reference; `images_100` holds
-  5,169 KiB after open). L2 + L1 FIXED (`Part._blob_caches`; shape index validate-on-hit). Next step: lazy blobs A1–A6.
+  5,169 KiB after open). L2 + L1 FIXED (`Part._blob_caches`; shape index validate-on-hit); draft PR #134 onto main. Next: lazy blobs A1–A6.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0 ready; v0.5.0's row is recorded but HELD).
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
@@ -68,4 +68,4 @@
 - 2026-10-15 | Memory reconciled: PR #130 merged 2026-10-14 (`1c132d7`); version bump + tags are all that's left of v0.5.1 | gh pr view 130
 - 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
 - 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md
-- 2026-10-15 1347 | v0.6.0 card expanded; stale shape-name index (L1) + stale `sha1` (L2) reproduced | sessions/2026-10-15-1347-v060-card-expanded.md
+- 2026-10-15 1347 | v0.6.0 card expanded, baseline recorded, L1 + L2 fixed; draft PR #134 | sessions/2026-10-15-1347-v060-card-expanded.md

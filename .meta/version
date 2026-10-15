@@ -2,7 +2,7 @@
 status: in-progress
 started: 2026-10-15
 branch: v0.6.0
-pr:
+pr: #134 (draft; grows until v0.6.0 ships)
 
 Scope (owner decision 2026-10-15): the performance remainder only. Four of the card's seven goals landed
 early (#107/#109/#123, `ShapeRange`). Streaming save is dropped unless the lazy-blob measurement shows that
