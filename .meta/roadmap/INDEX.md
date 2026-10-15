@@ -29,6 +29,6 @@ Scope and exclusions: `.claude/context/feature-manifest.md`.
 | v0.4.0  | 03    | Stability & real-world round-trip                       | shipped |
 | v0.5.0  | 03    | Transitions, animations (read), custom layouts          | shipped |
 | v0.5.1  | 03    | Patch: decks PowerPoint refused (glow, comments, chartex, shadow) | shipped |
-| v0.6.0  | 03    | Performance & developer experience (harness done)       | planned ← cursor |
+| v0.6.0  | 03    | Performance remainder: lazy blobs, caching audit        | in-progress ← cursor |
 | v0.7.0  | 03    | Cross-run text find/replace & text helpers              | planned |
 | v1.0.0  | 04    | API freeze, comprehensive docs, SemVer commitment       | planned (sketch) |

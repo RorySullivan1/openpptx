@@ -2,9 +2,9 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- Package **0.5.1**. v0.5.1 close-out PR (branch `v0.5.1`) carries #131 shadow + #132 chartex repair + bump; PowerPoint-COM
-  verified. **After merge:** add v0.5.1's row to `.meta/release-tags.md` (its merge commit); owner tags v0.5.0 (hold lifted)
-  and v0.5.1. Cursor then v0.6.0 (thin card, see Threads).
+- Package 0.5.1 SHIPPED (PR #133 merged `51a8cd1`); v0.5.1 tag row recorded; owner tags v0.5.0 + v0.5.1 by hand.
+  **In flight: v0.6.0 on branch `v0.6.0`** — perf remainder only: lazy binary blobs + caching audit (`.meta/version`).
+  Next step: expand the v0.6.0 card with implementation detail before code lands.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0 ready; v0.5.0's row is recorded but HELD).
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
@@ -31,12 +31,12 @@
 - [2026-10-15] Load-time repairs live in `OpcPackage._repair_loaded_parts(parts)` (Package overrides), scanning the
   loader's part dict: an `iter_parts()` walk cost +1.7% work count, near the 2% gate — same log
 
+- [2026-10-15] Owner: v0.6.0 = perf remainder only (lazy blobs + caching audit); streaming save dropped unless measured;
+  cross-run text stays v0.7.0 — .meta/version
+
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
   Would NOT have caught #127 (the part was related, from the wrong source).
-- **v0.6.0's card is mostly obsolete before it starts**: 4 of 6 goals landed early (#51/#107/#109/#123 — perf harness,
-  lookup indexes, `ShapeRange`, work-count gate). Only lazy blob loading, streaming save and the caching audit remain,
-  which is thin for a version. Re-slice it (or pull v0.7.0's cross-run text work forward) when the branch opens.
 - The `github` MCP server may fail to connect ("Authorization header is badly formatted"); `gh` CLI works — use it.
 - v0.3.2 docstring audit: consider adopting the factory's prose tier (`prose_budget.py`, `prose-auditor`, `/prose-review`).
 - Legacy getters write on read (from python-pptx): `Font.color` makes fill solid, `_Paragraph.alignment` adds a:pPr.
