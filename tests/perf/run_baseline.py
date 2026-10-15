@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import cProfile
+import gc
 import io
 import json
 import platform
@@ -34,6 +35,7 @@ BASELINE_HEADING = "## Baseline"
 PROFILE_TOP_N = 20
 OPEN_ITERATIONS = 5
 REPEAT_ACCESS = 10
+SPECS = (corpus.SMALL, corpus.MEDIUM, corpus.LARGE, corpus.IMAGES_100)
 
 
 def _median(samples: list[float]) -> float:
@@ -43,11 +45,11 @@ def _median(samples: list[float]) -> float:
 
 def _build_corpus(workdir: Path) -> dict[str, Path]:
     decks: dict[str, Path] = {}
-    for spec in (corpus.SMALL, corpus.MEDIUM, corpus.LARGE):
+    for spec in SPECS:
         t0 = time.perf_counter()
         decks[spec.name] = corpus.build_deck(spec, workdir / f"{spec.name}.pptx")
         print(
-            f"[build] {spec.name:<6}  slides={spec.n_slides:<4}"
+            f"[build] {spec.name:<10}  slides={spec.n_slides:<4}"
             f"  shapes/slide={spec.shapes_per_slide:<3}"
             f"  paragraphs/shape={spec.paragraphs_per_shape:<2}"
             f"  images={spec.n_images:<3}"
@@ -100,6 +102,27 @@ def _peak_memory_open(deck: Path) -> tuple[int, int]:
     return current, peak
 
 
+def _memory_held(deck: Path, save_to: Path) -> dict[str, int]:
+    """Measure memory while the deck stays open: after open, then the peak during save.
+
+    Unlike `_peak_memory_open`, the presentation is still referenced when `current` is read, so it
+    is what an open deck holds. Saving to a file keeps the output bytes out of the count.
+    """
+    gc.collect()
+    tracemalloc.start()
+    prs = Presentation(str(deck))
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.reset_peak()
+    prs.save(str(save_to))
+    _, save_peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    return {
+        "open_current_bytes": current,
+        "open_peak_bytes": peak,
+        "save_peak_bytes": save_peak,
+    }
+
+
 def _profile_workload(deck: Path) -> str:
     """cProfile the full open+iterate+save cycle on `deck`. Returns top-N text."""
     prof = cProfile.Profile()
@@ -117,6 +140,12 @@ def _profile_workload(deck: Path) -> str:
     stats = pstats.Stats(prof, stream=out).strip_dirs().sort_stats("cumulative")
     stats.print_stats(PROFILE_TOP_N)
     return out.getvalue()
+
+
+def _write_lf(path: Path, text: str) -> None:
+    """Write `text` with LF line endings (the repo pins LF), even on Windows."""
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(text)
 
 
 def _format_table(headers: list[str], rows: list[list[str]]) -> str:
@@ -155,7 +184,7 @@ def main() -> int:
             "save_s": save_s,
         }
         print(
-            f"[time] {name:<6}"
+            f"[time] {name:<10}"
             f"  open={open_s * 1000:>7.2f} ms"
             f"  iter1x={iter_single_s * 1000:>7.2f} ms"
             f"  iter{REPEAT_ACCESS}x={iter_repeat_s * 1000:>8.2f} ms"
@@ -170,8 +199,21 @@ def main() -> int:
         current, peak = _peak_memory_open(deck)
         memory[name] = {"current_bytes": current, "peak_bytes": peak}
         print(
-            f"[mem]  {name:<6}  current={current / 1024:>8.1f} KiB"
+            f"[mem]  {name:<10}  current={current / 1024:>8.1f} KiB"
             f"  peak={peak / 1024:>8.1f} KiB"
+        )
+
+    print("\n" + "=" * 72)
+    print("Memory (tracemalloc, deck held open, then saved)")
+    print("=" * 72)
+    memory_held: dict[str, dict[str, int]] = {}
+    for name, deck in decks.items():
+        held = _memory_held(deck, workdir / f"{name}.resaved.pptx")
+        memory_held[name] = held
+        print(
+            f"[held] {name:<10}  open current={held['open_current_bytes'] / 1024:>8.1f} KiB"
+            f"  open peak={held['open_peak_bytes'] / 1024:>8.1f} KiB"
+            f"  save peak={held['save_peak_bytes'] / 1024:>8.1f} KiB"
         )
 
     print("\n" + "=" * 72)
@@ -181,7 +223,7 @@ def main() -> int:
     print(profile_text)
 
     baseline = {
-        "schema_version": 1,
+        "schema_version": 2,
         "captured_at": datetime.now(timezone.utc).isoformat(),
         "platform": {
             "python": sys.version.split()[0],
@@ -197,15 +239,16 @@ def main() -> int:
                 "n_images": spec.n_images,
                 "file_size_bytes": decks[spec.name].stat().st_size,
             }
-            for spec in (corpus.SMALL, corpus.MEDIUM, corpus.LARGE)
+            for spec in SPECS
         },
         "timings_seconds": timings,
         "memory_bytes_on_open": memory,
+        "memory_bytes_held": memory_held,
         "iter_repeat_access_count": REPEAT_ACCESS,
         "open_iterations": OPEN_ITERATIONS,
     }
 
-    BASELINE_PATH.write_text(json.dumps(baseline, indent=2) + "\n")
+    _write_lf(BASELINE_PATH, json.dumps(baseline, indent=2) + "\n")
     print(f"\n[write] {BASELINE_PATH.relative_to(REPO_ROOT)}")
 
     _write_perf_doc_section(baseline, profile_text)
@@ -216,6 +259,7 @@ def main() -> int:
 def _write_perf_doc_section(baseline: dict, profile_text: str) -> None:
     timings = baseline["timings_seconds"]
     memory = baseline["memory_bytes_on_open"]
+    memory_held = baseline["memory_bytes_held"]
     corpus_info = baseline["corpus"]
 
     corpus_rows = [
@@ -244,6 +288,16 @@ def _write_perf_doc_section(baseline: dict, profile_text: str) -> None:
             name,
             f"{memory[name]['current_bytes'] / 1024:.1f}",
             f"{memory[name]['peak_bytes'] / 1024:.1f}",
+        ]
+        for name in corpus_info
+    ]
+
+    memory_held_rows = [
+        [
+            name,
+            f"{memory_held[name]['open_current_bytes'] / 1024:.1f}",
+            f"{memory_held[name]['open_peak_bytes'] / 1024:.1f}",
+            f"{memory_held[name]['save_peak_bytes'] / 1024:.1f}",
         ]
         for name in corpus_info
     ]
@@ -280,6 +334,13 @@ Open is median of {baseline['open_iterations']} cold opens.
 
 {_format_table(["fixture", "current", "peak"], memory_rows)}
 
+### Memory with the deck held open (KiB, tracemalloc)
+
+`current` and `peak` are read while the presentation is still referenced, so `current` is what an
+open deck holds. `save peak` is the peak from the start of the save to its end, written to a file.
+
+{_format_table(["fixture", "current after open", "peak on open", "save peak"], memory_held_rows)}
+
 ### cProfile top {PROFILE_TOP_N} (medium fixture, open + iterate + save)
 
 ```
@@ -295,11 +356,11 @@ pytest -m perf
 """
 
     # -- replace any earlier Baseline section (always the last one) rather than appending --
-    doc = PERF_DOC_PATH.read_text()
+    doc = PERF_DOC_PATH.read_text(encoding="utf-8")
     heading_at = doc.find("\n" + BASELINE_HEADING + "\n")
     if heading_at != -1:
         doc = doc[:heading_at]
-    PERF_DOC_PATH.write_text(doc.rstrip() + section)
+    _write_lf(PERF_DOC_PATH, doc.rstrip() + section)
 
 
 if __name__ == "__main__":

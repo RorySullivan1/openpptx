@@ -57,8 +57,10 @@ The v0.6.0 card sets the boundaries this work honors:
 ## What already exists (verify, do not reimplement)
 
 - **Shape name / ID indexes** — `_BaseShapes._get_name_index` / `_get_id_index`
-  (`src/pptx/shapes/shapetree.py`): built lazily on first lookup, dict-cached, invalidated on
-  mutation. `bench_lookup.py` checks lookups stay flat across 10 / 100 / 1000 shapes.
+  (`src/pptx/shapes/shapetree.py`): built lazily on first lookup, dict-cached, and cleared only by
+  the shape collection's own add/insert methods. `bench_lookup.py` checks lookups stay flat across
+  10 / 100 / 1000 shapes. **Stale after a rename or a raw-XML removal** (v0.6.0 lead L1): after
+  `shape.name = "B"`, `get_by_name("B")` is `None`.
 - **Lazy part loading** — `_ZipPkgReader` (`src/pptx/opc/serialized.py`) reads each part's
   bytes on demand; `LazyXmlPart` (`src/pptx/opc/package.py`) defers parsing for parts usually
   left untouched (presProps, tableStyles, diagram and chartex parts).
@@ -88,10 +90,37 @@ On the v0.4.0 real-world corpus (24 PowerPoint-authored decks), the read side wa
 - The baseline's `save` column is a single run and swings about ±40%. Repeat a save timing
   before reading anything into it.
 
+## v0.6.0 branch-open reference (2026-10-15)
+
+These are the "before" numbers for the lazy-blob and caching-audit work (card:
+`.meta/roadmap/stages/03-hardening-and-gaps/v0.6.0.md`). They were measured on the owner's
+Windows box (CPython 3.13.13, Windows / AMD64), so the branch-close re-run must use the same box.
+The Baseline section at the end is regenerated and will not keep them.
+
+- **`images_100`**: 100 slides, each with one distinct 128×128 noise PNG (about 49 KiB each);
+  4,961 KiB on disk. The older specs reuse one PNG, which `add_picture` dedupes, so `large`'s
+  "10 images" is a single image part.
+
+  | measure (tracemalloc, deck held open) | KiB |
+  | --- | --- |
+  | current after open | 5,169.1 |
+  | peak on open | 5,450.0 |
+  | peak during save (to a file) | 5,881.4 |
+
+  After open, the deck holds about the total of its image bytes. Lazy blobs should cut
+  "current after open" to roughly the `large` deck's ~255 KiB.
+- **Wall-clock** for `images_100`: open 17.7 ms, save 91.4 ms. Save timings vary run to run, so
+  repeat them before comparing.
+- **Work count** (`python -m tests.perf.workcount`, 3.13): 1,007,082 calls over 28 decks, the same
+  as at v0.5.1. The pinned gate (3.11) skips on this box.
+- The older "Memory on open" table reads `current` after the `Presentation` is dropped, but
+  reference cycles keep the deck alive until GC runs. Use the "deck held open" table for
+  lazy-blob comparisons.
+
 ## Harness
 
 - `tests/perf/corpus.py` — synthetic deck generator (slides, shapes/slide, paragraphs/shape,
-  images); `SMALL`, `MEDIUM`, `LARGE` specs.
+  images); `SMALL`, `MEDIUM`, `LARGE` specs, plus `IMAGES_100` (100 distinct images, for memory).
 - `tests/perf/conftest.py` — session-scoped `synth_small` / `synth_medium` / `synth_large`.
 - `tests/perf/bench_open.py`, `bench_iterate.py`, `bench_save.py`, `bench_lookup.py` — opt-in
   `@pytest.mark.perf` benchmarks with generous ceilings (smoke checks, not regression gates).
@@ -111,8 +140,8 @@ python -m tests.perf.run_baseline    # refresh baseline.json and the section bel
 
 ## Baseline
 
-Captured: `2026-10-01T15:25:24.410339+00:00`
-Platform: `CPython 3.11.15` on `Linux / x86_64`
+Captured: `2026-10-15T17:57:54.818668+00:00`
+Platform: `CPython 3.13.13` on `Windows / AMD64`
 
 ### Corpus
 
@@ -121,6 +150,7 @@ Platform: `CPython 3.11.15` on `Linux / x86_64`
 | small | 5 | 5 | 2 | 0 | 31.6 KiB |
 | medium | 30 | 15 | 4 | 5 | 71.2 KiB |
 | large | 100 | 25 | 5 | 10 | 191.3 KiB |
+| images_100 | 100 | 1 | 1 | 100 | 4961.2 KiB |
 
 ### Wall-clock (ms)
 
@@ -133,47 +163,61 @@ Open is median of 5 cold opens.
 
 | fixture | open | iter1x | iter10x | save |
 | --- | --- | --- | --- | --- |
-| small | 5.77 | 1.02 | 3.17 | 6.15 |
-| medium | 15.40 | 24.86 | 127.50 | 15.34 |
-| large | 66.62 | 93.48 | 655.98 | 45.97 |
+| small | 2.96 | 0.37 | 1.22 | 3.02 |
+| medium | 9.30 | 6.43 | 38.72 | 7.82 |
+| large | 26.99 | 40.46 | 272.28 | 26.71 |
+| images_100 | 17.67 | 2.07 | 3.58 | 91.38 |
 
 ### Memory on open (KiB, tracemalloc)
 
 | fixture | current | peak |
 | --- | --- | --- |
-| small | 108.4 | 153.0 |
-| medium | 198.7 | 221.8 |
-| large | 237.3 | 447.0 |
+| small | 108.2 | 154.2 |
+| medium | 102.9 | 221.1 |
+| large | 227.0 | 427.0 |
+| images_100 | 5120.5 | 5401.4 |
+
+### Memory with the deck held open (KiB, tracemalloc)
+
+`current` and `peak` are read while the presentation is still referenced, so `current` is what an
+open deck holds. `save peak` is the peak from the start of the save to its end, written to a file.
+
+| fixture | current after open | peak on open | save peak |
+| --- | --- | --- | --- |
+| small | 116.8 | 160.9 | 469.8 |
+| medium | 214.9 | 233.1 | 629.7 |
+| large | 255.4 | 455.5 | 807.9 |
+| images_100 | 5169.1 | 5450.0 | 5881.4 |
 
 ### cProfile top 20 (medium fixture, open + iterate + save)
 
 ```
-337351 function calls (336070 primitive calls) in 0.238 seconds
+335357 function calls (334076 primitive calls) in 0.118 seconds
 
    Ordered by: cumulative time
-   List reduced from 337 to 20 due to restriction <20>
+   List reduced from 330 to 20 due to restriction <20>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    0.022    0.022    0.190    0.190 run_baseline.py:69(_bench_iterate_text)
-    18000    0.019    0.000    0.076    0.000 text.py:910(runs)
-    18000    0.007    0.000    0.043    0.000 text.py:1024(text)
-    22610    0.040    0.000    0.042    0.000 xmlchemy.py:404(get_child_element_list)
-    18000    0.009    0.000    0.037    0.000 text.py:71(text)
-     4500    0.004    0.000    0.035    0.000 text.py:222(paragraphs)
-    18060    0.026    0.000    0.028    0.000 xmlchemy.py:500(get_child_element)
-2821/1807    0.003    0.000    0.025    0.000 util.py:166(__get__)
-    36000    0.010    0.000    0.025    0.000 text.py:913(<genexpr>)
-        1    0.000    0.000    0.025    0.025 presentation.py:94(save)
-        1    0.000    0.000    0.025    0.025 presentation.py:440(save)
-        1    0.000    0.000    0.025    0.025 package.py:158(save)
-        1    0.000    0.000    0.024    0.024 serialized.py:71(write)
-        1    0.000    0.000    0.024    0.024 serialized.py:82(_write)
-        1    0.000    0.000    0.023    0.023 api.py:22(Presentation)
-        1    0.000    0.000    0.023    0.023 package.py:80(open)
-        1    0.000    0.000    0.023    0.023 package.py:165(_load)
-        1    0.000    0.000    0.022    0.022 package.py:184(load)
-        1    0.000    0.000    0.022    0.022 package.py:199(_load)
-        1    0.000    0.000    0.021    0.021 serialized.py:100(_write_parts)
+        1    0.009    0.009    0.091    0.091 run_baseline.py:71(_bench_iterate_text)
+    18000    0.009    0.000    0.039    0.000 text.py:910(runs)
+    22610    0.020    0.000    0.022    0.000 xmlchemy.py:404(get_child_element_list)
+    18000    0.003    0.000    0.020    0.000 text.py:1024(text)
+    18000    0.004    0.000    0.018    0.000 text.py:71(text)
+     4500    0.004    0.000    0.017    0.000 text.py:222(paragraphs)
+    18060    0.013    0.000    0.014    0.000 xmlchemy.py:500(get_child_element)
+        1    0.000    0.000    0.014    0.014 presentation.py:103(save)
+        1    0.000    0.000    0.014    0.014 presentation.py:476(save)
+        1    0.000    0.000    0.014    0.014 package.py:158(save)
+2831/1817    0.001    0.000    0.014    0.000 util.py:166(__get__)
+    36000    0.006    0.000    0.013    0.000 text.py:913(<genexpr>)
+        1    0.000    0.000    0.013    0.013 serialized.py:71(write)
+        1    0.000    0.000    0.013    0.013 serialized.py:82(_write)
+        1    0.000    0.000    0.012    0.012 api.py:22(Presentation)
+        1    0.000    0.000    0.012    0.012 package.py:80(open)
+        1    0.000    0.000    0.012    0.012 package.py:165(_load)
+        1    0.000    0.000    0.012    0.012 package.py:192(load)
+        1    0.000    0.000    0.012    0.012 package.py:207(_load)
+        1    0.000    0.000    0.012    0.012 serialized.py:100(_write_parts)
 ```
 
 ### Reproducing

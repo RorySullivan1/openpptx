@@ -1,11 +1,11 @@
 {
-  "schema_version": 1,
-  "captured_at": "2026-10-01T15:25:24.410339+00:00",
+  "schema_version": 2,
+  "captured_at": "2026-10-15T17:57:54.818668+00:00",
   "platform": {
-    "python": "3.11.15",
+    "python": "3.13.13",
     "implementation": "CPython",
-    "system": "Linux",
-    "machine": "x86_64"
+    "system": "Windows",
+    "machine": "AMD64"
   },
   "corpus": {
     "small": {
@@ -28,40 +28,79 @@
       "paragraphs_per_shape": 5,
       "n_images": 10,
       "file_size_bytes": 195927
+    },
+    "images_100": {
+      "n_slides": 100,
+      "shapes_per_slide": 1,
+      "paragraphs_per_shape": 1,
+      "n_images": 100,
+      "file_size_bytes": 5080295
     }
   },
   "timings_seconds": {
     "small": {
-      "open_median_s": 0.005766431000012062,
-      "iter_text_single_s": 0.0010152600000026268,
-      "iter_text_repeated_s": 0.0031682919999980186,
-      "save_s": 0.006153318000002628
+      "open_median_s": 0.0029562999989138916,
+      "iter_text_single_s": 0.0003665999975055456,
+      "iter_text_repeated_s": 0.0012237999908393249,
+      "save_s": 0.003020100004505366
     },
     "medium": {
-      "open_median_s": 0.015397578999994721,
-      "iter_text_single_s": 0.0248643649999849,
-      "iter_text_repeated_s": 0.12749749500000007,
-      "save_s": 0.015337149999993471
+      "open_median_s": 0.009304999999585561,
+      "iter_text_single_s": 0.006428399996366352,
+      "iter_text_repeated_s": 0.03872290000435896,
+      "save_s": 0.007821000006515533
     },
     "large": {
-      "open_median_s": 0.06661799299999416,
-      "iter_text_single_s": 0.09347934000001601,
-      "iter_text_repeated_s": 0.6559837549999941,
-      "save_s": 0.04596899500000973
+      "open_median_s": 0.02698650000093039,
+      "iter_text_single_s": 0.040455399997881614,
+      "iter_text_repeated_s": 0.2722751999972388,
+      "save_s": 0.02671089999785181
+    },
+    "images_100": {
+      "open_median_s": 0.017670300003373995,
+      "iter_text_single_s": 0.002065799999400042,
+      "iter_text_repeated_s": 0.0035780000034719706,
+      "save_s": 0.09137740000733174
     }
   },
   "memory_bytes_on_open": {
     "small": {
-      "current_bytes": 111004,
-      "peak_bytes": 156665
+      "current_bytes": 110804,
+      "peak_bytes": 157860
     },
     "medium": {
-      "current_bytes": 203421,
-      "peak_bytes": 227125
+      "current_bytes": 105402,
+      "peak_bytes": 226424
     },
     "large": {
-      "current_bytes": 243045,
-      "peak_bytes": 457736
+      "current_bytes": 232445,
+      "peak_bytes": 437248
+    },
+    "images_100": {
+      "current_bytes": 5243434,
+      "peak_bytes": 5530986
+    }
+  },
+  "memory_bytes_held": {
+    "small": {
+      "open_current_bytes": 119588,
+      "open_peak_bytes": 164804,
+      "save_peak_bytes": 481043
+    },
+    "medium": {
+      "open_current_bytes": 220069,
+      "open_peak_bytes": 238672,
+      "save_peak_bytes": 644803
+    },
+    "large": {
+      "open_current_bytes": 261565,
+      "open_peak_bytes": 466480,
+      "save_peak_bytes": 827329
+    },
+    "images_100": {
+      "open_current_bytes": 5293194,
+      "open_peak_bytes": 5580786,
+      "save_peak_bytes": 6022602
     }
   },
   "iter_repeat_access_count": 10,
