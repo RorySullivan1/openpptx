@@ -18,8 +18,9 @@ existing notes slides; not layouts, masters, charts, SmartArt or comments). The 
 
 ## Objectives / acceptance
 - [x] Card expanded with implementation detail before code lands (2026-10-15).
-- [ ] Replace, find, merge and deck-wide behaviour covered by failing-first unit tests, plus the
+- [x] Replace, find, merge and deck-wide behaviour covered by failing-first unit tests, plus the
   `hypothesis` property test against plain-string results.
-- [ ] Corpus round trip, and PowerPoint 16 opens the edited decks without repair.
-- [ ] No regression versus v0.6.0: the work-count gate passes without raising its budget; iteration within noise.
+- [x] Corpus round trip, and PowerPoint 16 opens the edited decks without repair (2026-10-16, COM).
+- [x] No regression versus v0.6.0: the work-count gate passes without raising its budget (1,085,069
+  calls, unchanged); iteration within noise.
 - [ ] Docs, `batch_process.py`, feature manifest and README updated; full suite green on CI; package 0.7.0.

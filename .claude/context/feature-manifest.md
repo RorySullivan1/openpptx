@@ -142,6 +142,13 @@ The codebase is organized in four layers, from low-level to high-level:
 - East Asian (`a:ea`) and complex-script (`a:cs`) font names
 - Hyperlinks on runs
 - Fit text to shape (requires font-metrics file)
+- Find / replace across runs (v0.7.0) — `find_all()`/`replace()` on a text frame or paragraph,
+  `find_text()`/`replace_text()` on a slide or the presentation (shapes, group members, table
+  cells, existing notes; not layouts, masters, charts, SmartArt or comments). Literal or regex
+  (compiled patterns keep their flags; templates expand), `count` across the scope. A match never
+  crosses a paragraph, line break or field; the new text takes the first touched run's formatting
+- Run traversal and clean-up — `TextFrame.iter_runs()`, `iter_chars()` (`TextChar` with
+  paragraph index, offset and run), opt-in `merge_runs()` ignoring proofing state
 
 ### Drawing / Formatting
 - **Fill** — solid, gradient (angle, stops with color and position; linear/radial/rectangular/path via `gradient_type`, focus rect via `gradient_fill_to_rect`), picture (`fill.picture()`, stretched or `tile()`d; autoshapes), patterned (50+ patterns), background (no fill), foreground/background colors
@@ -240,7 +247,7 @@ These are inherent constraints of a file-format library that edits XML. They can
 - Text-level 3D scene, fill, and outline effects
 
 ### Text Range Model Limitations
-- VBA's `TextRange` provides `Characters()`, `Words()`, `Sentences()`, `Lines()`, `Find()`, `Replace()`, `InsertBefore()`, `InsertAfter()`. The `Lines()` method requires a rendering engine to know where visual line breaks occur. The string-search operations are theoretically possible but complicated by the run-splitting model where a single visual word may span multiple XML runs — planned for a future milestone (see `.meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md`).
+- VBA's `TextRange` provides `Characters()`, `Words()`, `Sentences()`, `Lines()`, `Find()`, `Replace()`, `InsertBefore()`, `InsertAfter()`. The `Lines()` method requires a rendering engine to know where visual line breaks occur. `Find()`/`Replace()` are implemented across runs (v0.7.0, `pptx.text.search`); `Lines()` stays out of scope, and `Characters()`, `Words()`, `Sentences()`, `InsertBefore()` and `InsertAfter()` remain gaps (below).
 
 ---
 
@@ -248,6 +255,6 @@ These are inherent constraints of a file-format library that edits XML. They can
 
 These are features that **are representable in the OOXML schema** and are therefore implementable, but are not yet present in the library.
 
-### Cross-run Text Operations (see `.meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md`)
-- Find / replace across runs within a paragraph
-- Run-aware string manipulation (`InsertBefore`, `InsertAfter`, `Characters`, `Words`)
+### Cross-run Text Operations
+- Run-aware string manipulation (`InsertBefore`, `InsertAfter`, `Characters`, `Words`). Find /
+  replace across runs shipped in v0.7.0 (see Implemented Features → Text)

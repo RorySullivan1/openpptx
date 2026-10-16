@@ -187,12 +187,50 @@ the three medians.
   1–3% in wall time.
 - **Memory**: unchanged from "v0.6.0 lazy blobs, after" above.
 
+## v0.7.0 branch close (2026-10-16)
+
+Same Windows box (CPython 3.13.13). v0.7.0 adds find/replace across runs
+(`pptx.text.search`) and touches no existing hot path: the new code runs only when called.
+
+**Wall-clock**, v0.6.0 (`origin/main`, `100a9c8`) against the branch, on the same deck files in
+`tests/perf/_corpus/`. Three interleaved rounds in separate processes, each a median of 15 runs;
+the table shows the median of the three medians.
+
+| deck | open | iter1x | iter10x |
+| --- | --- | --- | --- |
+| `small` | 2.61 → 2.73 | 0.30 → 0.30 | 1.34 → 1.35 |
+| `medium` | 7.28 → 8.06 | 6.35 → 6.50 | 40.44 → 40.52 |
+| `large` | 28.14 → 28.19 | 41.91 → 41.36 | 273.43 → 272.96 |
+
+- **iter1x and iter10x are within noise** on every deck (the acceptance criterion).
+- `medium` open read +11% in the combined run, but alone it is flat: five alternating processes,
+  each a median of 41 opens after 5 warm-up opens, gave 7.66 → 7.64 ms. In the combined run each
+  open follows a text walk in the same process, like v0.6.0's `medium` iter1x reading.
+- **Work count** (total calls, CPython 3.11.17, lxml 6.1.3): 1,085,069, identical to the v0.6.0
+  branch close. The gate passes on the unchanged budget (1,073,411 + 2%).
+
+**Find/replace** (`tests/perf/bench_replace.py`, opt-in), on the `large` deck: 12,500 paragraphs,
+one run each. Median of three runs, each opening the deck fresh.
+
+| operation | ms |
+| --- | --- |
+| `find_text("shape=")`, a match in every paragraph | 90.9 |
+| `replace_text()` with no match (the walk alone) | 56.6 |
+| `replace_text()`, literal, every paragraph | 96.9 |
+| `replace_text()`, regex with a `\1` template, every paragraph | 98.8 |
+| `merge_runs()` after splitting every run in two | 87.9 |
+
+A replace that matches nowhere costs about 1.4x the `iter1x` walk; one that rewrites every
+paragraph about 2.3x. `merge_runs()` over the 28-deck real-world corpus removes 70 runs out of
+236 adjacent run pairs (13 identical, 57 differing only in proofing state).
+
 ## Harness
 
 - `tests/perf/corpus.py` — synthetic deck generator (slides, shapes/slide, paragraphs/shape,
   images); `SMALL`, `MEDIUM`, `LARGE` specs, plus `IMAGES_100` (100 distinct images, for memory).
 - `tests/perf/conftest.py` — session-scoped `synth_small` / `synth_medium` / `synth_large`.
-- `tests/perf/bench_open.py`, `bench_iterate.py`, `bench_save.py`, `bench_lookup.py` — opt-in
+- `tests/perf/bench_open.py`, `bench_iterate.py`, `bench_save.py`, `bench_lookup.py`,
+  `bench_replace.py` (v0.7.0 find/replace) — opt-in
   `@pytest.mark.perf` benchmarks with generous ceilings (smoke checks, not regression gates).
 - `tests/perf/run_baseline.py` — writes `tests/perf/baseline.json` and replaces the Baseline
   section below: wall-clock, `tracemalloc` memory, cProfile top 20.

@@ -6,6 +6,16 @@ Text
 
 .. automodule:: pptx.text.text
 
+``pptx.text.search``
+--------------------
+
+Find and replace across runs. The methods are on |TextFrame|, ``_Paragraph``,
+|Slide| and |Presentation| (``find_all()``/``replace()`` on a text frame or
+paragraph, ``find_text()``/``replace_text()`` on a slide or the presentation);
+this module holds the objects they return and the machinery behind them.
+
+.. automodule:: pptx.text.search
+
 ``pptx.text.styles``
 --------------------
 

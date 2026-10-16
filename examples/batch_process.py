@@ -1,10 +1,15 @@
 """Process many presentations in parallel, one worker process per CPU core.
 
-Each deck is opened, has a placeholder token replaced in every text run, and is saved to an
-output folder; a per-deck summary (slides, runs changed, or the error) is printed as each
-finishes. The work for one deck is independent of every other, so the decks are spread across
-worker processes with `concurrent.futures.ProcessPoolExecutor`. On 4 cores, 16 decks of 100 slides each ran 3.4x
-faster than a plain loop (issue #51); small decks gain less, as process start-up dominates.
+Each deck is opened, has a placeholder token replaced throughout with
+`Presentation.replace_text()`, and is saved to an output folder; a per-deck summary (slides,
+replacements made, or the error) is printed as each finishes. `replace_text()` matches across
+runs, so it also finds a token PowerPoint has split into several runs, which a loop over
+`run.text` misses; it covers group members, table cells and notes too.
+
+The work for one deck is independent of every other, so the decks are spread across worker
+processes with `concurrent.futures.ProcessPoolExecutor`. On 4 cores, 16 decks of 100 slides each
+ran 3.4x faster than a plain loop (issue #51); small decks gain less, as process start-up
+dominates.
 
 Use processes, not threads: pypptx objects (like the lxml trees under them) must not be shared
 between threads, and a process pool also sidesteps the GIL. Give each worker a *path*, not a
@@ -38,13 +43,13 @@ class Result:
 
     name: str
     slides: int = 0
-    runs_changed: int = 0
+    replacements: int = 0
     seconds: float = 0.0
     error: str | None = None
 
 
 def process_deck(src: Path, dst: Path, find: str, replace: str) -> Result:
-    """Open `src`, replace `find` with `replace` in every text run, and save to `dst`.
+    """Open `src`, replace `find` with `replace` in all of its slide text, and save to `dst`.
 
     Runs in a worker process. Any error is caught and reported, so one bad file does not stop
     the batch.
@@ -52,16 +57,7 @@ def process_deck(src: Path, dst: Path, find: str, replace: str) -> Result:
     started = time.perf_counter()
     try:
         prs = Presentation(str(src))
-        changed = 0
-        for slide in prs.slides:
-            for shape in slide.shapes:
-                if not shape.has_text_frame:
-                    continue
-                for paragraph in shape.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        if find in run.text:
-                            run.text = run.text.replace(find, replace)
-                            changed += 1
+        changed = prs.replace_text(find, replace)
         prs.save(str(dst))
         return Result(src.name, len(prs.slides), changed, time.perf_counter() - started)
     except Exception as exc:  # noqa: BLE001 -- report every failure, keep the batch going
@@ -86,8 +82,8 @@ def process_folder(in_dir: Path, out_dir: Path, find: str, replace: str, workers
                 print(f"  FAILED {result.name}: {result.error}")
             else:
                 print(
-                    f"  {result.name}: {result.slides} slides, {result.runs_changed} runs"
-                    f" changed ({result.seconds:.2f}s)"
+                    f"  {result.name}: {result.slides} slides, {result.replacements}"
+                    f" replacements ({result.seconds:.2f}s)"
                 )
     elapsed = time.perf_counter() - started
     print(
@@ -97,7 +93,11 @@ def process_folder(in_dir: Path, out_dir: Path, find: str, replace: str, workers
 
 
 def build_demo_decks(folder: Path, count: int = 8) -> None:
-    """Write `count` small decks whose text mentions the token ACME, to process in the demo."""
+    """Write `count` small decks whose text mentions the token ACME, to process in the demo.
+
+    The last row of each slide splits the token over two runs ("AC" + "ME"), as PowerPoint does
+    when, say, part of a word was once flagged by the spell checker.
+    """
     folder.mkdir(parents=True, exist_ok=True)
     for n in range(count):
         prs = Presentation()
@@ -108,6 +108,9 @@ def build_demo_decks(folder: Path, count: int = 8) -> None:
                     Inches(0.5), Inches(0.5 + row), Inches(8), Inches(0.8)
                 )
                 box.text_frame.text = f"ACME quarterly report {n}, slide {slide_idx}, row {row}"
+            paragraph = box.text_frame.paragraphs[0]
+            paragraph.text = "Prepared by AC"
+            paragraph.add_run().text = "ME finance"
         prs.save(str(folder / f"report_{n:02d}.pptx"))
 
 

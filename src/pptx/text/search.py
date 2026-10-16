@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from pptx.text.text import _Paragraph
 
 #: A search pattern: a `str`, literal unless `regex=True`, or a compiled regular expression.
-Pattern = Union[str, "re.Pattern[str]"]
+Pattern = Union[str, re.Pattern[str]]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -296,7 +296,9 @@ def iter_slide_text_frames(slide: Slide) -> Iterator[tuple[BaseShape, TextFrame]
         yield from _iter_shapes_text_frames(slide.notes_slide.shapes)
 
 
-def _iter_shapes_text_frames(shapes: Iterable[BaseShape]) -> Iterator[tuple[BaseShape, TextFrame]]:
+def _iter_shapes_text_frames(
+    shapes: Iterable[BaseShape],
+) -> Iterator[tuple[BaseShape, TextFrame]]:
     for shape in shapes:
         if isinstance(shape, GroupShape):
             yield from _iter_shapes_text_frames(shape.shapes)

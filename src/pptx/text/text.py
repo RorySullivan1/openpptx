@@ -127,7 +127,7 @@ class TextFrame(Subshape):
     def iter_chars(self) -> Iterator[TextChar]:
         """Generate a |TextChar| for each character of each paragraph's text.
 
-        A line break reads as `"\v"`. The `run` of a line break, and of the text of a field, is
+        A line break reads as `"\\v"`. The `run` of a line break, and of the text of a field, is
         |None|. Paragraph boundaries generate nothing.
         """
         from pptx.text.search import iter_paragraph_chars
@@ -305,7 +305,7 @@ class TextFrame(Subshape):
         last run keeps the text after the match with its own formatting. A run left empty is
         removed, and so is any relationship (e.g. a hyperlink) only it referred to.
 
-        When `regex` is True or `old` is compiled, `new` is a template, so `\1` and `\g<name>`
+        When `regex` is True or `old` is compiled, `new` is a template, so `\\1` and `\\g<name>`
         insert groups. `count` limits the number of replacements, in document order; |None|
         replaces every match and a negative count raises |InvalidValueError|.
         """
@@ -854,7 +854,7 @@ class _Paragraph(Subshape):
     def iter_chars(self) -> Iterator[TextChar]:
         """Generate a |TextChar| for each character of `.text`; `paragraph_index` is 0.
 
-        A line break reads as `"\v"`. The `run` of a line break, and of the text of a field, is
+        A line break reads as `"\\v"`. The `run` of a line break, and of the text of a field, is
         |None|.
         """
         from pptx.text.search import iter_paragraph_chars

@@ -60,7 +60,8 @@ class Describe_ParagraphReplace:
                 HELLO_P,
                 "lo world",
                 "XY",
-                'a:p/(a:r/(a:rPr{b=1},a:t"Hel"),a:r/(a:rPr{i=1},a:t"XY"),a:r/(a:rPr{u=sng},a:t"!"))',
+                'a:p/(a:r/(a:rPr{b=1},a:t"Hel"),a:r/(a:rPr{i=1},a:t"XY"),'
+                'a:r/(a:rPr{u=sng},a:t"!"))',
             ),
             # -- a run left empty is removed --
             (
