@@ -30,5 +30,5 @@ Scope and exclusions: `.claude/context/feature-manifest.md`.
 | v0.5.0  | 03    | Transitions, animations (read), custom layouts          | shipped |
 | v0.5.1  | 03    | Patch: decks PowerPoint refused (glow, comments, chartex, shadow) | shipped |
 | v0.6.0  | 03    | Performance remainder: lazy blobs, caching audit        | shipped |
-| v0.7.0  | 03    | Cross-run text find/replace & text helpers              | in-progress ← cursor |
-| v1.0.0  | 04    | API freeze, comprehensive docs, SemVer commitment       | planned (sketch) |
+| v0.7.0  | 03    | Cross-run text find/replace & text helpers              | shipped |
+| v1.0.0  | 04    | API freeze, comprehensive docs, SemVer commitment       | planned (sketch) ← cursor |

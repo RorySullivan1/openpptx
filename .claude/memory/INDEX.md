@@ -2,8 +2,8 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.6.0 SHIPPED (PR #134, merge `100a9c8`; lazy blobs + caching audit, `.claude/context/caching-audit.md`).
-  **In flight: v0.7.0 on branch `v0.7.0`** — cross-run find/replace, deck-wide; BUILT (package 0.7.0), PR #135 awaiting CI/merge.
+- 0.7.0 SHIPPED (PR #135, merge `0db7ef1`; cross-run find/replace, `pptx/text/search.py`). Cursor → v1.0.0,
+  card still a sketch: expand it before building. Ship bookkeeping is on branch `v1.0.0`.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
@@ -65,13 +65,6 @@
 ## Log              (append-only pointers)
 - 2026-09-24..10-09 | 22 earlier sessions (claudeBrain adoption; epics #87/#79/#56/#62/#66/#75; #51 perf; v0.3.x docs
   and examples; #114 tags; #115 3D charts; v0.4.0 hardening; v0.5.0 build) | sessions/ARCHIVE-2026.md
-- 2026-10-13 2217 | PowerPoint checks for #119–#125 run on Windows; #115/#122/#125 pass; 3 bugs filed #126–#128 | sessions/2026-10-13-2217-powerpoint-verification-pr119-125.md
-- 2026-10-13 2228 | Actions unblocked (7/7 green); #125 merged ahead of #126–#128, tag held; local memory merged with origin | sessions/2026-10-13-2228-pr125-merge-order-ci-unblocked.md
-- 2026-10-13 | v0.5.0 shipped (PR #125, `b4b1c38`): package 0.5.0, cursor → v0.6.0; tag held for #126–#128 | .meta/version
-- 2026-10-13 2253 | Assessed next-on-main: #126–#128 ahead of the cursor, recommended as a v0.5.1 patch; v0.6.0 card found thin | sessions/2026-10-13-2253-main-next-assessment.md
-- 2026-10-14 | v0.5.1 fixes written (unlogged sessions): #126 merged via PR #129; #127+#128 in PR #130 | gh pr view 130
-- 2026-10-15 | Memory reconciled: PR #130 merged 2026-10-14 (`1c132d7`); version bump + tags are all that's left of v0.5.1 | gh pr view 130
-- 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
-- 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md
-- 2026-10-15 1347 | v0.6.0 built end to end: card, L1/L2, lazy blobs, caching audit (11 fixes), gate metric, 0.6.0; PR #134 ready | sessions/2026-10-15-1347-v060-card-expanded.md
+- 2026-10-13..10-15 | 9 sessions (PowerPoint checks #119–#125, v0.5.0/v0.5.1 ship, #126–#132, v0.6.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
+- 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
