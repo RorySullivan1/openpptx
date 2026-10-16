@@ -1,19 +1,46 @@
 [build-system]
-requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+# setuptools 77 is the first to read the PEP 639 `license` expression and `license-files`.
+requires = ["setuptools>=77.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "openpptx"
 version = "0.7.1"
 description = "Create, read, and modify PowerPoint .pptx files"
+readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
+# -- carries the owner's notice and python-pptx's, which this code is derived from --
+license-files = ["LICENSE"]
+authors = [{ name = "Rory Sullivan" }]
+keywords = ["powerpoint", "pptx", "ooxml", "office", "presentation", "slides"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Office Suites",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
 dependencies = [
     "lxml>=4.9",
     "typing_extensions>=4.4",
     "XlsxWriter>=3.0",
     "Pillow>=9.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/RorySullivan1/openpptx"
+Documentation = "https://rorysullivan1.github.io/openpptx/"
+Source = "https://github.com/RorySullivan1/openpptx"
+Issues = "https://github.com/RorySullivan1/openpptx/issues"
 
 [project.optional-dependencies]
 dev = [

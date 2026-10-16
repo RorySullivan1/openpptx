@@ -3,13 +3,12 @@
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
   repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.1 SHIPPED (PR #136, merge `2627ddd`). **In flight: v1.0.0 on branch `v1.0.0`**, card filled in 2026-10-16, no code
-  yet. Rebrand done; rest of step 1 = root LICENSE + `[project.urls]`/classifiers. Owner actions are listed in the card.
+- 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`.** Step 1 (rename, LICENSE, metadata) DONE 2026-10-16;
+  next = step 2, API audit + stability page + public-name snapshot test. Owner actions are listed in the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- Sessions can't push tags; owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
+- Sessions can't push tags (and push only to their assigned branch); owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
   lightweight; see that file); no Releases yet.
-- Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 - API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra).
 
@@ -75,8 +74,6 @@
 - 2026-09-24..10-09 | 22 earlier sessions (claudeBrain adoption; epics #87/#79/#56/#62/#66/#75; #51 perf; v0.3.x docs
   and examples; #114 tags; #115 3D charts; v0.4.0 hardening; v0.5.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-13..10-15 | 9 sessions (PowerPoint checks #119–#125, v0.5.0/v0.5.1 ship, #126–#132, v0.6.0 build) | sessions/ARCHIVE-2026.md
-- 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
-- 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
-- 2026-10-16 | v0.7.1 built: 9 review findings → template/count errors up front, TextMatch eq, `\v` → a:br, regex context, rel drops | sessions/2026-10-16-1300-v071-review-fixes.md
-- 2026-10-16 | v0.7.1 merged (PR #136, `2627ddd`, 7/7 CI); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
+- 2026-10-16 | 4 entries (v0.7.0 built + merged #135, v0.7.1 built + merged #136) | sessions/ARCHIVE-2026.md
 - 2026-10-16 1305 | v1.0.0 card filled in: `openpptx` dist, documented-surface contract, Pages, LICENSE | sessions/2026-10-16-1305-v100-card-expanded.md
+- 2026-10-16 | v1.0.0 step 1 done: LICENSE (both notices), pyproject metadata, setuptools>=77; build+twine OK | v1.0.0 card
