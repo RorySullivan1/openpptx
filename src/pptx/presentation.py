@@ -9,6 +9,7 @@ from pptx.enum.pres import PP_SLIDE_SHOW_TYPE
 from pptx.exc import InvalidValueError
 from pptx.shared import PartElementProxy
 from pptx.slide import SlideMasters, Slides
+from pptx.text.search import TextFinder, TextReplacer
 from pptx.util import lazyproperty
 
 if TYPE_CHECKING:
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
     from pptx.parts.presentation import PresentationPart
     from pptx.parts.tablestyles import TableStylesPart
     from pptx.slide import HandoutMaster, NotesMaster, SlideLayouts, SlideMaster
+    from pptx.text.search import Pattern, TextMatch
     from pptx.text.styles import TextListStyle
     from pptx.theme import Theme
     from pptx.util import Length
@@ -82,6 +84,15 @@ class Presentation(PartElementProxy):
         """
         return self.part.package.custom_properties
 
+    def find_text(self, pattern: Pattern, *, regex: bool = False) -> list[TextMatch]:
+        """Every match of `pattern` in the text of every slide, in presentation order.
+
+        Each slide is searched as by `Slide.find_text()`: its shapes, group members, table cells
+        and existing notes slide. Layouts, masters, charts, SmartArt and comments are not.
+        """
+        finder = TextFinder(pattern, regex=regex)
+        return [match for slide in self.slides for match in finder.find_in_slide(slide)]
+
     @property
     def handout_master(self) -> HandoutMaster | None:
         """The |HandoutMaster| of this presentation, or |None| when it has none. Read only.
@@ -99,6 +110,21 @@ class Presentation(PartElementProxy):
         and returned. The same single instance is returned on each call.
         """
         return self.part.notes_master
+
+    def replace_text(
+        self, old: Pattern, new: str, *, count: int | None = None, regex: bool = False
+    ) -> int:
+        """Replace matches of `old` with `new` on every slide; return the number replaced.
+
+        Each slide is covered as by `Slide.replace_text()`, slides in presentation order, and
+        `count` limits the replacements over the whole presentation.
+        """
+        replacer = TextReplacer(old, new, count=count, regex=regex)
+        for slide in self.slides:
+            if replacer.done:
+                break
+            replacer.replace_in_slide(slide)
+        return replacer.replaced
 
     def save(self, file: str | IO[bytes]) -> None:
         """Writes this presentation to `file`.
