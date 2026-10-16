@@ -19,9 +19,42 @@ from ..oxml.unitdata.dml import (
     an_scrgbClr,
     an_srgbClr,
 )
+from ..unitutil.cxml import element
 
 
 class DescribeColorFormat:
+
+    def it_sees_a_color_type_changed_through_another_color_format(self):
+        solidFill = element("a:solidFill/a:srgbClr{val=FF0000}")
+        color = ColorFormat.from_colorchoice_parent(solidFill)
+        other = ColorFormat.from_colorchoice_parent(solidFill)
+        assert color.type == MSO_COLOR_TYPE.RGB
+
+        other.theme_color = MSO_THEME_COLOR.ACCENT_1
+
+        assert color.type == MSO_COLOR_TYPE.SCHEME
+
+    def it_sees_a_color_added_through_another_color_format(self):
+        solidFill = element("a:solidFill")
+        color = ColorFormat.from_colorchoice_parent(solidFill)
+        other = ColorFormat.from_colorchoice_parent(solidFill)
+        assert color.type is None
+
+        other.rgb = RGBColor(0xFF, 0x00, 0x00)
+
+        assert color.rgb == RGBColor(0xFF, 0x00, 0x00)
+
+    def it_writes_to_the_color_the_xml_holds_after_another_color_format_changed_it(self):
+        solidFill = element("a:solidFill/a:srgbClr{val=FF0000}")
+        color = ColorFormat.from_colorchoice_parent(solidFill)
+        other = ColorFormat.from_colorchoice_parent(solidFill)
+        assert color.type == MSO_COLOR_TYPE.RGB
+        other.theme_color = MSO_THEME_COLOR.ACCENT_1
+
+        color.rgb = RGBColor(0x00, 0x00, 0xFF)
+
+        assert solidFill.xpath("a:srgbClr/@val") == ["0000FF"]
+
     def it_knows_the_type_of_its_color(self, color_type_fixture_):
         color_format, color_type = color_type_fixture_
         assert color_format.type == color_type

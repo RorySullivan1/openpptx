@@ -28,6 +28,26 @@ def _run_roundtrip_test(test_code: str) -> None:
 class DescribeRoundTrip:
     """Integration tests verifying save/load round-trip fidelity."""
 
+    def it_keeps_the_slide_order_when_saved_before_and_after_listing_the_slides(self):
+        _run_roundtrip_test("""prs = Presentation()
+for text in ("first", "second"):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.shapes.add_textbox(0, 0, Inches(1), Inches(1)).text_frame.text = text
+prs.slides.move(0, 1)
+stream = BytesIO()
+prs.save(stream)
+
+# -- slide parts are named out of order; listing the slides renames them, after a save --
+prs = Presentation(BytesIO(stream.getvalue()))
+prs.save(BytesIO())
+prs.slides
+saved = BytesIO()
+prs.save(saved)
+
+texts = [sp.text_frame.text for s in Presentation(saved).slides for sp in s.shapes]
+assert texts == ["second", "first"], texts
+""")
+
     def it_round_trips_a_blank_presentation(self):
         _run_roundtrip_test("""\
 prs = Presentation()

@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from pptx.dml.color import ColorFormat
 from pptx.enum.dml import MSO_SHADOW_TYPE
-from pptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from pptx.enum.dml import MSO_RECT_ALIGNMENT
@@ -139,7 +138,7 @@ class ShadowFormat:
         outerShdw = self._get_or_add_outerShdw()
         outerShdw.rotWithShape = value
 
-    @lazyproperty
+    @property
     def color(self) -> ColorFormat:
         """Color of the shadow, including transparency.
 
@@ -147,7 +146,8 @@ class ShadowFormat:
         ``.theme_color`` chooses the shadow color. Transparency is controlled
         via the alpha child on the color element.
 
-        Accessing this property creates an outer shadow element if none exists.
+        Accessing this property creates an outer shadow element if none exists, afresh on
+        each access, so setting the color after ``inherit = True`` adds a shadow again.
         """
         outerShdw = self._outerShdw
         if outerShdw is not None:

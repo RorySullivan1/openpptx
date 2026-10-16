@@ -162,19 +162,21 @@ class Describe_ImageParts:
 
     def it_can_get_a_matching_image_part(self, Image_, image_, image_part_, _find_by_sha1_):
         Image_.from_file.return_value = image_
+        image_.blob = b"1234"
         _find_by_sha1_.return_value = image_part_
         image_parts = _ImageParts(None)
 
         image_part = image_parts.get_or_add_image_part("image.png")
 
         Image_.from_file.assert_called_once_with("image.png")
-        _find_by_sha1_.assert_called_once_with(image_parts, image_.sha1)
+        _find_by_sha1_.assert_called_once_with(image_parts, image_.sha1, 4)
         assert image_part is image_part_
 
     def it_can_add_an_image_part(
         self, package_, Image_, image_, _find_by_sha1_, ImagePart_, image_part_
     ):
         Image_.from_file.return_value = image_
+        image_.blob = b"1234"
         _find_by_sha1_.return_value = None
         ImagePart_.new.return_value = image_part_
         image_parts = _ImageParts(package_)
@@ -182,14 +184,23 @@ class Describe_ImageParts:
         image_part = image_parts.get_or_add_image_part("image.png")
 
         Image_.from_file.assert_called_once_with("image.png")
-        _find_by_sha1_.assert_called_once_with(image_parts, image_.sha1)
+        _find_by_sha1_.assert_called_once_with(image_parts, image_.sha1, 4)
         ImagePart_.new.assert_called_once_with(package_, image_)
         assert image_part is image_part_
 
     def it_can_find_an_image_part_by_sha1_hash(self, find_fixture):
         image_parts, sha1, expected_value = find_fixture
-        image_part = image_parts._find_by_sha1(sha1)
+        image_part = image_parts._find_by_sha1(sha1, 3)
         assert image_part is expected_value
+
+    def but_it_skips_an_image_part_known_to_be_another_size(self, request, _iter_):
+        image_part_ = instance_mock(request, ImagePart, sha1="f00beed")
+        image_part_._may_hold.return_value = False
+        _iter_.return_value = iter((image_part_,))
+        image_parts = _ImageParts(None)
+
+        assert image_parts._find_by_sha1("f00beed", 3) is None
+        image_part_._may_hold.assert_called_once_with(3)
 
     def but_it_skips_unsupported_image_types(self, request, _iter_):
         sha1 = "f00beed"
@@ -199,7 +210,7 @@ class Describe_ImageParts:
         _iter_.return_value = iter((svg_part_, png_part_))
         image_parts = _ImageParts(None)
 
-        result = image_parts._find_by_sha1(sha1)
+        result = image_parts._find_by_sha1(sha1, 3)
 
         assert result == png_part_
 
@@ -282,14 +293,23 @@ class Describe_MediaParts:
 
         media_part = media_parts.get_or_add_media_part(media_)
 
-        media_parts._find_by_sha1.assert_called_once_with(media_parts, sha1)
+        media_parts._find_by_sha1.assert_called_once_with(media_parts, sha1, 4)
         assert MediaPart_.new.call_args_list == calls
         assert media_part is media_part_
 
     def it_can_find_a_media_part_by_sha1(self, find_fixture):
         media_parts, sha1, expected_value = find_fixture
-        media_part = media_parts._find_by_sha1(sha1)
+        media_part = media_parts._find_by_sha1(sha1, 3)
         assert media_part is expected_value
+
+    def but_it_skips_a_media_part_known_to_be_another_size(self, request, _iter_):
+        media_part_ = instance_mock(request, MediaPart, sha1="f00beed")
+        media_part_._may_hold.return_value = False
+        _iter_.return_value = iter((media_part_,))
+        media_parts = _MediaParts(None)
+
+        assert media_parts._find_by_sha1("f00beed", 3) is None
+        media_part_._may_hold.assert_called_once_with(3)
 
     # fixtures ---------------------------------------------
 
@@ -314,6 +334,7 @@ class Describe_MediaParts:
         media_present = request.param
         media_parts = _MediaParts(package_)
         media_.sha1 = sha1 = "2468"
+        media_.blob = b"1234"
         calls = [] if media_present else [call(package_, media_)]
         _find_by_sha1_.return_value = media_part_ if media_present else None
         MediaPart_.new.return_value = None if media_present else media_part_

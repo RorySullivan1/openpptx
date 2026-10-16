@@ -15,7 +15,7 @@ from pptx.oxml.shapes.picture import CT_Picture
 from pptx.shapes.autoshape import Shape
 from pptx.shapes.graphfrm import GraphicFrame
 from pptx.shapes.picture import Picture
-from pptx.util import Emu, lazyproperty
+from pptx.util import Emu
 
 if TYPE_CHECKING:
     from pptx.oxml.shapes.autoshape import CT_Shape
@@ -92,19 +92,43 @@ class _InheritsDimensions:
     def width(self, value):
         self._element.cx = value
 
-    @lazyproperty
+    # -- the `p:ph` attribute a placeholder is matched to its base by --
+    _base_match_attr = "idx"
+    # -- (base, base `p:ph`, its match value, own `p:ph`, own match value) from the last search --
+    _found_base = None
+
+    @property
     def _base_placeholder(self):
         """
         Return the layout or master placeholder shape this placeholder
-        inherits from. Not to be confused with an instance of
-        |BasePlaceholder| (necessarily).
+        inherits from, or |None| if there is none. Not to be confused with an
+        instance of |BasePlaceholder| (necessarily).
 
-        Looked up once per placeholder object and then reused, so reading
-        `left`, `top`, `width` and `height` in turn searches the layout once,
-        not four times. A placeholder object therefore keeps the base it found
-        for as long as it lives; one obtained after the layout or master
-        placeholder is deleted or re-indexed sees the change.
+        Found once per placeholder object and then reused while nothing it was
+        matched by has changed: the base is still in its tree and both `p:ph`
+        elements keep the `idx` (or `type`) they had. So reading `left`, `top`,
+        `width` and `height` in turn searches the layout once, not four times,
+        and a base deleted or re-indexed afterwards is still noticed. Finding
+        no base is not reused, as a matching placeholder can be added later.
         """
+        found = self._found_base
+        attr = self._base_match_attr
+        if found is not None:
+            base, base_ph, base_value, own_ph, own_value = found
+            if (
+                own_ph.get(attr) == own_value
+                and base_ph.get(attr) == base_value
+                and base._element.getparent() is not None
+            ):
+                return base
+        base = self._find_base_placeholder()
+        if base is not None:
+            own_ph, base_ph = self._element.ph, base._element.ph
+            self._found_base = (base, base_ph, base_ph.get(attr), own_ph, own_ph.get(attr))
+        return base
+
+    def _find_base_placeholder(self):
+        """Search for the placeholder this one inherits from, |None| if there is none."""
         raise NotImplementedError("Must be implemented by all subclasses.")
 
     def _effective_value(self, attr_name):
@@ -153,8 +177,7 @@ class _BaseSlidePlaceholder(_InheritsDimensions, Shape):
         """
         return MSO_SHAPE_TYPE.PLACEHOLDER
 
-    @lazyproperty
-    def _base_placeholder(self):
+    def _find_base_placeholder(self):
         """
         Return the layout placeholder this slide placeholder inherits from.
         Not to be confused with an instance of |BasePlaceholder|
@@ -246,8 +269,9 @@ class LayoutPlaceholder(_InheritsDimensions, Shape):
 
     element: CT_Shape  # pyright: ignore[reportIncompatibleMethodOverride]
 
-    @lazyproperty
-    def _base_placeholder(self):
+    _base_match_attr = "type"
+
+    def _find_base_placeholder(self):
         """
         Return the master placeholder this layout placeholder inherits from.
         """
@@ -268,8 +292,9 @@ class NotesSlidePlaceholder(_InheritsDimensions, Shape):
     placeholder on the notes master that has the same type (e.g. 'body').
     """
 
-    @lazyproperty
-    def _base_placeholder(self):
+    _base_match_attr = "type"
+
+    def _find_base_placeholder(self):
         """
         Return the notes master placeholder this notes slide placeholder
         inherits from, or |None| if no placeholder of the matching type is
@@ -376,8 +401,7 @@ class PlaceholderPicture(_InheritsDimensions, Picture):
     Placeholder shape populated with a picture.
     """
 
-    @lazyproperty
-    def _base_placeholder(self):
+    def _find_base_placeholder(self):
         """
         Return the layout placeholder this picture placeholder inherits from.
         """

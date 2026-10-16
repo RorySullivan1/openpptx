@@ -128,21 +128,21 @@ class _BaseShapes(ParentedElementProxy):
         Accepts either a shape name (str) or a shape object.
         """
         if isinstance(name_or_shape, str):
-            return name_or_shape in self._get_name_index()
+            return self._shape_elm_named(name_or_shape) is not None
         return any(
             shape_elm is name_or_shape.element for shape_elm in self._iter_member_elms()
         )
 
     def get_by_name(self, name: str, default: BaseShape | None = None) -> BaseShape | None:
         """Return the shape with *name*, or *default* if not found."""
-        shape_elm = self._get_name_index().get(name)
+        shape_elm = self._shape_elm_named(name)
         if shape_elm is not None:
             return self._shape_factory(shape_elm)
         return default
 
     def get_by_id(self, shape_id: int, default: BaseShape | None = None) -> BaseShape | None:
         """Return the shape with *shape_id*, or *default* if not found."""
-        shape_elm = self._get_id_index().get(shape_id)
+        shape_elm = self._shape_elm_with_id(shape_id)
         if shape_elm is not None:
             return self._shape_factory(shape_elm)
         return default
@@ -192,6 +192,44 @@ class _BaseShapes(ParentedElementProxy):
         """Clear cached shape index dicts. Call after any shape mutation."""
         self._name_index = None
         self._id_index = None
+
+    def _is_current_member(self, shape_elm: ShapeElement) -> bool:
+        """True when `shape_elm`, taken from an index, is still a member of this collection."""
+        return shape_elm.getparent() is self._spTree and self._is_member_elm(shape_elm)
+
+    def _shape_elm_named(self, name: str) -> ShapeElement | None:
+        """The member shape element named `name`, or None.
+
+        The indexes can go stale without any method here being called: renaming a shape, or
+        removing or editing its element in the XML, changes the tree under them. So an indexed
+        hit is used only while it is still a member with that name. A stale hit or a miss rebuilds
+        the index once, so a miss costs one scan, as every lookup did before the index existed.
+        With duplicate names, a hit that is still valid wins even if a rename has since put
+        another shape of that name earlier in the tree.
+        """
+        if self._name_index is not None:
+            shape_elm = self._name_index.get(name)
+            if (
+                shape_elm is not None
+                and self._is_current_member(shape_elm)
+                and shape_elm.shape_name == name
+            ):
+                return shape_elm
+            self._name_index = None
+        return self._get_name_index().get(name)
+
+    def _shape_elm_with_id(self, shape_id: int) -> ShapeElement | None:
+        """The member shape element with `shape_id`, or None; see `_shape_elm_named()`."""
+        if self._id_index is not None:
+            shape_elm = self._id_index.get(shape_id)
+            if (
+                shape_elm is not None
+                and self._is_current_member(shape_elm)
+                and shape_elm.shape_id == shape_id
+            ):
+                return shape_elm
+            self._id_index = None
+        return self._get_id_index().get(shape_id)
 
     def clone_placeholder(self, placeholder: LayoutPlaceholder) -> None:
         """Add a new placeholder shape based on `placeholder`."""

@@ -191,20 +191,22 @@ class _ImageParts:
         that instance is returned, otherwise a new image part is created.
         """
         image = Image.from_file(image_file)
-        image_part = self._find_by_sha1(image.sha1)
+        image_part = self._find_by_sha1(image.sha1, len(image.blob))
         return image_part if image_part else ImagePart.new(self._package, image)
 
-    def _find_by_sha1(self, sha1: str) -> ImagePart | None:
+    def _find_by_sha1(self, sha1: str, size: int) -> ImagePart | None:
         """
         Return an |ImagePart| object belonging to this package or |None| if
         no matching image part is found. The image part is identified by the
-        SHA1 hash digest of the image binary it contains.
+        SHA1 hash digest of the image binary it contains, which is `size` bytes
+        long; a part known to be another size is skipped without reading it.
         """
         for image_part in self:
-            # ---skip unknown/unsupported image types, like SVG---
-            if not hasattr(image_part, "sha1"):
+            # ---skip unknown/unsupported image types, like SVG, which load as a plain Part; asking
+            # ---`hasattr(part, "sha1")` instead would hash, and so read, every image part---
+            if not isinstance(image_part, ImagePart):
                 continue
-            if image_part.sha1 == sha1:
+            if image_part._may_hold(size) and image_part.sha1 == sha1:
                 return image_part
         return None
 
@@ -244,14 +246,14 @@ class _MediaParts:
         bytestream, that instance is returned, otherwise a new media part is
         created.
         """
-        media_part = self._find_by_sha1(media.sha1)
+        media_part = self._find_by_sha1(media.sha1, len(media.blob))
         if media_part is None:
             media_part = MediaPart.new(self._package, media)
         return media_part
 
-    def _find_by_sha1(self, sha1: str) -> MediaPart | None:
-        """Return |MediaPart| object having *sha1* hash or None if not found."""
+    def _find_by_sha1(self, sha1: str, size: int) -> MediaPart | None:
+        """Return the |MediaPart| of `size` bytes having *sha1* hash, or None if not found."""
         for media_part in self:
-            if media_part.sha1 == sha1:
+            if media_part._may_hold(size) and media_part.sha1 == sha1:
                 return media_part
         return None

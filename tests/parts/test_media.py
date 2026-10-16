@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+
 from pptx.media import Video
 from pptx.package import Package
 from pptx.parts.media import MediaPart
@@ -31,3 +33,11 @@ class DescribeMediaPart:
         assert MediaPart(None, None, None, b"blobish-bytes").sha1 == (
             "61efc464c21e54cfc1382fb5b6ef7512e141ceae"
         )
+
+    def it_recomputes_its_sha1_after_its_blob_is_replaced(self):
+        media_part = MediaPart(None, None, None, b"old-bytes")
+        assert media_part.sha1 == hashlib.sha1(b"old-bytes").hexdigest()
+
+        media_part.blob = b"new-bytes"
+
+        assert media_part.sha1 == hashlib.sha1(b"new-bytes").hexdigest()

@@ -2,13 +2,13 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- Package **0.5.1**. v0.5.1 close-out PR (branch `v0.5.1`) carries #131 shadow + #132 chartex repair + bump; PowerPoint-COM
-  verified. **After merge:** add v0.5.1's row to `.meta/release-tags.md` (its merge commit); owner tags v0.5.0 (hold lifted)
-  and v0.5.1. Cursor then v0.6.0 (thin card, see Threads).
+- Package 0.6.0 on branch `v0.6.0`, PR #134 READY (lazy binary blobs + caching audit, `.claude/context/caching-audit.md`).
+  `.meta/version` stays in-progress until it merges. 0.5.1 shipped (PR #133, `51a8cd1`).
+- Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0 ready; v0.5.0's row is recorded but HELD).
+- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
-- Actions RUNS again (2026-10-14 01:48Z, #125 ran 7/7 green); LF pinned; `tests.yml` covers 3.9–3.13/Win/macOS.
+- CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 - API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra).
 
 ## Decisions        (append-only; supersede, never delete)
@@ -31,12 +31,16 @@
 - [2026-10-15] Load-time repairs live in `OpcPackage._repair_loaded_parts(parts)` (Package overrides), scanning the
   loader's part dict: an `iter_parts()` walk cost +1.7% work count, near the 2% gate — same log
 
+- [2026-10-15] Owner: v0.6.0 = perf remainder only (lazy blobs + caching audit); streaming save dropped unless measured;
+  cross-run text stays v0.7.0 — .meta/version
+- [2026-10-15] Owner: lazy blobs for PATH sources only (zip reopened per read, CRC/size checked → `PackageError`; no
+  held handle); stream + directory sources stay eager — sessions/2026-10-15-1347-v060-card-expanded.md
+- [2026-10-15] Owner: accept save cost of lazy blobs (+5–7% images_100; fixed ~0.4 ms/save zip reopen on small decks);
+  work-count gate counts total calls, re-budgeted from main — sessions/2026-10-15-1347-v060-card-expanded.md
+
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
   Would NOT have caught #127 (the part was related, from the wrong source).
-- **v0.6.0's card is mostly obsolete before it starts**: 4 of 6 goals landed early (#51/#107/#109/#123 — perf harness,
-  lookup indexes, `ShapeRange`, work-count gate). Only lazy blob loading, streaming save and the caching audit remain,
-  which is thin for a version. Re-slice it (or pull v0.7.0's cross-run text work forward) when the branch opens.
 - The `github` MCP server may fail to connect ("Authorization header is badly formatted"); `gh` CLI works — use it.
 - v0.3.2 docstring audit: consider adopting the factory's prose tier (`prose_budget.py`, `prose-auditor`, `/prose-review`).
 - Legacy getters write on read (from python-pptx): `Font.color` makes fill solid, `_Paragraph.alignment` adds a:pPr.
@@ -65,3 +69,4 @@
 - 2026-10-15 | Memory reconciled: PR #130 merged 2026-10-14 (`1c132d7`); version bump + tags are all that's left of v0.5.1 | gh pr view 130
 - 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
 - 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md
+- 2026-10-15 1347 | v0.6.0 built end to end: card, L1/L2, lazy blobs, caching audit (11 fixes), gate metric, 0.6.0; PR #134 ready | sessions/2026-10-15-1347-v060-card-expanded.md

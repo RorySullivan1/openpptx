@@ -10,8 +10,12 @@ Used by `tests/perf/conftest.py` (pytest fixtures) and
 
 from __future__ import annotations
 
+import io
+import random
 from dataclasses import dataclass
 from pathlib import Path
+
+from PIL import Image as PIL_Image
 
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -29,6 +33,9 @@ class CorpusSpec:
     shapes_per_slide: int
     paragraphs_per_shape: int
     n_images: int = 0
+    # -- `add_picture` dedupes by SHA-1, so repeating one image file yields a single image part;
+    # -- distinct images give each picture its own part --
+    distinct_images: bool = False
 
 
 SMALL = CorpusSpec(
@@ -48,6 +55,18 @@ LARGE = CorpusSpec(
     paragraphs_per_shape=5,
     n_images=10,
 )
+
+# 100 distinct images, one per slide, for the lazy-blob memory measurement (v0.6.0).
+IMAGES_100 = CorpusSpec(
+    name="images_100",
+    n_slides=100,
+    shapes_per_slide=1,
+    paragraphs_per_shape=1,
+    n_images=100,
+    distinct_images=True,
+)
+
+DISTINCT_IMAGE_PX = 128
 
 # Single-slide spec used for the index-linearity benchmark.
 LOOKUP_COUNTS = (10, 100, 1000)
@@ -77,13 +96,24 @@ def build_deck(spec: CorpusSpec, dest: Path) -> Path:
                 p.text = f"slide={slide_idx} shape={shape_idx} p={p_idx}"
                 p.font.size = Pt(11)
         if image_budget > 0:
+            image = _distinct_image(slide_idx) if spec.distinct_images else image_path_str
             slide.shapes.add_picture(
-                image_path_str, Inches(5.0), Inches(0.5), Inches(2.0), Inches(2.0)
+                image, Inches(5.0), Inches(0.5), Inches(2.0), Inches(2.0)
             )
             image_budget -= 1
 
     prs.save(str(dest))
     return dest
+
+
+def _distinct_image(seed: int) -> io.BytesIO:
+    """A PNG of RGB noise, the same for the same `seed`; noise keeps it from compressing away."""
+    side = DISTINCT_IMAGE_PX
+    pixels = random.Random(seed).randbytes(side * side * 3)
+    stream = io.BytesIO()
+    PIL_Image.frombytes("RGB", (side, side), pixels).save(stream, format="PNG")
+    stream.seek(0)
+    return stream
 
 
 def build_lookup_deck(n_shapes: int, dest: Path) -> Path:

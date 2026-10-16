@@ -120,7 +120,7 @@ class LineFormat:
         ln = self._get_or_add_ln()
         ln.cap = value
 
-    @lazyproperty
+    @property
     def color(self) -> ColorFormat:
         """
         The |ColorFormat| instance that provides access to the color settings
@@ -128,7 +128,8 @@ class LineFormat:
         As a side-effect, accessing this property causes the line fill type
         to be set to ``MSO_FILL.SOLID``. If this sounds risky for your use
         case, use ``line.fill.type`` to non-destructively discover the
-        existing fill type.
+        existing fill type. Each access does this afresh, so the color set
+        after a change of fill type makes the line solid again.
         """
         if self.fill.type != MSO_FILL.SOLID:
             self.fill.solid()

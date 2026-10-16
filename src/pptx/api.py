@@ -25,6 +25,15 @@ def Presentation(pptx: str | IO[bytes] | None = None) -> presentation.Presentati
     either a path to a ``.pptx`` file (a string) or a file-like object. If
     *pptx* is missing or ``None``, the built-in default presentation
     "template" is loaded.
+
+    Opened from a path, the file is not held open, but images, media and other
+    binary parts are read from it only when they are used, such as when the
+    presentation is saved. So the file must not be replaced or deleted while the
+    presentation still needs it; reading such a part then raises |PackageError|.
+    Saving back over the same file by its path is fine, but opening that file for
+    writing yourself, e.g. ``prs.save(open(path, "wb"))``, empties it before its
+    parts can be read. A file-like object is read in full when it is opened, so it
+    can be closed straight away.
     """
     if pptx is None:
         pptx = _default_pptx_path()

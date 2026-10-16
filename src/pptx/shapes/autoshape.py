@@ -97,7 +97,6 @@ class AdjustmentCollection:
 
     def __init__(self, prstGeom: CT_PresetGeometry2D) -> None:
         super(AdjustmentCollection, self).__init__()
-        self._adjustments_ = self._initialized_adjustments(prstGeom)
         self._prstGeom = prstGeom
 
     def __getitem__(self, idx: int) -> float:
@@ -109,8 +108,9 @@ class AdjustmentCollection:
 
         Causes all adjustment values in collection to be written to the XML.
         """
-        self._adjustments_[idx].effective_value = value
-        self._rewrite_guides()
+        adjustments = self._adjustments_
+        adjustments[idx].effective_value = value
+        self._rewrite_guides(adjustments)
 
     def _initialized_adjustments(self, prstGeom: CT_PresetGeometry2D | None) -> list[Adjustment]:
         """Return an initialized list of adjustment values based on the contents of `prstGeom`."""
@@ -121,12 +121,21 @@ class AdjustmentCollection:
         self._update_adjustments_with_actuals(adjustments, prstGeom.gd_lst)
         return adjustments
 
-    def _rewrite_guides(self) -> None:
-        """Write `a:gd` elements to the XML, one for each adjustment value.
+    @property
+    def _adjustments_(self) -> list[Adjustment]:
+        """The adjustments as the XML holds them now.
+
+        Read afresh on each access rather than kept, so a value written through another
+        collection for the same shape is both seen and kept when this one writes.
+        """
+        return self._initialized_adjustments(self._prstGeom)
+
+    def _rewrite_guides(self, adjustments: list[Adjustment]) -> None:
+        """Write `a:gd` elements to the XML, one for each of `adjustments`.
 
         Any existing guide elements are overwritten.
         """
-        guides = [(adj.name, adj.val) for adj in self._adjustments_]
+        guides = [(adj.name, adj.val) for adj in adjustments]
         self._prstGeom.rewrite_guides(guides)
 
     @staticmethod

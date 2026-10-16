@@ -59,6 +59,26 @@ class DescribeAdjustment:
 class DescribeAdjustmentCollection:
     """Unit-test suite for `pptx.shapes.autoshape.AdjustmentCollection`."""
 
+    def it_reads_an_adjustment_written_through_another_collection(self):
+        prstGeom = element("a:prstGeom{prst=roundRect}/a:avLst")
+        adjustments, other = AdjustmentCollection(prstGeom), AdjustmentCollection(prstGeom)
+        assert adjustments[0] == 0.16667
+
+        other[0] = 0.4
+
+        assert adjustments[0] == 0.4
+
+    def it_keeps_an_adjustment_written_through_another_collection_when_it_writes(self):
+        prstGeom = element("a:prstGeom{prst=wedgeRoundRectCallout}/a:avLst")
+        adjustments, other = AdjustmentCollection(prstGeom), AdjustmentCollection(prstGeom)
+        assert len(adjustments) == 3
+        other[1] = 0.25
+
+        adjustments[0] = 0.1
+
+        assert AdjustmentCollection(prstGeom)[1] == 0.25
+
+
     @pytest.mark.parametrize(
         ("prst", "expected_values"),
         [
@@ -152,10 +172,13 @@ class DescribeAdjustmentCollection:
         with pytest.raises(ShapeError):
             adjustments[0] = "1.0"
 
-    def it_writes_adj_vals_to_xml_on_assignment(self, adjustments_with_prstGeom_):
-        adjs, guides = adjustments_with_prstGeom_
-        adjs[0] = 0.999
-        adjs._prstGeom.rewrite_guides.assert_called_once_with(guides)
+    def it_writes_adj_vals_to_xml_on_assignment(self):
+        prstGeom = element("a:prstGeom{prst=chevron}/a:avLst")
+        adjustments = AdjustmentCollection(prstGeom)
+
+        adjustments[0] = 0.999
+
+        assert [(gd.name, gd.fmla) for gd in prstGeom.gd_lst] == [("adj", "val 99900")]
 
     # fixtures -------------------------------------------------------
 
@@ -163,15 +186,6 @@ class DescribeAdjustmentCollection:
     def adjustments(self):
         prstGeom = a_prstGeom().with_nsdecls().with_prst("chevron").element
         return AdjustmentCollection(prstGeom)
-
-    @pytest.fixture
-    def adjustments_with_prstGeom_(self, request):
-        prstGeom = a_prstGeom().with_nsdecls().with_prst("chevron").element
-        adjustments = AdjustmentCollection(prstGeom)
-        prstGeom_ = instance_mock(request, CT_PresetGeometry2D, name="prstGeom_")
-        adjustments._prstGeom = prstGeom_
-        guides = [("adj", 99900)]
-        return adjustments, guides
 
     def _adj_actuals_cases():
         gd_bldr = a_gd().with_name("adj2").with_fmla("val 25000")

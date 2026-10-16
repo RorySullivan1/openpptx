@@ -37,5 +37,7 @@ places — and left unstated it produces exactly that. Two rules settle it:
 | `feature-manifest.md` | Authoritative scope & feature inventory — what pypptx implements, the remaining gaps, and what is deliberately out of scope (rendering, slideshow, print, macros). Read before proposing a feature "PowerPoint can do". |
 | `feature-gaps.md` | Granular feature buildout log (sections 1–24) with the OOXML schema location of each item. States the **bottom-up, types-first** strategy. |
 | `verification-surface.md` | Who can confirm each surface worked — the per-surface `agent-runnable` / `human-gated` / `unverified` table, written by the `establish-verification` workflow. |
+| `performance.md` | Performance measurements and the perf harness: what is done, the work-count gate, branch-open and branch-close numbers per version, and the regenerated Baseline section. |
+| `caching-audit.md` | Every `@lazyproperty` and hand-rolled cache, sorted into five buckets and judged sound or fixed (v0.6.0). Read before adding or changing a cache. |
 
 Reference notes are catalogued automatically in `INDEX.md` — not listed here.

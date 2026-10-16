@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import posixpath
 import zipfile
 import zlib
-from typing import IO, TYPE_CHECKING, Any, Container, Sequence
+from typing import IO, TYPE_CHECKING, Any, Container, Iterator, Sequence
 
-from pptx.exc import InvalidPackageError, PackageNotFoundError
+from pptx.exc import InvalidPackageError, PackageError, PackageNotFoundError
 from pptx.opc.constants import CONTENT_TYPE as CT
 from pptx.opc.oxml import CT_Types, serialize_part_xml
 from pptx.opc.packuri import CONTENT_TYPES_URI, PACKAGE_URI, PackURI
@@ -37,6 +38,18 @@ class PackageReader(Container[bytes]):
     def __getitem__(self, pack_uri: PackURI) -> bytes:
         """Return bytes for part corresponding to `pack_uri`."""
         return self._blob_reader[pack_uri]
+
+    def blob_source_for(self, pack_uri: PackURI) -> bytes | ZipMember:
+        """Return the bytes of `pack_uri`, or a |ZipMember| that reads them when asked.
+
+        Only a package opened from a path to a zip file defers the read. A stream may be closed
+        by its caller once loading ends, and an expanded directory is rare, so both give bytes.
+        """
+        return self._blob_reader.blob_source_for(pack_uri)
+
+    def close(self) -> None:
+        """Release the open package file; deferred reads reopen it when they need it."""
+        self._blob_reader.close()
 
     def rels_xml_for(self, partname: PackURI) -> bytes | None:
         """Return optional rels item XML for `partname`.
@@ -127,6 +140,13 @@ class _PhysPkgReader(Container[PackURI]):
             f"`{type(self).__name__}` must implement `.__contains__()`"
         )
 
+    def blob_source_for(self, pack_uri: PackURI) -> bytes | ZipMember:
+        """Bytes for part `pack_uri`; a subclass able to defer the read returns a |ZipMember|."""
+        return self[pack_uri]
+
+    def close(self) -> None:
+        """Release any open file; the base implementation holds none."""
+
     @classmethod
     def factory(cls, pkg_file: str | IO[bytes]) -> _PhysPkgReader:
         """Return |_PhysPkgReader| subtype instance appropriage for `pkg_file`."""
@@ -175,8 +195,9 @@ class _ZipPkgReader(_PhysPkgReader):
     """Implements |PhysPkgReader| interface for a zip-file OPC package.
 
     Blobs are read on demand from the zip archive rather than all at once,
-    reducing peak memory usage for large packages. The zip file is kept open
-    for the lifetime of the reader to avoid repeated open/close cycles.
+    reducing peak memory usage for large packages. The zip file stays open while the package
+    loads, until `close()`. When `pkg_file` is a path, `blob_source_for()` returns a |ZipMember|
+    that reopens the file to read its bytes later.
     """
 
     def __init__(self, pkg_file: str | IO[bytes]):
@@ -187,6 +208,7 @@ class _ZipPkgReader(_PhysPkgReader):
                 "%s is not a valid .pptx package: not a readable zip archive (%s)"
                 % (_describe(pkg_file), e)
             ) from e
+        self._archive = ZipArchive(os.path.abspath(pkg_file)) if isinstance(pkg_file, str) else None
 
     def __del__(self) -> None:
         """Close the zip file when this reader is garbage-collected."""
@@ -216,6 +238,20 @@ class _ZipPkgReader(_PhysPkgReader):
                 % (pack_uri, e)
             ) from e
 
+    def blob_source_for(self, pack_uri: PackURI) -> bytes | ZipMember:
+        """A |ZipMember| for `pack_uri` when this archive was opened from a path, else its bytes."""
+        if self._archive is None:
+            return self[pack_uri]
+        membername = self._member_names.get(pack_uri)
+        if membername is None:
+            raise KeyError("no member '%s' in package" % pack_uri)
+        info = self._zipf.getinfo(membername)
+        return ZipMember(self._archive, membername, info.CRC, info.file_size)
+
+    def close(self) -> None:
+        """Close the zip file. Reading through this reader afterwards fails."""
+        self._zipf.close()
+
     @lazyproperty
     def _member_names(self) -> dict[PackURI, str]:
         """dict mapping PackURI to zip member name (str).
@@ -224,6 +260,86 @@ class _ZipPkgReader(_PhysPkgReader):
         read on demand in ``__getitem__``.
         """
         return {PackURI("/%s" % name): name for name in self._zipf.namelist()}
+
+
+class ZipArchive:
+    """A `.pptx` file on disk that |ZipMember| objects read from after the package has loaded.
+
+    The file is open only while a read, or a `batch()` of reads, needs it. Holding no handle in
+    between leaves the file free to be moved or deleted, which Windows forbids while it is open.
+    """
+
+    def __init__(self, path: str):
+        self.path = path
+        self._zipf: zipfile.ZipFile | None = None
+        self._depth = 0
+
+    @contextlib.contextmanager
+    def batch(self) -> Iterator[None]:
+        """Keep the file open for every read made inside the `with` block.
+
+        Reopening the zip parses its central directory each time, about half a millisecond for a
+        few hundred parts, so a save reads all its parts inside one batch. Batches nest.
+        """
+        if self._depth == 0:
+            self._zipf = self._open()
+        self._depth += 1
+        try:
+            yield
+        finally:
+            self._depth -= 1
+            if self._depth == 0 and self._zipf is not None:
+                self._zipf.close()
+                self._zipf = None
+
+    def read(self, membername: str, crc: int, size: int) -> bytes:
+        """Bytes of `membername`, which held `crc` and `size` bytes when the package loaded.
+
+        Raises |PackageError| when the file is gone or its member no longer matches: the file was
+        replaced or rewritten after the presentation was opened.
+        """
+        with self.batch():
+            assert self._zipf is not None
+            try:
+                info = self._zipf.getinfo(membername)
+            except KeyError:
+                info = None
+            if info is None or (info.CRC, info.file_size) != (crc, size):
+                raise self._changed_error(membername)
+            try:
+                return self._zipf.read(info)
+            except (zipfile.BadZipFile, zlib.error, EOFError, NotImplementedError) as e:
+                raise InvalidPackageError(
+                    "part '/%s' of the package cannot be read: the archive is corrupt (%s)"
+                    % (membername, e)
+                ) from e
+
+    def _changed_error(self, membername: str | None = None) -> PackageError:
+        parts = "its parts" if membername is None else "its part '/%s'" % membername
+        return PackageError(
+            "'%s' changed or was removed after the presentation was opened, so %s can no longer "
+            "be read" % (self.path, parts)
+        )
+
+    def _open(self) -> zipfile.ZipFile:
+        try:
+            return zipfile.ZipFile(self.path, "r")
+        except (OSError, zipfile.BadZipFile, EOFError) as e:
+            raise self._changed_error() from e
+
+
+class ZipMember:
+    """The bytes of one zip member, left in a |ZipArchive| on disk until `read()`."""
+
+    def __init__(self, archive: ZipArchive, membername: str, crc: int, size: int):
+        self.archive = archive
+        self._membername = membername
+        self._crc = crc
+        self.size = size
+
+    def read(self) -> bytes:
+        """Read the member's bytes from the archive; nothing is cached."""
+        return self.archive.read(self._membername, self._crc, self.size)
 
 
 def _describe(pkg_file: str | IO[bytes]) -> str:

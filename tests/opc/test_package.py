@@ -29,6 +29,7 @@ from pptx.opc.package import (
     _Relationships,
 )
 from pptx.opc.packuri import PACKAGE_URI, PackURI
+from pptx.opc.serialized import PackageReader
 from pptx.oxml import parse_xml
 from pptx.parts.presentation import PresentationPart
 
@@ -327,6 +328,8 @@ class Describe_PackageLoader:
             )
         )
         _xml_rels_prop_.return_value = rels_
+        package_reader_ = instance_mock(request, PackageReader)
+        property_mock(request, _PackageLoader, "_package_reader", return_value=package_reader_)
         package_loader = _PackageLoader(None, None)
 
         pkg_xml_rels, parts = package_loader._load()
@@ -335,6 +338,7 @@ class Describe_PackageLoader:
             part_.load_rels_from_xml.assert_called_once_with(rels_[part_.partname], parts_)
         assert pkg_xml_rels is rels_["/"]
         assert parts is parts_
+        package_reader_.close.assert_called_once_with()
 
     def it_loads_the_xml_relationships_from_the_package_to_help(self, request):
         pkg_xml_rels = parse_xml(snippet_bytes("package-rels-xml"))
@@ -999,6 +1003,16 @@ class Describe_Relationships:
 
 class Describe_Relationship:
     """Unit-test suite for `pptx.opc.package._Relationship` objects."""
+
+    def it_names_its_target_by_the_partname_the_target_has_now(self):
+        part = Part(PackURI("/ppt/slides/slide1.xml"), CT.PML_SLIDE, None)
+        relationship = _Relationship("/ppt", "rId1", RT.SLIDE, RTM.INTERNAL, part)
+        assert relationship.target_ref == "slides/slide1.xml"
+
+        part.partname = PackURI("/ppt/slides/slide2.xml")
+
+        assert relationship.target_partname == "/ppt/slides/slide2.xml"
+        assert relationship.target_ref == "slides/slide2.xml"
 
 
     def it_keeps_an_internal_relationship_whose_target_is_a_fragment(self):

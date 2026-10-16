@@ -175,11 +175,11 @@ class ActionSetting(Subshape):
         """
         return self.part.slide
 
-    @lazyproperty
+    @property
     def _slide_index(self):
         """
         Position in the slide collection of the slide containing the shape
-        having this click action.
+        having this click action. Not cached, because slides can be moved.
         """
         return self._slides.index(self._slide)
 

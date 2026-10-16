@@ -417,11 +417,13 @@ class MajorGridlines(ElementProxy):
         super(MajorGridlines, self).__init__(xAx)
         self._xAx = xAx  # axis element, catAx or valAx
 
-    @lazyproperty
+    @property
     def format(self):
         """
         The |ChartFormat| object providing access to the shape formatting
-        properties of this data point, such as line and fill.
+        properties of these gridlines, such as line and fill. Accessing it adds
+        the gridlines if they are not present, so it is not cached:
+        `has_major_gridlines = False` removes the element it wraps.
         """
         majorGridlines = self._xAx.get_or_add_majorGridlines()
         return ChartFormat(majorGridlines)

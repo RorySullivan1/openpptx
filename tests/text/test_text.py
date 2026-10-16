@@ -601,6 +601,20 @@ class DescribeTextFrame:
 class DescribeFont:
     """Unit-test suite for `pptx.text.text.Font` object."""
 
+    def it_makes_the_font_solid_again_when_its_color_is_set_after_a_fill_change(self):
+        from pptx.dml.color import RGBColor
+        from pptx.enum.dml import MSO_FILL
+
+        font = Font(element("a:rPr"))
+        font.color.rgb = RGBColor(0xFF, 0x00, 0x00)
+        font.fill.background()
+
+        font.color.rgb = RGBColor(0x00, 0x00, 0xFF)
+
+        assert font.fill.type == MSO_FILL.SOLID
+        assert font.fill.fore_color.rgb == RGBColor(0x00, 0x00, 0xFF)
+
+
     def it_knows_its_bold_setting(self, bold_get_fixture):
         font, expected_value = bold_get_fixture
         assert font.bold == expected_value

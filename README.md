@@ -40,6 +40,12 @@ p.font.bold = True
 prs.save("hello.pptx")
 ```
 
+A presentation opened from a path (`Presentation("deck.pptx")`) leaves images and other binary
+parts in that file until they are used, so a deck full of pictures opens without loading them
+all into memory. Keep the file in place while you work on the presentation. Saving over it by
+path (`prs.save("deck.pptx")`) is fine; opening it for writing yourself first empties it before
+those parts can be read. A file-like object is read in full when it is opened.
+
 ## Features
 
 - **Presentations** — create blank, open existing (`.pptx` / `.pptm` / `.potx`), save to file or stream, core + custom document properties, notes page size, slide-show settings (loop, kiosk/browse, pen color, slide range), custom shows, table-style listing, embedded fonts (list and remove)
