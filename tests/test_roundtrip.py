@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Round-trip integration tests for python-pptx.
+"""Round-trip integration tests for openpptx.
 
 These tests create presentations, save to BytesIO, reload, and verify
 that content survives the round-trip through serialization/deserialization.

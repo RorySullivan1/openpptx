@@ -42,7 +42,7 @@ Four layers, low to high. Each layer only depends on the ones below it.
 | **Parts** | `openpptx/parts/` | One class per content-type — `SlidePart`, `ChartPart`, `ImagePart`, etc. A part owns one XML element tree (or a blob) plus its outbound relationships. |
 | **API** | `openpptx/api.py`, `openpptx/presentation.py`, `openpptx/slide.py`, `openpptx/shapes/`, `openpptx/text/`, `openpptx/chart/`, `openpptx/dml/`, `openpptx/table.py`, `openpptx/action.py` | User-facing Pythonic proxies. Modeled loosely on the VBA PowerPoint object model. |
 
-Entry point is `openpptx.api.Presentation(path_or_stream=None)`. With no argument it loads `src/openpptx/templates/default.pptx`. The returned `Presentation` is a proxy whose `.part` is a `PresentationPart`, which owns the package graph through `openpptx.package.Package` (`OpcPackage` subclass).
+Entry point is `openpptx.api.Presentation(pptx=None)` (a path or a file-like object). With no argument it loads `src/openpptx/templates/default.pptx`. The returned `Presentation` is a proxy whose `.part` is a `PresentationPart`, which owns the package graph through `openpptx.package.Package` (`OpcPackage` subclass).
 
 ### How content-types resolve to part classes
 

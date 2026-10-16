@@ -26,7 +26,7 @@ class DescribeCorePropertiesPart:
             ("identifier", "GXS 10.2.1ab"),
             ("keywords", "foo bar baz"),
             ("language", "US-EN"),
-            ("last_modified_by", "Steve Canny"),
+            ("last_modified_by", "Jane Doe"),
             ("subject", "Spam"),
             ("title", "Presentation"),
             ("version", "1.2.88"),
@@ -40,7 +40,7 @@ class DescribeCorePropertiesPart:
     @pytest.mark.parametrize(
         ("prop_name", "tagname", "value"),
         [
-            ("author", "dc:creator", "scanny"),
+            ("author", "dc:creator", "jdoe"),
             ("category", "cp:category", "silly stories"),
             ("comments", "dc:description", "Bar foo to you"),
             ("content_status", "cp:contentStatus", "FINAL"),
@@ -188,7 +188,7 @@ class DescribeCorePropertiesPart:
             b"  <dc:language>US-EN</dc:language>\n"
             b"  <cp:lastPrinted>2014-06-04T04:28:00Z</cp:lastPrinted>\n"
             b"  <cp:keywords>foo bar baz</cp:keywords>\n"
-            b"  <cp:lastModifiedBy>Steve Canny</cp:lastModifiedBy>\n"
+            b"  <cp:lastModifiedBy>Jane Doe</cp:lastModifiedBy>\n"
             b"  <cp:revision>4</cp:revision>\n"
             b"  <dc:subject>Spam</dc:subject>\n"
             b"  <dc:title>Presentation</dc:title>\n"
