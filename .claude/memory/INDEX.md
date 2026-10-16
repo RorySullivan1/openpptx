@@ -2,11 +2,13 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.0 SHIPPED (PR #135, merge `0db7ef1`). **In flight: v0.7.1 on branch `v0.7.1`**: review-fix patch (owner, 2026-10-16),
-  built from `v1.0.0`'s ship-bookkeeping commit. v1.0.0 card is still a sketch: expand it before building.
+- 0.7.1 SHIPPED (PR #136, merge `2627ddd`); ship recorded on branch `v1.0.0`. **Cursor: v1.0.0**, card still a sketch:
+  expand it (`/version-set`) before building. Stale in it: perf CI gate already exists; `make html` → `sphinx-build -W`;
+  acceptance lacks the PowerPoint COM opens-without-repair check.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
+- Sessions can't push tags; owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
+  lightweight; see that file); no Releases yet.
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 - API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra).
@@ -67,3 +69,4 @@
 - 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
 - 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
 - 2026-10-16 | v0.7.1 built: 9 review findings → template/count errors up front, TextMatch eq, `\v` → a:br, regex context, rel drops | sessions/2026-10-16-1300-v071-review-fixes.md
+- 2026-10-16 | v0.7.1 merged (PR #136, `2627ddd`, 7/7 CI); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
