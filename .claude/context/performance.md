@@ -161,7 +161,7 @@ These numbers come from the same box as the branch-open reference.
 ## v0.6.0 branch close (2026-10-15)
 
 Same Windows box as the branch-open reference. The caching audit is in
-[`caching-audit.md`](caching-audit.md): 10 stale caches fixed, the rest recorded as sound.
+[`caching-audit.md`](caching-audit.md): 11 stale caches fixed, the rest recorded as sound.
 
 **Wall-clock**, branch open (`c0a8a60`) against branch close, on the same deck files. Three
 interleaved rounds in separate processes, each a median of 15 runs; the table shows the median of

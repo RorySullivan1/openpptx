@@ -25,7 +25,7 @@ detail and the two confirmed audit leads (L1 stale shape-name index, L2 stale `s
   `.claude/context/performance.md`; open-then-save stays byte-identical for untouched binary parts.
   `images_100` held after open 5,169 → 356 KiB.
 - [x] Every caching-audit finding is fixed with a failing-first test, or recorded as sound with a reason
-  (`.claude/context/caching-audit.md`: 10 fixed plus L1/L2, 190 sound).
+  (`.claude/context/caching-audit.md`: 11 fixed plus L1/L2, 190 sound).
 - [x] `tests/perf` baseline re-run at branch close: no tracked operation slower than its baseline;
   the work-count gate passes without raising its budget. Owner exceptions (2026-10-15): save
   +0.4 ms per path-opened deck with binary parts (zip reopen; +5–9%), and the gate now counts total
