@@ -20,6 +20,7 @@ from pptx.shapes.shapetree import (
     SlideShapes,
 )
 from pptx.shared import ElementProxy, ParentedElementProxy, PartElementProxy
+from pptx.text.search import TextFinder, TextReplacer
 from pptx.theme import Theme
 from pptx.transition import SlideTransition
 from pptx.util import lazyproperty
@@ -51,6 +52,7 @@ if TYPE_CHECKING:
     from pptx.presentation import Presentation
     from pptx.shapes.placeholder import LayoutPlaceholder, MasterPlaceholder
     from pptx.shapes.shapetree import NotesSlidePlaceholder
+    from pptx.text.search import Pattern, TextMatch
     from pptx.text.styles import MasterTextStyles
     from pptx.text.text import TextFrame
 
@@ -270,6 +272,19 @@ class Slide(_BaseSlide):
         """
         return self._element.bg is None
 
+    def find_text(self, pattern: Pattern, *, regex: bool = False) -> list[TextMatch]:
+        """Every match of `pattern` in this slide's text, as |TextMatch| objects.
+
+        Searches each shape with a text frame in shape-tree order, group members included and
+        each table's cells row by row, then the notes slide when this slide has one; a notes
+        slide is never created. Layouts, masters, charts, SmartArt and comments are not searched,
+        nor is placeholder prompt text inherited from the layout. Each match's `shape` is the
+        shape holding it (the graphic frame for a table cell).
+
+        `pattern` is interpreted as by `TextFrame.find_all()`. Does not change the slide.
+        """
+        return TextFinder(pattern, regex=regex).find_in_slide(self)
+
     @property
     def has_notes_slide(self) -> bool:
         """`True` if this slide has a notes slide, `False` otherwise.
@@ -315,6 +330,16 @@ class Slide(_BaseSlide):
         slide has no transition.
         """
         return SlideTransition(self._element)
+
+    def replace_text(
+        self, old: Pattern, new: str, *, count: int | None = None, regex: bool = False
+    ) -> int:
+        """Replace matches of `old` with `new` in this slide's text; return the count replaced.
+
+        Covers the text `find_text()` searches, in the same order, and replaces as
+        `TextFrame.replace()` does. `count` limits the replacements over the whole slide.
+        """
+        return TextReplacer(old, new, count=count, regex=regex).replace_in_slide(self)
 
     @property
     def slide_id(self) -> int:

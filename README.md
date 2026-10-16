@@ -46,6 +46,16 @@ all into memory. Keep the file in place while you work on the presentation. Savi
 path (`prs.save("deck.pptx")`) is fine; opening it for writing yourself first empties it before
 those parts can be read. A file-like object is read in full when it is opened.
 
+Text can be found and replaced across the whole deck, even where PowerPoint has split a word
+into several runs. The new text takes the formatting of the first run a match touches:
+
+```python
+prs = Presentation("deck.pptx")
+prs.replace_text("ACME", "Acme Corp")  # slides, groups, tables and existing notes
+for match in prs.find_text(r"Q[1-4] 20\d\d", regex=True):
+    print(match.shape.name, match.paragraph.text)
+```
+
 ## Features
 
 - **Presentations** — create blank, open existing (`.pptx` / `.pptm` / `.potx`), save to file or stream, core + custom document properties, notes page size, slide-show settings (loop, kiosk/browse, pen color, slide range), custom shows, table-style listing, embedded fonts (list and remove)
@@ -53,6 +63,7 @@ those parts can be read. A file-like object is read in full when it is opened.
 - **180+ shape types** — autoshapes, pictures, tables, connectors, group shapes, freeforms, placeholders, OLE objects, movies, audio clips, callouts; 3D models, zooms and equations are listed read-only
 - **Shape control** — z-order, visibility, lock aspect ratio, group containment, hyperlinks, click actions
 - **Rich text formatting** — bold, italic, underline, color, size, shadow, strikethrough, caps, superscript/subscript, character spacing, kerning, bullets, tab stops, columns, RTL, vertical orientation
+- **Find & replace** — across run boundaries, in a text frame, a slide or the whole deck (group members, table cells and notes included); literal or regex with `count`, keeping the formatting of the first run a match touches; run and character iteration, and merging runs split only by proofing state
 - **Fill styles** — solid, gradient (linear, radial, rectangular, path), pattern, picture (stretched or tiled), background (no fill)
 - **Line formatting** — width, color, dash styles, compound styles, cap and join styles, arrowheads, transparency, pattern fill
 - **75+ chart types** — bar, line, pie, scatter, bubble, area, radar, stock, surface, doughnut, of-pie (plus 3D column, bar, line, pie and area variants, add and read); combo charts with trendlines, error bars, secondary axes, drop / hi-lo / up-down lines, log scale, 3D view, data labels with leader lines, data tables; Office 2016+ waterfall, histogram, box & whisker, treemap, sunburst and funnel charts (add and read; Pareto and region map read)
@@ -86,7 +97,7 @@ See the [`examples/`](examples/) directory for runnable scripts:
 | [`add_chart_secondary_axis.py`](examples/add_chart_secondary_axis.py) | Combo chart: column plot plus a line plot on a secondary value axis |
 | [`chart_3d_view.py`](examples/chart_3d_view.py) | 3D column, bar and pie charts; camera rotation, perspective and depth; floor and wall formatting |
 | [`chart_trendlines_error_bars.py`](examples/chart_trendlines_error_bars.py) | Linear, polynomial and moving-average trendlines; fixed, percentage and std-dev error bars |
-| [`batch_process.py`](examples/batch_process.py) | Process a folder of decks in parallel with a process pool (find/replace text, per-file error reporting) |
+| [`batch_process.py`](examples/batch_process.py) | Process a folder of decks in parallel with a process pool (deck-wide `replace_text()`, per-file error reporting) |
 | [`modern_charts.py`](examples/modern_charts.py) | Waterfall, histogram, box & whisker, treemap, sunburst and funnel charts, and a chart data table |
 | [`slide_operations.py`](examples/slide_operations.py) | Duplicate, reorder, and delete slides |
 | [`merge_presentations.py`](examples/merge_presentations.py) | Import and merge slides across presentations |

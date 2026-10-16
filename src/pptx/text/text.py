@@ -32,6 +32,7 @@ if TYPE_CHECKING:
         PP_PARAGRAPH_ALIGNMENT,
     )
     from pptx.oxml.action import CT_Hyperlink
+    from pptx.text.search import Pattern, TextChar, TextMatch
     from pptx.oxml.text import (
         CT_RegularTextRun,
         CT_TextBody,
@@ -110,6 +111,44 @@ class TextFrame(Subshape):
 
         font_size = self._best_fit_font_size(font_family, max_size, bold, italic, font_file)
         self._apply_fit(font_family, font_size, bold, italic)
+
+    def find_all(self, pattern: Pattern, *, regex: bool = False) -> list[TextMatch]:
+        """Every match of `pattern` in this text frame, as |TextMatch| objects in document order.
+
+        `pattern` is a `str`, matched literally unless `regex` is True, or a compiled regular
+        expression, which keeps its flags (e.g. `re.IGNORECASE`). A match can span several runs
+        but never a paragraph, a line break or a field. Zero-width regex matches are skipped, and
+        an empty literal pattern raises |InvalidValueError|. Does not change the text frame.
+        """
+        from pptx.text.search import TextFinder
+
+        return TextFinder(pattern, regex=regex).find_in(self.paragraphs)
+
+    def iter_chars(self) -> Iterator[TextChar]:
+        """Generate a |TextChar| for each character of each paragraph's text.
+
+        A line break reads as `"\\v"`. The `run` of a line break, and of the text of a field, is
+        |None|. Paragraph boundaries generate nothing.
+        """
+        from pptx.text.search import iter_paragraph_chars
+
+        for idx, paragraph in enumerate(self.paragraphs):
+            yield from iter_paragraph_chars(paragraph, idx)
+
+    def iter_runs(self) -> Iterator[_Run]:
+        """Generate each |_Run| in this text frame, in document order. A field is not a run."""
+        for paragraph in self.paragraphs:
+            yield from paragraph.runs
+
+    def merge_runs(self) -> int:
+        """Merge adjacent runs that have the same formatting; return the number of runs removed.
+
+        Formatting is compared ignoring the proofing state PowerPoint stores on a run (`dirty`,
+        `err`, `smtClean` and `smtId`), which often splits a word over runs that look the same.
+        The merged run keeps the first run's properties. Runs either side of a line break or a
+        field are not adjacent. Never called automatically, e.g. by `replace()`.
+        """
+        return sum(p.merge_runs() for p in self.paragraphs)
 
     @property
     def font_scale(self) -> float | None:
@@ -254,6 +293,25 @@ class TextFrame(Subshape):
         for p_text in text.split("\n"):
             p = txBody.add_p()
             p.append_text(p_text)
+
+    def replace(
+        self, old: Pattern, new: str, *, count: int | None = None, regex: bool = False
+    ) -> int:
+        """Replace matches of `old` with `new`; return the number of replacements made.
+
+        `old` is interpreted as by `find_all()`, so a match can span several runs. The replacement
+        text takes the formatting of the first run the match touches: that run keeps the text
+        before the match followed by `new`, any runs wholly inside the match are removed, and the
+        last run keeps the text after the match with its own formatting. A run left empty is
+        removed, and so is any relationship (e.g. a hyperlink) only it referred to.
+
+        When `regex` is True or `old` is compiled, `new` is a template, so `\\1` and `\\g<name>`
+        insert groups. `count` limits the number of replacements, in document order; |None|
+        replaces every match and a negative count raises |InvalidValueError|.
+        """
+        from pptx.text.search import TextReplacer
+
+        return TextReplacer(old, new, count=count, regex=regex).replace_in(self.paragraphs)
 
     @property
     def text_orientation(self) -> MSO_TEXT_VERTICAL_TYPE | None:
@@ -774,6 +832,15 @@ class _Paragraph(Subshape):
             self._element.remove(elm)
         return self
 
+    def find_all(self, pattern: Pattern, *, regex: bool = False) -> list[TextMatch]:
+        """Every match of `pattern` in this paragraph, as |TextMatch| objects in document order.
+
+        Interpreted as by `TextFrame.find_all()`; `paragraph_index` is 0 for every match.
+        """
+        from pptx.text.search import TextFinder
+
+        return TextFinder(pattern, regex=regex).find_in((self,))
+
     @property
     def font(self) -> Font:
         """|Font| object containing default character properties for the runs in this paragraph.
@@ -783,6 +850,16 @@ class _Paragraph(Subshape):
         properties set at the run level.
         """
         return Font(self._defRPr)
+
+    def iter_chars(self) -> Iterator[TextChar]:
+        """Generate a |TextChar| for each character of `.text`; `paragraph_index` is 0.
+
+        A line break reads as `"\\v"`. The `run` of a line break, and of the text of a field, is
+        |None|.
+        """
+        from pptx.text.search import iter_paragraph_chars
+
+        return iter_paragraph_chars(self, 0)
 
     @property
     def indent(self) -> Length | None:
@@ -915,6 +992,24 @@ class _Paragraph(Subshape):
     def runs(self) -> tuple[_Run, ...]:
         """Sequence of runs in this paragraph."""
         return tuple(_Run(r, self) for r in self._element.r_lst)
+
+    def merge_runs(self) -> int:
+        """Merge adjacent runs that have the same formatting; return the number of runs removed.
+
+        See `TextFrame.merge_runs()`.
+        """
+        return self._p.merge_runs()
+
+    def replace(
+        self, old: Pattern, new: str, *, count: int | None = None, regex: bool = False
+    ) -> int:
+        """Replace matches of `old` with `new`; return the number of replacements made.
+
+        Behaves as `TextFrame.replace()` does, within this paragraph.
+        """
+        from pptx.text.search import TextReplacer
+
+        return TextReplacer(old, new, count=count, regex=regex).replace_in((self,))
 
     @property
     def space_after(self) -> Length | None:

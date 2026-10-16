@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Callable, cast
 
+from lxml import etree
+
 from pptx.enum.lang import MSO_LANGUAGE_ID
 from pptx.enum.text import (
     MSO_AUTO_SIZE,
@@ -57,6 +59,9 @@ from pptx.util import Emu, Length
 if TYPE_CHECKING:
     from pptx.oxml.action import CT_Hyperlink
 
+# -- proofing state PowerPoint records on a run; it does not change how the text looks --
+_PROOFING_STATE_ATTRS = frozenset(("dirty", "err", "smtClean", "smtId"))
+
 
 class CT_RegularTextRun(BaseOxmlElement):
     """`a:r` custom element class"""
@@ -78,6 +83,20 @@ class CT_RegularTextRun(BaseOxmlElement):
     @text.setter
     def text(self, value: str):  # pyright: ignore[reportIncompatibleMethodOverride]
         self.t.text = self._escape_ctrl_chars(value)
+
+    def formatting_key(self) -> tuple[object, ...]:
+        """The `formatting_key()` of this run's `a:rPr`, or the empty key when it has none."""
+        rPr = self.rPr
+        return () if rPr is None else rPr.formatting_key()
+
+    def splice(self, start: int, end: int, text: str) -> None:
+        """Replace `.text[start:end]` with `text`.
+
+        Control characters in `text` are escaped as the `.text` setter does; the run's existing
+        text is kept exactly as it is.
+        """
+        old = self.text
+        self.t.text = old[:start] + self._escape_ctrl_chars(text) + old[end:]
 
     @staticmethod
     def _escape_ctrl_chars(s: str) -> str:
@@ -425,6 +444,21 @@ class CT_TextCharacterProperties(BaseOxmlElement):
         "kern", ST_TextNonNegativePoint
     )
 
+    def formatting_key(self) -> tuple[object, ...]:
+        """A hashable value that is equal for two elements exactly when their formatting is.
+
+        Made of the attributes, less the proofing state PowerPoint records on a run (`dirty`,
+        `err`, `smtClean`, `smtId`), and the serialized children. An element with no formatting
+        has the empty key, as does a run with no `a:rPr`.
+        """
+        attrs = tuple(
+            sorted((k, v) for k, v in self.attrib.items() if k not in _PROOFING_STATE_ATTRS)
+        )
+        children = tuple(etree.tostring(child) for child in self)
+        if not attrs and not children:
+            return ()
+        return (attrs, children)
+
     def _new_gradFill(self):
         return CT_GradientFillProperties.new_gradFill()
 
@@ -553,6 +587,52 @@ class CT_TextParagraph(BaseOxmlElement):
         return tuple(
             e for e in self if isinstance(e, (CT_RegularTextRun, CT_TextLineBreak, CT_TextField))
         )
+
+    def run_segments(self) -> list[tuple[int, list[CT_RegularTextRun]]]:
+        """Each maximal sequence of consecutive `a:r` children, with its offset into `.text`.
+
+        An `a:br`, an `a:fld` or any other child ends a segment, so text matched within one
+        segment never crosses a line break or a field. The offset is where the segment's text
+        starts in this paragraph's `.text`.
+        """
+        segments: list[tuple[int, list[CT_RegularTextRun]]] = []
+        runs: list[CT_RegularTextRun] = []
+        start = offset = 0
+        for child in self:
+            if isinstance(child, CT_RegularTextRun):
+                if not runs:
+                    start = offset
+                runs.append(child)
+                offset += len(child.text)
+                continue
+            if runs:
+                segments.append((start, runs))
+                runs = []
+            if isinstance(child, (CT_TextLineBreak, CT_TextField)):
+                offset += len(child.text)
+        if runs:
+            segments.append((start, runs))
+        return segments
+
+    def merge_runs(self) -> int:
+        """Merge each run into the run before it when both have the same formatting.
+
+        Only consecutive `a:r` children merge (see `.run_segments()`), and formatting is compared
+        by `formatting_key()`, so runs that differ only in proofing state merge. The merged run
+        keeps the first run's `a:rPr`. Returns the number of runs removed.
+        """
+        removed = 0
+        for _, runs in self.run_segments():
+            keep, key = runs[0], runs[0].formatting_key()
+            for r in runs[1:]:
+                r_key = r.formatting_key()
+                if r_key != key:
+                    keep, key = r, r_key
+                    continue
+                keep.t.text = keep.text + r.text
+                self.remove(r)
+                removed += 1
+        return removed
 
     @property
     def text(self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]

@@ -16,6 +16,7 @@ only, the merge of its PR. Found by walking `main`'s first-parent history
 | `v0.4.0` | `aceb359ebfd89df5f51e903b8eabde501554037c` | 2026-10-01 | PR #123 | 0.4.0 | **The ship commit itself, not a merge:** PR #123 also carries #51's P6 (`iterchildren` getters), which is not part of v0.4.0. This commit's parent is the v0.4.0 merge (`2c64b2d`, PR #122), so its tree is exactly v0.4.0 plus the ship bookkeeping |
 | `v0.5.0` | `070704d2656a3298ec0b9a3cc4dd3e2096fffe3b` | 2026-10-13 | — (direct to `main`) | 0.5.0 | **Known defects, fixed in v0.5.1:** glow, legacy comments, every chartex type and shadow-without-colour write decks PowerPoint refuses (#126/#127/#128/#131). Tag it anyway as the historical v0.5.0; the hold lifted when v0.5.1 shipped the fixes. **The ship commit itself, not a merge:** v0.5.0's work merged as `b4b1c38` (PR #125) and this commit adds only the ship bookkeeping |
 | `v0.5.1` | `51a8cd1d242256cb5032761188ab909aedc528ef` | 2026-10-15 | PR #133 | 0.5.1 | Patch: decks PowerPoint refused. Carries #131/#132 and the ship bookkeeping; #126 merged in PR #129, #127/#128 in PR #130 |
+| `v0.6.0` | `100a9c84a2586a634057facec1ae76f07b6a4481` | 2026-10-16 | PR #134 | 0.6.0 | Lazy binary blobs and the caching audit (11 stale caches fixed, plus L1/L2). Its shipped status is recorded on the v0.7.0 branch |
 
 ## Commands
 
@@ -31,7 +32,8 @@ git tag -a v0.3.2 cb8a179c3346cf75f1759c445df31f1ef244dd51 -m "v0.3.2"
 git tag -a v0.4.0 aceb359ebfd89df5f51e903b8eabde501554037c -m "v0.4.0"
 git tag -a v0.5.0 070704d2656a3298ec0b9a3cc4dd3e2096fffe3b -m "v0.5.0 (known PowerPoint-refusal defects; fixed in v0.5.1)"
 git tag -a v0.5.1 51a8cd1d242256cb5032761188ab909aedc528ef -m "v0.5.1"
-git push origin v0.1.0 v0.2.0 v0.3.0 v0.3.1 v0.3.2 v0.4.0 v0.5.0 v0.5.1
+git tag -a v0.6.0 100a9c84a2586a634057facec1ae76f07b6a4481 -m "v0.6.0"
+git push origin v0.1.0 v0.2.0 v0.3.0 v0.3.1 v0.3.2 v0.4.0 v0.5.0 v0.5.1 v0.6.0
 ```
 
 A GitHub Release can then be drafted from each tag; the version cards under
