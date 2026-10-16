@@ -41,6 +41,8 @@
   masters/charts/SmartArt); property test uses hypothesis (already a dev dep) — .meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md
 
 ## Threads          (open items; remove when closed)
+- v0.7.0 follow-up (review, harmless): a removed run holding TWO refs to one rId (hlinkClick + hlinkMouseOver)
+  leaves that relationship orphaned — drop_rel's <2 rule counts the run's own refs (`search._remove_run`).
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
   Would NOT have caught #127 (the part was related, from the wrong source).
 - The `github` MCP server may fail to connect ("Authorization header is badly formatted"); `gh` CLI works — use it.

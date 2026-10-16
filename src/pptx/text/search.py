@@ -231,9 +231,13 @@ class TextReplacer:
     def _replace_in_paragraph(self, paragraph: _Paragraph) -> None:
         p = paragraph._p  # pyright: ignore[reportPrivateUsage]
         hits = list(itertools.islice(_iter_hits(p, self._compiled), self._remaining))
+        # -- expand every template before changing anything, so a bad one changes nothing --
+        try:
+            news = [hit.match.expand(self._new) if self._expand else self._new for hit in hits]
+        except re.error as e:
+            raise InvalidValueError(f"new is not a valid replacement template: {e}") from e
         # -- right to left, so the offsets of the earlier hits stay valid --
-        for hit in reversed(hits):
-            new = hit.match.expand(self._new) if self._expand else self._new
+        for hit, new in zip(reversed(hits), reversed(news)):
             self._apply(hit, new, paragraph)
         self.replaced += len(hits)
         if self._remaining is not None:

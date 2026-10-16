@@ -209,6 +209,13 @@ class Describe_ParagraphReplace:
         with pytest.raises(InvalidValueError, match="empty"):
             paragraph.replace("", "b")
 
+    def it_raises_on_an_invalid_template_before_changing_anything(self):
+        paragraph = _paragraph('a:p/(a:r/a:t"ab",a:r/(a:rPr{b=1},a:t"ab"))')
+        before = paragraph._p.xml
+        with pytest.raises(InvalidValueError, match="template"):
+            paragraph.replace("(a)", r"\9", regex=True)
+        assert paragraph._p.xml == before
+
     def it_raises_on_an_invalid_regex(self):
         paragraph = _paragraph('a:p/a:r/a:t"a"')
         with pytest.raises(InvalidValueError, match="regular expression"):
