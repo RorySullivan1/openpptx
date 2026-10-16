@@ -2,8 +2,8 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- Package 0.6.0 on branch `v0.6.0`, PR #134 READY (lazy binary blobs + caching audit, `.claude/context/caching-audit.md`).
-  `.meta/version` stays in-progress until it merges. 0.5.1 shipped (PR #133, `51a8cd1`).
+- 0.6.0 SHIPPED (PR #134, merge `100a9c8`; lazy blobs + caching audit, `.claude/context/caching-audit.md`).
+  **In flight: v0.7.0 on branch `v0.7.0`** — cross-run find/replace, deck-wide; card expanded, no code yet.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
@@ -37,6 +37,8 @@
   held handle); stream + directory sources stay eager — sessions/2026-10-15-1347-v060-card-expanded.md
 - [2026-10-15] Owner: accept save cost of lazy blobs (+5–7% images_100; fixed ~0.4 ms/save zip reopen on small decks);
   work-count gate counts total calls, re-budgeted from main — sessions/2026-10-15-1347-v060-card-expanded.md
+- [2026-10-15] Owner: v0.7.0 find/replace is DECK-WIDE too (slide shapes, groups, tables, existing notes; not layouts/
+  masters/charts/SmartArt); property test uses hypothesis (already a dev dep) — .meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
