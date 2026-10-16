@@ -165,7 +165,7 @@ class TextFrame(Subshape):
         When `a:normAutofit` is present without an explicit `fontScale` value, the
         OOXML default of `1.0` (no scaling) is returned.
 
-        pypptx does not itself compute text autofit; this property only exposes a
+        openpptx does not itself compute text autofit; this property only exposes a
         value already present in the XML (e.g. one written by PowerPoint).
         """
         normAutofit = self._bodyPr.normAutofit
@@ -184,7 +184,7 @@ class TextFrame(Subshape):
         present without an explicit `lnSpcReduction` value, the OOXML default of
         `0.0` (no reduction) is returned.
 
-        pypptx does not itself compute text autofit; this property only exposes a
+        openpptx does not itself compute text autofit; this property only exposes a
         value already present in the XML (e.g. one written by PowerPoint).
         """
         normAutofit = self._bodyPr.normAutofit

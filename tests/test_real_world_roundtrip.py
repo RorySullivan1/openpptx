@@ -37,7 +37,7 @@ from .unitutil.deckwalk import walk, walk_timing
 CORPUS_DIR = Path(__file__).parent / "test_files" / "real_world"
 CORPUS = sorted(CORPUS_DIR.glob("*.pptx"), key=lambda p: p.name.lower())
 MALFORMED = sorted((CORPUS_DIR / "malformed").glob("*.pptx"))
-MARKER_TEXT = "pypptx round-trip marker"
+MARKER_TEXT = "openpptx round-trip marker"
 
 # -- the corpus is test-only data kept out of published artifacts (MANIFEST.in prunes it from
 # -- the sdist), so a test run from an unpacked sdist has no corpus directory at all. In a
@@ -65,7 +65,7 @@ def _relationships(rels_xml: bytes) -> set[tuple[str | None, ...]]:
 def _same_part(name: str, original: bytes, saved: bytes) -> bool:
     """True when the part `name` is unchanged.
 
-    A `.rels` part compares as its set of relationships (pypptx writes them sorted by id), an
+    A `.rels` part compares as its set of relationships (openpptx writes them sorted by id), an
     XML part as canonical XML ignoring whitespace between elements, anything else byte for byte.
     XML that lxml can't parse or canonicalize (e.g. the SharePoint content-type schema in
     `bug68703.pptx`'s `customXml/item3.xml`) also compares byte for byte.
@@ -201,7 +201,7 @@ def _rebuilt(source: Path, drop: str) -> io.BytesIO:
 
 @pytest.mark.realworld
 class DescribeDamagedInput:
-    """A file or stream that is not a readable package fails with a clear pypptx exception."""
+    """A file or stream that is not a readable package fails with a clear openpptx exception."""
 
     @pytest.mark.parametrize("path", MALFORMED, ids=[p.name[-24:] for p in MALFORMED])
     def it_rejects_each_malformed_corpus_file(self, path: Path):

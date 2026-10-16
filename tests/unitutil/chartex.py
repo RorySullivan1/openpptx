@@ -1,6 +1,6 @@
 """Builds a `.pptx` package holding chartex charts laid out the way PowerPoint saves them.
 
-The package starts as a one-slide pypptx presentation. Three chartex parts are then written in at
+The package starts as a one-slide openpptx presentation. Three chartex parts are then written in at
 the ZIP level, each with its embedded workbook, relationships, content-type overrides and an
 `mc:AlternateContent` graphic frame on the slide, so loading exercises the path a PowerPoint file
 does:

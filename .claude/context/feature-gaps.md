@@ -1,6 +1,6 @@
-# pypptx TODO
+# openpptx TODO
 
-Planned additions and improvements for the pypptx library.
+Planned additions and improvements for the openpptx library.
 
 **Strategy:** Bottom-up, types-first. Complete the OXML layer (XML element classes,
 simple types, enumerations) before building the Python API wrappers on top. This
@@ -765,7 +765,7 @@ for a demonstration of "slide **and shape** tags", and only the slide half exist
 
 - [x] Slide tags — `Slide.tags` (`TagsPart`, mapping-style: `__getitem__`/`__setitem__`/
       `__delitem__`/`__contains__`/`__len__`/`__iter__`/`items`/`get`), referenced from
-      `p:cSld/p:custDataLst/p:tags`; a tags relationship no shape refers to (as pypptx wrote
+      `p:cSld/p:custDataLst/p:tags`; a tags relationship no shape refers to (as openpptx wrote
       before #114) is adopted as the slide's (#114)
 - [x] `CT_CustomerDataList` (`p:custDataLst`) and `CT_TagsData` (`p:tags`) in `oxml/tags.py`;
       `tags_rId` / `set_tags_rId()` / `remove_tags_rId()` on `p:nvPr` and `p:cSld` (#114)

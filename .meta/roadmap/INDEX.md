@@ -1,4 +1,4 @@
-# Development Map — pypptx
+# Development Map — openpptx
 
 > Auto-surfaced at session start. Keep to ~one screen; detail lives in `stages/`.
 > The cursor (`←`) is the next version to build. Statuses: planned · in-progress · shipped.

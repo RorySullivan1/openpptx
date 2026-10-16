@@ -37,7 +37,7 @@ class PP_TRANSITION_TYPE(BaseXmlEnum):
     Morph (`p159`). The XML value is the element's namespace-prefixed tag.
 
     PowerPoint's own `PpEntryEffect` combines an effect with its direction, so it has no
-    one-to-one counterpart here; the values of this enumeration are pypptx's own. A
+    one-to-one counterpart here; the values of this enumeration are openpptx's own. A
     transition's direction is available separately, from ``SlideTransition.direction``.
 
     Example::

@@ -1,58 +1,80 @@
-"""Exceptions used with pypptx.
+"""Exceptions used with openpptx.
 
-The base exception class is |PyPptxError|; every exception pypptx raises deliberately derives
-from it, so ``except PyPptxError`` catches them all.
+The base exception class is |OpenPptxError|; every exception openpptx raises deliberately derives
+from it, so ``except OpenPptxError`` catches them all.
 
 Several classes also derive from a builtin exception. The API used to raise plain
 ``ValueError`` / ``TypeError`` in these cases, and callers written against that keep working:
 ``except ValueError`` still catches a |ShapeError|, |SlideError|, |ChartError|, |TableError|
 or |InvalidValueError|, and ``except TypeError`` still catches an |InvalidTypeError|.
+
+``PyPptxError``, the base class's name before the project became openpptx, is a deprecated
+alias of |OpenPptxError|: it is the same class, and importing it emits a ``DeprecationWarning``.
 """
 
 from __future__ import annotations
 
+import warnings
+from typing import TYPE_CHECKING
 
-class PyPptxError(Exception):
+
+class OpenPptxError(Exception):
     """Generic error class."""
 
 
-class PackageNotFoundError(PyPptxError):
+if TYPE_CHECKING:
+    PyPptxError = OpenPptxError
+
+
+def __getattr__(name: str) -> type[OpenPptxError]:
+    """Resolve the deprecated alias `PyPptxError`, warning the caller to use the new name."""
+    if name == "PyPptxError":
+        warnings.warn(
+            "PyPptxError is deprecated; use OpenPptxError (the same class)",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return OpenPptxError
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+class PackageNotFoundError(OpenPptxError):
     """Raised when a package cannot be found at the specified path."""
 
 
-class InvalidXmlError(PyPptxError):
+class InvalidXmlError(OpenPptxError):
     """Raised when invalid XML is encountered according to the OOXML schema."""
 
 
-class InvalidValueError(PyPptxError, ValueError):
+class InvalidValueError(OpenPptxError, ValueError):
     """Raised when a value is of an acceptable type but out of range or otherwise invalid.
 
     Also a ``ValueError``, which is what the API raised for these cases before.
     """
 
 
-class InvalidTypeError(PyPptxError, TypeError):
+class InvalidTypeError(OpenPptxError, TypeError):
     """Raised when a value is of the wrong type for the property or parameter it is given to.
 
     Also a ``TypeError``, which is what the API raised for these cases before.
     """
 
 
-class ShapeError(PyPptxError, ValueError):
+class ShapeError(OpenPptxError, ValueError):
     """Raised for shape operation failures (type mismatch, invalid state).
 
     Also a ``ValueError``, which is what the API raised for these cases before.
     """
 
 
-class SlideError(PyPptxError, ValueError):
+class SlideError(OpenPptxError, ValueError):
     """Raised for slide collection and management failures.
 
     Also a ``ValueError``, which is what the API raised for these cases before.
     """
 
 
-class ChartError(PyPptxError, ValueError):
+class ChartError(OpenPptxError, ValueError):
     """Raised for chart-specific operation failures.
 
     Also a ``ValueError``, which is what the API raised for these cases before.
@@ -68,14 +90,14 @@ class UnsupportedEffectError(ShapeError, NotImplementedError, AttributeError):
     """
 
 
-class TableError(PyPptxError, ValueError):
+class TableError(OpenPptxError, ValueError):
     """Raised for table operation failures (cell access, merge).
 
     Also a ``ValueError``, which is what the API raised for these cases before.
     """
 
 
-class PackageError(PyPptxError):
+class PackageError(OpenPptxError):
     """Raised for OPC package, relationship, or content-type errors."""
 
 

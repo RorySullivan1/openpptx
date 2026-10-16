@@ -40,7 +40,7 @@ def _waterfall_data() -> CategoryChartData:
 
 
 def _without_chart_style_parts(stream: io.BytesIO) -> io.BytesIO:
-    """Return a copy of the saved deck in `stream` shaped as pypptx 0.5.0 wrote it.
+    """Return a copy of the saved deck in `stream` shaped as openpptx 0.5.0 wrote it.
 
     That is, with no chart-style or color-style parts, relationships or content types.
     """
@@ -188,7 +188,7 @@ class DescribeAddingChartexCharts:
             )
 
     def it_repairs_a_chart_saved_without_style_parts_when_the_deck_is_reloaded(self):
-        # -- regression for #132: a pypptx 0.5.0 chartex deck must open after a plain re-save --
+        # -- regression for #132: a openpptx 0.5.0 chartex deck must open after a plain re-save --
         prs = Presentation()
         slide = prs.slides.add_slide(prs.slide_layouts[6])
         for chart_type in (XL_CHART_TYPE.WATERFALL, XL_CHART_TYPE.FUNNEL):

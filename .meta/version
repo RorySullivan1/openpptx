@@ -5,7 +5,8 @@ branch: v1.0.0
 pr:
 
 Release milestone: API freeze, docs, SemVer, PyPI. Owner decisions 2026-10-16: distribution name `openpptx`
-(the PyPI name `pypptx` is an unrelated 2015 project; the import stays `pptx`); the contract is the
+(the PyPI name `pypptx` is an unrelated 2015 project; the import stays `pptx`), and a complete rebrand, the
+repo included (`RorySullivan1/openpptx`); the contract is the
 documented surface (oxml/opc/parts are internal, not renamed); docs on GitHub Pages; the LICENSE carries
 python-pptx's notice. Detail is in the card, `.meta/roadmap/stages/04-stable-release/v1.0.0.md`.
 

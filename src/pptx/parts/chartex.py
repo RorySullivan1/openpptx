@@ -59,7 +59,7 @@ class ChartExPart(LazyXmlPart):
     def ensure_style_parts(self) -> None:
         """Add the chart-style and color-style parts PowerPoint requires, where either is missing.
 
-        PowerPoint refuses a deck whose chartex chart lacks either part, and pypptx 0.5.0 and
+        PowerPoint refuses a deck whose chartex chart lacks either part, and openpptx 0.5.0 and
         earlier wrote neither. Only relationships change: the chart type is read from a throwaway
         parse of the blob, so a chart that was never read still saves its original bytes.
         """
@@ -126,7 +126,7 @@ def _style_template_name(chart_type: XL_CHART_TYPE | None) -> str:
     """Return the name of the chart-style template for a chartex chart of `chart_type`.
 
     `src/pptx/templates/` holds the style PowerPoint 16 writes for a new chart of each type
-    pypptx can create: `chartex_style_<type>` for waterfall, histogram, box_whisker, treemap,
+    openpptx can create: `chartex_style_<type>` for waterfall, histogram, box_whisker, treemap,
     sunburst and funnel. A chart loaded from a deck may be another type (`PARETO`, `REGION_MAP`)
     or unrecognized (|None|), and it still needs a style, or PowerPoint refuses the deck.
     """

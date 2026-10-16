@@ -1,15 +1,15 @@
-# pypptx
+# openpptx
 
 Create, read, and modify PowerPoint .pptx files in pure Python.
 
 ## Overview
 
-pypptx is a Python library for working with Microsoft PowerPoint presentations. It operates directly on the Office Open XML (OOXML) file format without requiring PowerPoint or any other software to be installed. Create presentations from scratch, open and modify existing ones, or merge slides across files — all with a clean, Pythonic API.
+openpptx is a Python library for working with Microsoft PowerPoint presentations. It operates directly on the Office Open XML (OOXML) file format without requiring PowerPoint or any other software to be installed. Create presentations from scratch, open and modify existing ones, or merge slides across files — all with a clean, Pythonic API.
 
 ## Installation
 
 ```bash
-pip install pypptx
+pip install openpptx
 ```
 
 Dependencies (installed automatically): lxml, Pillow, XlsxWriter, typing\_extensions.
@@ -24,7 +24,7 @@ prs = Presentation()
 
 # Add a title slide
 slide = prs.slides.add_slide(prs.slide_layouts[0])
-slide.shapes.title.text = "Hello, pypptx!"
+slide.shapes.title.text = "Hello, openpptx!"
 slide.placeholders[1].text = "Automating PowerPoint with Python"
 
 # Add a blank slide with a formatted text box

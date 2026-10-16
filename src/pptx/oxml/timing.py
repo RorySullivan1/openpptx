@@ -3,7 +3,7 @@
 The tree is a nest of time nodes. `p:par` (parallel), `p:seq` (sequence) and `p:excl`
 (exclusive) containers each hold a `p:cTn` (common time-node data) whose `p:childTnLst` holds
 the next level. The leaves are behaviors such as `p:set` or `p:animEffect`, and the media nodes
-`p:audio` / `p:video`. pypptx reads this tree; apart from the media nodes that `add_movie()` and
+`p:audio` / `p:video`. openpptx reads this tree; apart from the media nodes that `add_movie()` and
 `add_audio()` append, it does not write it.
 """
 

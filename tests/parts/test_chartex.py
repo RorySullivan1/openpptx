@@ -87,7 +87,7 @@ class DescribeChartExPart:
         [(XL_CHART_TYPE.WATERFALL, "395"), (XL_CHART_TYPE.FUNNEL, "419")],
     )
     def it_adds_the_style_parts_a_loaded_chart_is_missing(self, chart_type, style_id: str):
-        # -- a chartex chart written by pypptx 0.5.0 has neither part; PowerPoint refuses it (#132)
+        # -- a chartex chart written by openpptx 0.5.0 has neither part; PowerPoint refuses it (#132)
         package = Presentation().part.package
         blob = WATERFALL_XML.replace('layoutId="waterfall"', 'layoutId="%s"' % (
             "waterfall" if chart_type is XL_CHART_TYPE.WATERFALL else "funnel"
@@ -106,7 +106,7 @@ class DescribeChartExPart:
         assert parse_xml(colors_part.blob).get("id") == "10"
 
     def it_adds_style_parts_even_when_its_chart_type_is_unknown(self):
-        # -- a chart pypptx can't classify must still open in PowerPoint --
+        # -- a chart openpptx can't classify must still open in PowerPoint --
         package = Presentation().part.package
         blob = (
             b'<cx:chartSpace xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"'

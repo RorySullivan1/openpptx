@@ -76,7 +76,7 @@ The v0.6.0 card sets the boundaries this work honors:
 
 Measured on a synthetic text-heavy deck (CPython 3.11, 4 cores):
 
-- **Time goes to pypptx's own Python**, not to C: cProfile put ~86% of the job in `pptx/`
+- **Time goes to openpptx's own Python**, not to C: cProfile put ~86% of the job in `pptx/`
   code before the caches (~81% after). cProfile over-weights Python calls, but the lever is the
   pure-Python layer — the opposite of #51's original "75–80% already in C" premise.
 - **`__slots__` on proxies is not viable as written.** `@lazyproperty` (199 uses) caches in the

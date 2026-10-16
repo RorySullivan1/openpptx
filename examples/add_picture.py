@@ -19,7 +19,7 @@ draw = ImageDraw.Draw(img)
 for y in range(300):
     r = int(255 * y / 300)
     draw.line([(0, y), (400, y)], fill=(r, 100, 255 - r))
-draw.text((120, 130), "pypptx", fill="white")
+draw.text((120, 130), "openpptx", fill="white")
 buf = BytesIO()
 img.save(buf, format="PNG")
 buf.seek(0)

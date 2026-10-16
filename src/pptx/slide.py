@@ -541,7 +541,7 @@ class SlideLayout(_BaseSlide):
 
         Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
         layout has no transition.
-        This is the transition stored on the layout itself; pypptx does not resolve whether
+        This is the transition stored on the layout itself; openpptx does not resolve whether
         PowerPoint applies it to slides that have none.
         """
         return SlideTransition(self._element)
@@ -712,7 +712,7 @@ class SlideMaster(_BaseMaster):
 
         Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
         master has no transition.
-        This is the transition stored on the master itself; pypptx does not resolve whether
+        This is the transition stored on the master itself; openpptx does not resolve whether
         PowerPoint applies it to slides that have none.
         """
         return SlideTransition(self._element)

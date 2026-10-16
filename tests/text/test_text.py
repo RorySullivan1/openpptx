@@ -1127,11 +1127,11 @@ class Describe_Hyperlink:
 
     @pytest.fixture
     def url(self):
-        return "https://example.com/pypptx"
+        return "https://example.com/openpptx"
 
     @pytest.fixture
     def url_2(self):
-        return "https://example.com/pypptx-alt"
+        return "https://example.com/openpptx-alt"
 
 
 class Describe_Paragraph:

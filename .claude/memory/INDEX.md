@@ -1,9 +1,10 @@
 # MEMORY INDEX  ·  keep ≤ ~80 lines, ≤ ~200 chars per line
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
-- pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
+- openpptx (was pypptx until 2026-10-16): pure-Python `.pptx` lib (dist `openpptx`, import `pptx`, repo
+  `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
 - 0.7.1 SHIPPED (PR #136, merge `2627ddd`). **In flight: v1.0.0 on branch `v1.0.0`**, card filled in 2026-10-16, no code
-  yet. Step 1 = packaging: dist rename to `openpptx`, root LICENSE, metadata. Owner actions are listed in the card.
+  yet. Rebrand done; rest of step 1 = root LICENSE + `[project.urls]`/classifiers. Owner actions are listed in the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - Sessions can't push tags; owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
@@ -43,6 +44,9 @@
 - [2026-10-16] Owner, v1.0.0: PyPI `pypptx` is an unrelated 2015 project, so the dist becomes **`openpptx`** (import stays
   `pptx`, repo stays `pypptx`). The contract is the DOCUMENTED surface (oxml/opc/parts internal, not renamed;
   snapshot test). Docs on GitHub Pages. LICENSE adds python-pptx's MIT notice — sessions/2026-10-16-1305-v100-card-expanded.md
+- [2026-10-16] Owner: COMPLETE rebrand to openpptx, the repo included (supersedes "repo stays pypptx"). History keeps
+  the old name: shipped cards, session logs, release-tags. `PyPptxError` → `OpenPptxError` with a deprecated
+  module-`__getattr__` alias — sessions/2026-10-16-1305-v100-card-expanded.md
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.

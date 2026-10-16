@@ -1,6 +1,6 @@
 """Builds a `.pptx` holding a 3-D clustered column chart, written the way PowerPoint saves one.
 
-The chart part carries what PowerPoint 2016 writes and pypptx's own writer does not: a
+The chart part carries what PowerPoint 2016 writes and openpptx's own writer does not: a
 `c:lang`, an `mc:AlternateContent` chart style, formatted floor and walls (`c:spPr` with
 `a:sp3d`), series `c:spPr`/`c:invertIfNegative`/`c:extLst`, a `c:dLbls` block, the third
 `c:axId val="0"` PowerPoint adds to a clustered 3D bar plot, and a `c:externalData` link to

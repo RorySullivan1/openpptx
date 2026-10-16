@@ -66,7 +66,7 @@ class Package(OpcPackage):
             return authors_part
 
     def _repair_loaded_parts(self, parts: list[Part]) -> None:
-        """Repair what pypptx 0.5.0 and earlier wrote wrong; PowerPoint refuses either defect.
+        """Repair what openpptx 0.5.0 and earlier wrote wrong; PowerPoint refuses either defect.
 
         - The comment-authors part was related from the package root rather than from the
           presentation part. PowerPoint never writes that package-level relationship, so it is

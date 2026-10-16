@@ -1,6 +1,6 @@
 # Stage 02 — Truthful docs  ◀ current stage
 
-**Goal:** make what pypptx *says* match what it *does*, so every later version builds on
+**Goal:** make what openpptx *says* match what it *does*, so every later version builds on
 accurate baselines: the scope manifest and README (v0.2.0), a runnable example per feature
 area (v0.3.1), then docstrings + a local Sphinx build (v0.3.2).
 

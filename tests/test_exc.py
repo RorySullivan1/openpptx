@@ -9,8 +9,8 @@ from pptx.exc import (
     InvalidPackageError,
     InvalidTypeError,
     InvalidValueError,
+    OpenPptxError,
     PackageError,
-    PyPptxError,
     ShapeError,
     SlideError,
     TableError,
@@ -19,7 +19,7 @@ from pptx.util import Inches
 
 
 class DescribeExceptionHierarchy:
-    """Each pypptx exception keeps the builtin base the API raised before it existed."""
+    """Each openpptx exception keeps the builtin base the API raised before it existed."""
 
     @pytest.mark.parametrize(
         ("exc_cls", "builtin"),
@@ -32,13 +32,35 @@ class DescribeExceptionHierarchy:
             (TableError, ValueError),
         ],
     )
-    def it_is_both_a_PyPptxError_and_the_builtin_it_replaced(self, exc_cls, builtin):
-        assert issubclass(exc_cls, PyPptxError)
+    def it_is_both_an_OpenPptxError_and_the_builtin_it_replaced(self, exc_cls, builtin):
+        assert issubclass(exc_cls, OpenPptxError)
         assert issubclass(exc_cls, builtin)
 
     def it_reports_an_unreadable_package_as_a_PackageError(self):
         assert issubclass(InvalidPackageError, PackageError)
         assert not issubclass(InvalidPackageError, ValueError)
+
+
+class DescribeDeprecatedPyPptxError:
+    """`PyPptxError`, the pre-openpptx name of the base class, still resolves, with a warning."""
+
+    def it_is_the_same_class_as_OpenPptxError(self):
+        with pytest.warns(DeprecationWarning, match="use OpenPptxError"):
+            from pptx.exc import PyPptxError
+
+        assert PyPptxError is OpenPptxError
+
+    def it_warns_through_the_pptx_exceptions_alias_too(self):
+        import pptx
+
+        with pytest.warns(DeprecationWarning):
+            assert pptx.exceptions.PyPptxError is OpenPptxError
+
+    def but_it_still_raises_AttributeError_for_an_unknown_name(self):
+        import pptx.exc
+
+        with pytest.raises(AttributeError, match="no attribute 'Nope'"):
+            pptx.exc.Nope  # noqa: B018
 
 
 class DescribeValidationErrors:

@@ -1,6 +1,6 @@
 """Builds a `.pptx` package holding one SmartArt graphic, laid out the way PowerPoint saves it.
 
-The package starts as a one-slide pypptx presentation; the SmartArt graphic frame, its five
+The package starts as a one-slide openpptx presentation; the SmartArt graphic frame, its five
 diagram parts (data, layout, quick-style, colors and PowerPoint's cached drawing), their
 relationships and content-type overrides are then written in at the ZIP level, so loading it
 exercises the same path a file from PowerPoint does.

@@ -19,7 +19,7 @@ class DescribeCorePropertiesPart:
     @pytest.mark.parametrize(
         ("prop_name", "expected_value"),
         [
-            ("author", "pypptx"),
+            ("author", "openpptx"),
             ("category", ""),
             ("comments", ""),
             ("content_status", "DRAFT"),
@@ -141,7 +141,7 @@ class DescribeCorePropertiesPart:
         assert core_props.partname == "/docProps/core.xml"
         assert isinstance(core_props._element, CT_CoreProperties)
         assert core_props.title == "PowerPoint Presentation"
-        assert core_props.last_modified_by == "pypptx"
+        assert core_props.last_modified_by == "openpptx"
         assert core_props.revision == 1
         assert core_props.modified is not None
         # core_props.modified only stores time with seconds resolution, so
@@ -180,7 +180,7 @@ class DescribeCorePropertiesPart:
             b'itype/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="h'
             b'ttp://www.w3.org/2001/XMLSchema-instance">\n'
             b"  <cp:contentStatus>DRAFT</cp:contentStatus>\n"
-            b"  <dc:creator>pypptx</dc:creator>\n"
+            b"  <dc:creator>openpptx</dc:creator>\n"
             b'  <dcterms:created xsi:type="dcterms:W3CDTF">2012-11-17T11:07:'
             b"40-05:30</dcterms:created>\n"
             b"  <dc:description/>\n"

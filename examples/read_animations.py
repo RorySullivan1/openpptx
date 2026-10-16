@@ -1,6 +1,6 @@
 """Report the transitions and animations in a deck.
 
-pypptx reads transitions and animations but does not author them, so point this script at a
+openpptx reads transitions and animations but does not author them, so point this script at a
 deck made in PowerPoint:
 
     python read_animations.py deck.pptx

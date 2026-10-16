@@ -45,7 +45,7 @@ class ChartEx:
     def chart_type(self) -> XL_CHART_TYPE | None:
         """Member of `XL_CHART_TYPE` for this chart, e.g. `XL_CHART_TYPE.WATERFALL`.
 
-        |None| when the chart has no series or its series layout is not one pypptx recognizes.
+        |None| when the chart has no series or its series layout is not one openpptx recognizes.
         """
         layout_ids = [series.layoutId for series in self._chartSpace.series_lst]
         if "paretoLine" in layout_ids:

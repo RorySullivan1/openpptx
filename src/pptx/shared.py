@@ -15,7 +15,7 @@ class ElementProxy:
 
     An element proxy class is one whose primary responsibilities are fulfilled by manipulating the
     attributes and child elements of an XML element. They are the most common type of class in
-    pypptx other than custom element (oxml) classes.
+    openpptx other than custom element (oxml) classes.
     """
 
     def __init__(self, element: BaseOxmlElement):

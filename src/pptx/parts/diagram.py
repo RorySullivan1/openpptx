@@ -45,5 +45,5 @@ class DiagramDrawingPart(LazyXmlPart):
     """PowerPoint's cached drawing of a diagram, e.g. ``/ppt/diagrams/drawing1.xml``.
 
     A display cache: PowerPoint rebuilds it from the data and layout parts when it is absent.
-    pypptx drops it when node text is edited so a stale drawing is never shown.
+    openpptx drops it when node text is edited so a stale drawing is never shown.
     """

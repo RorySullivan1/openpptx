@@ -1,4 +1,4 @@
-"""Initialization module for pypptx package."""
+"""Initialization module for openpptx package."""
 
 from __future__ import annotations
 

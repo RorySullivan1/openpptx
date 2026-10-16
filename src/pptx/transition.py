@@ -19,7 +19,7 @@ class SlideTransition(ElementProxy):
 
     Obtained from `Slide.transition`, and also from `SlideLayout.transition` and
     `SlideMaster.transition`, which report the transition stored on the layout or master
-    itself. pypptx does not work out whether PowerPoint applies a layout's or master's
+    itself. openpptx does not work out whether PowerPoint applies a layout's or master's
     transition to a slide that has none of its own.
 
     A transition PowerPoint 2010 or later wrote in `mc:AlternateContent` is read from its richer

@@ -397,7 +397,7 @@ class DescribeCommentAuthorsRelationship:
         assert "ppt/commentAuthors.xml" in pkg.namelist()
 
     def it_repairs_a_deck_that_relates_the_authors_part_from_the_package(self):
-        # -- pypptx 0.5.0 and earlier related the part from the package root; opening such a
+        # -- openpptx 0.5.0 and earlier related the part from the package root; opening such a
         # -- deck moves the relationship, so re-saving it repairs it even if comments go unread
         prs = Presentation()
         package = prs.part.package

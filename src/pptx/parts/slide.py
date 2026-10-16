@@ -333,7 +333,7 @@ class SlidePart(BaseSlidePart):
 
         It is the part `p:cSld/p:custDataLst/p:tags` refers to. The slide part also relates the
         tags part of each tagged shape, so a tags relationship alone does not identify the
-        slide's; one no shape refers to (as pypptx wrote before shape tags) is adopted.
+        slide's; one no shape refers to (as openpptx wrote before shape tags) is adopted.
         """
         cSld = self._element.cSld
         if cSld.tags_rId is None:

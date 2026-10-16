@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Identity
 
-- Distribution name: **`pypptx`** (on PyPI). Import name: **`pptx`**. Sources live at `src/pptx/`, NOT `src/pypptx/`. Test code and user code both `from pptx import ...`.
+- Distribution name: **`openpptx`** (PyPI, from 1.0.0; the project was called `pypptx` until then, a PyPI name an unrelated project owns). Repo: `RorySullivan1/openpptx`. Import name: **`pptx`**. Sources live at `src/pptx/`, NOT `src/openpptx/`. Test code and user code both `from pptx import ...`.
 - Pure-Python library for reading/writing PowerPoint `.pptx` (OOXML / ECMA-376) files. No PowerPoint, no rendering engine, no runtime dependency — every feature must be expressible as an edit to XML parts inside the package's ZIP container.
 - Python `>= 3.9`. Hard deps: `lxml`, `Pillow`, `XlsxWriter`, `typing_extensions`.
 
@@ -123,6 +123,6 @@ Decisions and state carry across sessions via the `session-memory` skill:
 
 ## Compact Instructions
 
-On compaction, preserve: the `pypptx` (dist) vs `pptx` (import) naming, the four-layer
+On compaction, preserve: the `openpptx` (dist) vs `pptx` (import) naming, the four-layer
 architecture and bottom-up/types-first rule, the `Describe*`/`it_*` test naming, the current
 `.meta/version` cursor, and that features must be pure XML edits (no rendering engine).

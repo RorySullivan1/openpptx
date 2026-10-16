@@ -1,8 +1,8 @@
-pypptx
-======
+openpptx
+========
 
 A pure-Python library for reading and writing PowerPoint ``.pptx`` files (Office Open XML,
-ECMA-376). Install it as ``pypptx`` and import it as ``pptx``::
+ECMA-376). Install it as ``openpptx`` and import it as ``pptx``::
 
     from pptx import Presentation
 

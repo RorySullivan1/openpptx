@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pypptx"
+name = "openpptx"
 version = "0.7.1"
 description = "Create, read, and modify PowerPoint .pptx files"
 requires-python = ">=3.9"

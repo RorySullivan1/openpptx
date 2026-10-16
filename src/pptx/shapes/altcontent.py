@@ -2,7 +2,7 @@
 
 Newer shape kinds are written as an `mc:AlternateContent` element: an `mc:Choice` holding the
 shape for a reader that understands it, and an `mc:Fallback` holding a stand-in (usually a
-picture) for any other reader. pypptx lists each such shape in `slide.shapes` as an
+picture) for any other reader. openpptx lists each such shape in `slide.shapes` as an
 |AlternateContentShape|, read-only, identified by `content_kind` and placed where its fallback is.
 Chartex charts, also written this way, are graphic frames instead (see `GraphicFrame.chartex`).
 """

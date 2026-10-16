@@ -244,7 +244,7 @@ class CT_CustomShowSlideList(BaseOxmlElement):
 
     NOTE: PowerPoint's schema reuses the `p:sld` tag for the `r:id`-only reference elements
     contained here -- the *same* tag used for a slide part's root element (`CT_Slide`).
-    Because pypptx's element-class lookup is global by tag name, these children are parsed as
+    Because openpptx's element-class lookup is global by tag name, these children are parsed as
     whatever class is registered for `p:sld` (`CT_Slide`). To avoid depending on that
     class's unrelated shape, only the generic, tag-agnostic `r:id` attribute is read or
     written here rather than declaring a dedicated element class.

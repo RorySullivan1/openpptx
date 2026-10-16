@@ -17,7 +17,7 @@ _EFFECT_TYPES = {
     qn(member.xml_value): member for member in PP_TRANSITION_TYPE if member.xml_value
 }
 
-# -- an `mc:Choice` is read when every namespace it requires is one of these; pypptx reads the
+# -- an `mc:Choice` is read when every namespace it requires is one of these; openpptx reads the
 # -- transition markup of PowerPoint 2010 (p14), 2013 (p15) and 2016+ Morph (p159) --
 _READABLE_NAMESPACES = frozenset(namespaces("p14", "p15", "p159").values())
 
@@ -61,7 +61,7 @@ def effective_transition(owner: BaseOxmlElement) -> CT_SlideTransition | None:
 
     PowerPoint 2010 and later write a transition that uses newer markup (a `p14:dur`
     duration, a PowerPoint 2010 effect, Morph) inside `mc:AlternateContent`, with an ECMA-376
-    equivalent as its `mc:Fallback`. The richer `mc:Choice` is used when pypptx reads every
+    equivalent as its `mc:Fallback`. The richer `mc:Choice` is used when openpptx reads every
     namespace it requires; otherwise the fallback is. None when there is no transition.
     """
     for child in owner.iterchildren():

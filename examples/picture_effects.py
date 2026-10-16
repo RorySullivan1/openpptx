@@ -2,7 +2,7 @@
 
 Places the same generated image five times and applies one effect to each copy, so the
 differences are visible side by side. The image is built in-process with Pillow (already a
-hard dependency of pypptx) so the script needs no asset file on disk.
+hard dependency of openpptx) so the script needs no asset file on disk.
 
 Every adjustment is read back out of the saved file and asserted.
 

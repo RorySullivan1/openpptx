@@ -1,4 +1,4 @@
-"""Abstract types used by `pypptx`."""
+"""Abstract types used by `openpptx`."""
 
 from __future__ import annotations
 

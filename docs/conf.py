@@ -1,4 +1,4 @@
-"""Sphinx configuration for the pypptx API reference.
+"""Sphinx configuration for the openpptx API reference.
 
 Build locally with ``sphinx-build -W -b html docs docs/_build/html`` after
 ``pip install -e ".[docs]"``. The pages are generated from the in-tree docstrings; there is no
@@ -15,8 +15,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 import pptx  # noqa: E402
 
-project = "pypptx"
-author = "pypptx contributors"
+project = "openpptx"
+author = "openpptx contributors"
 release = pptx.__version__
 version = ".".join(release.split(".")[:2])
 
@@ -83,7 +83,7 @@ def _substitutions() -> str:
     import pkgutil
 
     subs: dict[str, str] = {name: "``%s``" % name for name in ("True", "False", "None")}
-    subs["pp"] = "pypptx"
+    subs["pp"] = "openpptx"
     builtins = ("AttributeError", "IndexError", "KeyError", "NotImplementedError", "ValueError")
     builtins += ("TypeError", "float", "int", "str", "bool")
     subs.update({name: ":class:`%s`" % name for name in builtins})

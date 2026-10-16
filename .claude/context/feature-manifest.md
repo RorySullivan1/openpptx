@@ -1,8 +1,8 @@
-# pypptx Project Manifest
+# openpptx Project Manifest
 
 ## Purpose
 
-pypptx is a Python library for creating, reading, and modifying Microsoft PowerPoint (.pptx) presentations. It operates directly on the Office Open XML (OOXML/ECMA-376) file format — a ZIP archive of XML parts — without requiring PowerPoint or any rendering engine.
+openpptx is a Python library for creating, reading, and modifying Microsoft PowerPoint (.pptx) presentations. It operates directly on the Office Open XML (OOXML/ECMA-376) file format — a ZIP archive of XML parts — without requiring PowerPoint or any rendering engine.
 
 The library provides a Pythonic object model that mirrors the structure of the VBA PowerPoint object model where feasible within the constraints of static file manipulation.
 
@@ -14,11 +14,11 @@ The library provides a Pythonic object model that mirrors the structure of the V
 
 ## Scope
 
-### What pypptx Is
+### What openpptx Is
 
 A file-format library. It reads and writes the XML inside `.pptx` files. Every feature it offers must be expressible as a modification to the XML parts and relationships that compose the OOXML package.
 
-### What pypptx Is Not
+### What openpptx Is Not
 
 - Not a rendering engine. It cannot convert slides to images or PDF.
 - Not a runtime environment. It cannot play slideshows, execute macros, interact with a clipboard, or manage application windows.
