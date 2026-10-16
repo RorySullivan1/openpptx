@@ -6,7 +6,9 @@ classes here match against the paragraph's text instead, and map each match back
 touches.
 
 A match never crosses a line break, a field or a paragraph: those split a paragraph's runs into
-segments (see `CT_TextParagraph.run_segments()`) and each segment is searched on its own.
+segments (see `CT_TextParagraph.run_segments()`), and a match lies within one segment. Each
+segment is searched in the paragraph's text, so `^`, `\\b` and a lookbehind at the start of a
+segment see the text before it; the end of a segment acts as the end of the text.
 
 On a slide, the text searched is that of every shape with a text frame, group members and table
 cells included, and of the slide's notes slide when it has one (see `iter_slide_text_frames()`).
@@ -39,11 +41,13 @@ if TYPE_CHECKING:
 Pattern = Union[str, re.Pattern[str]]
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, eq=False)
 class TextMatch:
     """One occurrence of a pattern in the text of a paragraph.
 
-    `paragraph.text[start:end] == text` always holds. Immutable.
+    `paragraph.text[start:end] == text` always holds. Immutable. Two matches are equal when they
+    have the same offsets and text and refer to the same paragraph, runs and shape in the XML, so
+    searching twice gives equal matches.
     """
 
     paragraph: _Paragraph
@@ -70,6 +74,26 @@ class TextMatch:
     Set by `Slide.find_text()` and `Presentation.find_text()`; the graphic frame for a match in a
     table cell. |None| when searching a text frame or a paragraph directly.
     """
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TextMatch):
+            return NotImplemented
+        return self._identity() == other._identity()
+
+    def __hash__(self) -> int:
+        return hash((self.paragraph._p, self.start, self.end))  # pyright: ignore[reportPrivateUsage]
+
+    def _identity(self) -> tuple[object, ...]:
+        """What makes two matches equal; the proxies compare by identity, so their elements."""
+        return (
+            self.paragraph._p,  # pyright: ignore[reportPrivateUsage]
+            self.paragraph_index,
+            self.start,
+            self.end,
+            self.text,
+            tuple(r._r for r in self.runs),  # pyright: ignore[reportPrivateUsage]
+            None if self.shape is None else self.shape._element,  # pyright: ignore[reportPrivateUsage]
+        )
 
 
 class TextChar(NamedTuple):
@@ -130,11 +154,13 @@ class _Hit(NamedTuple):
 
 def _iter_hits(p: CT_TextParagraph, compiled: re.Pattern[str]) -> Iterator[_Hit]:
     """Generate each non-empty match of `compiled` in `p`, in document order."""
+    text = p.text
     for seg_start, runs in p.run_segments():
-        texts = [r.text for r in runs]
-        # -- bounds[i] is where run i starts in the segment text; bounds[-1] is its length --
-        bounds = [0, *itertools.accumulate(len(t) for t in texts)]
-        for m in compiled.finditer("".join(texts)):
+        # -- bounds[i] is where run i starts in the paragraph text; bounds[-1] is the segment end --
+        bounds = list(itertools.accumulate((len(r.text) for r in runs), initial=seg_start))
+        # -- searching the paragraph text from `pos` lets `^`, `\b` and lookbehind see what comes
+        #    before the segment; `endpos` keeps each match within it --
+        for m in compiled.finditer(text, seg_start, bounds[-1]):
             start, end = m.span()
             if start == end:
                 continue
@@ -142,12 +168,7 @@ def _iter_hits(p: CT_TextParagraph, compiled: re.Pattern[str]) -> Iterator[_Hit]
             first = bisect_right(bounds, start) - 1
             last = bisect_right(bounds, end - 1) - 1
             yield _Hit(
-                seg_start + start,
-                seg_start + end,
-                m,
-                runs[first : last + 1],
-                start - bounds[first],
-                end - bounds[last],
+                start, end, m, runs[first : last + 1], start - bounds[first], end - bounds[last]
             )
 
 
@@ -197,10 +218,19 @@ class TextReplacer:
         self._compiled = compile_pattern(old, regex)
         if not isinstance(new, str):
             raise InvalidTypeError(f"new must be a str, got {type(new).__name__}")
+        if count is not None and (not isinstance(count, int) or isinstance(count, bool)):
+            raise InvalidTypeError(f"count must be None or an int, got {type(count).__name__}")
         if count is not None and count < 0:
             raise InvalidValueError(f"count must be None or at least 0, got {count}")
         self._new = new
         self._expand = regex or not isinstance(old, str)
+        if self._expand:
+            # -- `sub()` parses its template before searching, so this checks the template
+            #    against the pattern's groups whether or not the text holds a match --
+            try:
+                self._compiled.sub(new, "")
+            except (re.error, IndexError) as e:
+                raise InvalidValueError(f"new is not a valid replacement template: {e}") from e
         self._remaining = count
         self.replaced = 0
         """Number of replacements made so far."""
@@ -213,10 +243,17 @@ class TextReplacer:
     def replace_in(self, paragraphs: Iterable[_Paragraph]) -> int:
         """Replace in each of `paragraphs` in turn; return the number of replacements made."""
         before = self.replaced
+        removed_rIds: dict[XmlPart, list[str]] = {}
         for paragraph in paragraphs:
             if self.done:
                 break
-            self._replace_in_paragraph(paragraph)
+            rIds = self._replace_in_paragraph(paragraph)
+            if rIds:
+                removed_rIds.setdefault(cast("XmlPart", paragraph.part), []).extend(rIds)
+        # -- once every run is gone, drop the relationships nothing refers to any more: one scan
+        #    of each part, however many runs went --
+        for part, rIds in removed_rIds.items():
+            part.drop_unreferenced_rels(rIds)
         return self.replaced - before
 
     def replace_in_slide(self, slide: Slide) -> int:
@@ -228,53 +265,63 @@ class TextReplacer:
             self.replace_in(text_frame.paragraphs)
         return self.replaced - before
 
-    def _replace_in_paragraph(self, paragraph: _Paragraph) -> None:
+    def _replace_in_paragraph(self, paragraph: _Paragraph) -> list[str]:
+        """Replace in `paragraph`; return the rIds the runs it removed referred to."""
         p = paragraph._p  # pyright: ignore[reportPrivateUsage]
         hits = list(itertools.islice(_iter_hits(p, self._compiled), self._remaining))
-        # -- expand every template before changing anything, so a bad one changes nothing --
-        try:
-            news = [hit.match.expand(self._new) if self._expand else self._new for hit in hits]
-        except re.error as e:
-            raise InvalidValueError(f"new is not a valid replacement template: {e}") from e
+        removed_rIds: list[str] = []
         # -- right to left, so the offsets of the earlier hits stay valid --
-        for hit, new in zip(reversed(hits), reversed(news)):
-            self._apply(hit, new, paragraph)
+        for hit in reversed(hits):
+            new = hit.match.expand(self._new) if self._expand else self._new
+            removed_rIds.extend(self._apply(hit, new))
         self.replaced += len(hits)
         if self._remaining is not None:
             self._remaining -= len(hits)
+        return removed_rIds
 
     @staticmethod
-    def _apply(hit: _Hit, new: str, paragraph: _Paragraph) -> None:
-        """Replace the text of `hit` with `new`, which takes the formatting of the first run."""
+    def _apply(hit: _Hit, new: str) -> list[str]:
+        """Replace the text of `hit` with `new`; return the rIds the runs it removed referred to.
+
+        `new` takes the formatting of the first run, and each line break in it (`"\\v"` or
+        `"\\n"`) becomes an `a:br` followed by a run, both formatted as the first run.
+        """
         first, last = hit.runs[0], hit.runs[-1]
+        lines = _LINE_BREAK.split(new)
+        removed_rIds: list[str] = []
         if first is last:
-            first.splice(hit.run_start, hit.run_end, new)
+            # -- the text after the match follows the last line, in the same formatting --
+            lines[-1] += first.text[hit.run_end :]
+            first.splice(hit.run_start, len(first.text), lines[0])
         else:
-            first.splice(hit.run_start, len(first.text), new)
+            first.splice(hit.run_start, len(first.text), lines[0])
             for r in hit.runs[1:-1]:
-                _remove_run(r, paragraph)
+                removed_rIds.extend(_remove_run(r))
             last.splice(0, hit.run_end, "")
             if not last.text:
-                _remove_run(last, paragraph)
+                removed_rIds.extend(_remove_run(last))
+        # -- before `first` can go: the new lines copy its formatting --
+        first.insert_lines_after(lines[1:])
         if not first.text:
-            _remove_run(first, paragraph)
+            removed_rIds.extend(_remove_run(first))
+        return removed_rIds
 
 
-def _remove_run(r: CT_RegularTextRun, paragraph: _Paragraph) -> None:
-    """Remove `r`, first dropping any relationship (e.g. a hyperlink) only it refers to.
+#: A line break in replacement text, as the `_Paragraph.text` setter reads one.
+_LINE_BREAK = re.compile("\n|\v")
 
-    `XmlPart.drop_rel()` drops a relationship only while fewer than two references to it remain,
-    so it must be called while `r` still counts as one of them.
+
+def _remove_run(r: CT_RegularTextRun) -> list[str]:
+    """Remove `r` from its paragraph; return the rIds it referred to.
+
+    The caller drops each relationship nothing refers to any more, once every run that is going
+    has gone (see `XmlPart.drop_unreferenced_rels()`).
     """
-    rIds = cast("list[str]", r.xpath(".//@r:id"))
-    if rIds:
-        part = cast("XmlPart", paragraph.part)
-        for rId in rIds:
-            if rId in part.rels:
-                part.drop_rel(rId)
+    rIds = r.rel_ids
     p = r.getparent()
     assert p is not None
     p.remove(r)
+    return rIds
 
 
 def iter_paragraph_chars(paragraph: _Paragraph, paragraph_index: int) -> Iterator[TextChar]:

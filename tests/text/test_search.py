@@ -216,6 +216,112 @@ class Describe_ParagraphReplace:
             paragraph.replace("(a)", r"\9", regex=True)
         assert paragraph._p.xml == before
 
+    @pytest.mark.parametrize("new", [r"\2", r"\g<foo>", "\\"])
+    def it_raises_on_an_invalid_template_even_when_nothing_matches(self, new: str):
+        paragraph = _paragraph('a:p/a:r/a:t"no digits here"')
+        with pytest.raises(InvalidValueError, match="template"):
+            paragraph.replace(r"(\d+)", new, regex=True)
+
+    def and_it_raises_on_a_template_naming_an_unknown_group_where_one_matches(self):
+        paragraph = _paragraph('a:p/a:r/a:t"abc"')
+        with pytest.raises(InvalidValueError, match="template"):
+            paragraph.replace("(a)", r"\g<foo>", regex=True)
+        assert paragraph.text == "abc"
+
+    @pytest.mark.parametrize("count", ["2", 1.5, True])
+    def it_raises_on_a_count_that_is_not_an_int(self, count: object):
+        paragraph = _paragraph('a:p/a:r/a:t"aaa"')
+        with pytest.raises(InvalidTypeError, match="count"):
+            paragraph.replace("a", "b", count=count)  # pyright: ignore[reportArgumentType]
+        assert paragraph.text == "aaa"
+
+    @pytest.mark.parametrize(
+        ("p_cxml", "old", "new", "expected_cxml"),
+        [
+            # -- within one run: the text after the match follows the last line --
+            (
+                'a:p/a:r/(a:rPr{b=1},a:t"aXb")',
+                "X",
+                "1\v2",
+                'a:p/(a:r/(a:rPr{b=1},a:t"a1"),a:br/a:rPr{b=1},a:r/(a:rPr{b=1},a:t"2b"))',
+            ),
+            # -- a line feed is a line break too, as in the `_Paragraph.text` setter --
+            (
+                'a:p/a:r/(a:rPr{b=1},a:t"aXb")',
+                "X",
+                "1\n2",
+                'a:p/(a:r/(a:rPr{b=1},a:t"a1"),a:br/a:rPr{b=1},a:r/(a:rPr{b=1},a:t"2b"))',
+            ),
+            # -- across runs: the new lines take the first run's formatting, the suffix keeps its own --
+            (
+                HELLO_P,
+                "llo wor",
+                "A\vB",
+                'a:p/(a:r/(a:rPr{b=1},a:t"HeA"),a:br/a:rPr{b=1},a:r/(a:rPr{b=1},a:t"B"),'
+                'a:r/(a:rPr{u=sng},a:t"ld!"))',
+            ),
+            # -- an empty line gets its break but no run, and an emptied run is removed --
+            (
+                'a:p/a:r/(a:rPr{b=1},a:t"X")',
+                "X",
+                "\v",
+                "a:p/a:br/a:rPr{b=1}",
+            ),
+            (
+                'a:p/a:r/a:t"aXb"',
+                "X",
+                "\v\v",
+                'a:p/(a:r/a:t"a",a:br,a:br,a:r/a:t"b")',
+            ),
+        ],
+    )
+    def it_inserts_a_line_break_for_each_line_break_in_the_new_text(
+        self, p_cxml: str, old: str, new: str, expected_cxml: str
+    ):
+        paragraph = _paragraph(p_cxml)
+        expected_text = paragraph.text.replace(old, new.replace("\n", "\v"))
+
+        assert paragraph.replace(old, new) == 1
+
+        assert paragraph._p.xml == xml(expected_cxml)
+        assert paragraph.text == expected_text
+
+    def and_it_inserts_line_breaks_from_an_expanded_template(self):
+        paragraph = _paragraph('a:p/(a:r/a:t"one two",a:r/a:t" three")')
+
+        assert paragraph.replace(r"(\w+) (\w+)", r"\2\v\1", regex=True) == 1
+
+        assert paragraph.text == "two\vone three"
+
+    @pytest.mark.parametrize(
+        ("pattern", "expected"),
+        [
+            # -- `^` matches only at the start of the paragraph, never after a field --
+            (r"^end", []),
+            (r"^page", [(0, 4)]),
+            # -- `\b` and lookbehind at a segment start see the text before it --
+            (r"\bend", []),
+            (r"(?<=3)end", [(6, 9)]),
+            (r"(?<!3)end", []),
+        ],
+    )
+    def it_matches_a_regex_in_the_context_of_the_paragraph_text(
+        self, pattern: str, expected: list[tuple[int, int]]
+    ):
+        paragraph = _paragraph('a:p/(a:r/a:t"page ",a:fld{type=slidenum}/a:t"3",a:r/a:t"end")')
+        assert paragraph.text == "page 3end"
+
+        matches = paragraph.find_all(pattern, regex=True)
+
+        assert [(m.start, m.end) for m in matches] == expected
+        assert paragraph.replace(pattern, "X", regex=True) == len(expected)
+
+    def and_it_treats_the_end_of_a_segment_as_the_end_of_the_text(self):
+        paragraph = _paragraph('a:p/(a:r/a:t"one",a:br,a:r/a:t"two")')
+
+        assert [m.text for m in paragraph.find_all(r"\w+$", regex=True)] == ["one", "two"]
+        assert [m.text for m in paragraph.find_all(r"^\w+", regex=True)] == ["one"]
+
     def it_raises_on_an_invalid_regex(self):
         paragraph = _paragraph('a:p/a:r/a:t"a"')
         with pytest.raises(InvalidValueError, match="regular expression"):
@@ -290,6 +396,17 @@ class Describe_ParagraphFindAll:
         assert isinstance(match, TextMatch)
         with pytest.raises(AttributeError):
             match.start = 2  # pyright: ignore[reportAttributeAccessIssue]
+
+    def it_compares_and_hashes_matches_by_what_they_refer_to(self):
+        paragraph = _paragraph(HELLO_P)
+
+        first, second = paragraph.find_all("o"), paragraph.find_all("o")
+
+        assert first == second
+        assert len({*first, *second}) == 2
+        assert first[0] != first[1]
+        # -- the same offsets in a different paragraph are a different match --
+        assert _paragraph(HELLO_P).find_all("o") != first
 
     def it_raises_on_an_empty_literal_pattern(self):
         with pytest.raises(InvalidValueError):

@@ -1,27 +1,21 @@
-# version: v0.7.0
+# version: v0.7.1
 status: in-progress
 started: 2026-10-16
-branch: v0.7.0
-pr: #135 (draft; grows until v0.7.0 ships)
+branch: v0.7.1
+pr: #136
 
-Scope (owner decisions 2026-10-15): find/replace on a text frame and a paragraph, plus a deck-wide sweep
-(`Slide`/`Presentation` `find_text()`/`replace_text()`: slide shapes incl. group members and table cells, and
-existing notes slides; not layouts, masters, charts, SmartArt or comments). The property-based test uses
-`hypothesis`, already a dev dependency. Implementation detail is in the card,
-`.meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md`.
+Patch on v0.7.0 (shipped, PR #135, `0db7ef1`) from a code review of the merged find/replace.
+Owner decisions 2026-10-16: ship as v0.7.1; `\v`/`\n` in `new` inserts a line break; regexes see
+the whole paragraph text. Detail is in the card, `.meta/roadmap/stages/03-hardening-and-gaps/v0.7.1.md`.
 
 ## Goals
-- `TextFrame`/`_Paragraph` `replace()` and `find_all()` across run boundaries; replaced text takes the
-  formatting of the first run it touches.
-- Deck-wide `find_text()`/`replace_text()` on `Slide` and `Presentation`.
-- `iter_runs()`/`iter_chars()` traversal, and an opt-in `merge_runs()` that ignores proofing state.
+- Bad template and bad `count` raise pypptx errors up front, whatever the deck holds.
+- `TextMatch` equality and hashing by element.
+- Line breaks in the replacement; regex anchors with paragraph context.
+- No orphaned relationship when a removed run cites one rId twice; one part scan per frame.
 
 ## Objectives / acceptance
-- [x] Card expanded with implementation detail before code lands (2026-10-15).
-- [x] Replace, find, merge and deck-wide behaviour covered by failing-first unit tests, plus the
-  `hypothesis` property test against plain-string results.
-- [x] Corpus round trip, and PowerPoint 16 opens the edited decks without repair (2026-10-16, COM).
-- [x] No regression versus v0.6.0: the work-count gate passes without raising its budget (1,085,069
-  calls, unchanged); iteration within noise.
-- [x] Docs, `batch_process.py`, feature manifest and README updated; full suite green on CI; package 0.7.0
-  (run 38847024896, 7/7 green).
+- [x] Each finding has a regression test that failed before its fix (32 tests).
+- [x] Full suite passes; work-count gate unchanged (1,085,069 calls).
+- [x] PowerPoint 16 opens the line-break and hyperlink decks without repair (COM, 2026-10-16).
+- [x] Docstrings, docs build and package 0.7.1.

@@ -14,6 +14,8 @@ from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.exc import InvalidValueError
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from pptx.oxml import parse_xml
+from pptx.oxml.ns import nsdecls
 from pptx.presentation import Presentation as PresentationCls
 from pptx.shapes.graphfrm import GraphicFrame
 from pptx.slide import Slide
@@ -224,6 +226,52 @@ class DescribeHyperlinkedRunRemoval:
         runs = slide.shapes[0].text_frame.paragraphs[0].runs
         assert [r.text for r in runs] == ["visit ", "my site", " today"]
         assert runs[1].hyperlink.address == URL
+
+    def it_drops_a_relationship_the_removed_run_refers_to_twice(self):
+        prs, slide = self._deck(share=False)
+        hlinkClick = slide.shapes[0].text_frame.paragraphs[0].runs[1]._r.rPr.hlinkClick
+        rId = hlinkClick.rId
+        hlinkClick.addnext(parse_xml(f'<a:hlinkMouseOver {nsdecls("a", "r")} r:id="{rId}"/>'))
+
+        assert slide.replace_text("visit our site", "see") == 1
+
+        assert self._hyperlink_rIds(slide) == []
+
+    def but_it_keeps_the_relationship_when_new_lines_carry_the_hyperlink_on(self):
+        prs, slide = self._deck(share=False)
+        (rId,) = self._hyperlink_rIds(slide)
+
+        # -- the linked run empties and goes; the line after the break copies its formatting --
+        assert slide.replace_text("our site", "\vour new site") == 1
+
+        assert self._hyperlink_rIds(slide) == [rId]
+        paragraph = _reopen(prs).slides[0].shapes[0].text_frame.paragraphs[0]
+        assert paragraph.text == "visit \vour new site today"
+        assert [r.hyperlink.address for r in paragraph.runs] == [None, URL, None]
+
+
+class DescribeMatchesAndLineBreaks:
+    """`TextMatch` values from a slide, and line breaks written by `replace_text()`."""
+
+    def it_returns_matches_that_compare_and_hash_by_what_they_refer_to(
+        self, prs: PresentationCls
+    ):
+        slide = prs.slides[0]
+
+        first, second = slide.find_text("Widgets"), slide.find_text("Widgets")
+
+        assert first == second
+        assert len({*first, *second}) == 5
+
+    def it_writes_a_line_break_for_each_one_in_the_new_text(self, prs: PresentationCls):
+        assert prs.replace_text("Widgets", "Wid-\vgets") == 6
+
+        reopened = _reopen(prs)
+
+        texts = [m.paragraph.text for m in reopened.find_text("gets")]
+        assert texts[0] == "Acme Wid-\vgets rule"
+        assert all("\v" in text for text in texts)
+        assert "_x000B_" not in reopened.slides[0].part.blob.decode("utf-8")
 
 
 @pytest.mark.skipif(not CORPUS_DIR.is_dir(), reason="real-world corpus not present")

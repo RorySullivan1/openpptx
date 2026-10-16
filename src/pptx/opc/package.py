@@ -9,7 +9,7 @@ from __future__ import annotations
 import collections
 import contextlib
 import os
-from typing import IO, TYPE_CHECKING, DefaultDict, Iterator, Mapping, Set, cast
+from typing import IO, TYPE_CHECKING, DefaultDict, Iterable, Iterator, Mapping, Set, cast
 
 from pptx.exc import InvalidPackageError, PackageError
 from pptx.opc.constants import RELATIONSHIP_TARGET_MODE as RTM
@@ -512,6 +512,18 @@ class XmlPart(Part):
         """
         if self._rel_ref_count(rId) < 2:
             self._rels.pop(rId)
+
+    def drop_unreferenced_rels(self, rIds: Iterable[str]) -> None:
+        """Remove each relationship in `rIds` that nothing in this part's XML refers to.
+
+        Any `r:` attribute counts as a reference, such as `r:id` or `r:embed`. Pass only rIds
+        whose references were just removed: a relationship that is never referenced from the
+        XML (e.g. to a slide layout) would be dropped too. The XML is scanned once.
+        """
+        referenced = set(cast("list[str]", self._element.xpath("//@r:*")))
+        for rId in dict.fromkeys(rIds):
+            if rId not in referenced and rId in self._rels:
+                self._rels.pop(rId)
 
     @property
     def part(self):

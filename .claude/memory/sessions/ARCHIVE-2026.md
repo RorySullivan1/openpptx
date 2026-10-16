@@ -81,3 +81,14 @@ Decisions folded out of INDEX.md to keep it in budget. Still in force unless sup
 - 2026-10-01 | #51 last item: enum `from_xml` dict lookup; v0.6.0 card records the #51 outcomes | .claude/context/performance.md
 - 2026-10-09 | #51 closed (PR #124); v0.5.0 card expanded from a 511-deck pilot | stages/03-hardening-and-gaps/v0.5.0.md
 - 2026-10-09 1630 | v0.5.0 built: transitions/animations read, layouts, handout master; import_slide id fix | sessions/2026-10-09-1630-v050-transitions-animations-layouts.md
+
+## Log pointers archived 2026-10-16
+- 2026-10-13 2217 | PowerPoint checks for #119–#125 run on Windows; #115/#122/#125 pass; 3 bugs filed #126–#128 | sessions/2026-10-13-2217-powerpoint-verification-pr119-125.md
+- 2026-10-13 2228 | Actions unblocked (7/7 green); #125 merged ahead of #126–#128, tag held; local memory merged with origin | sessions/2026-10-13-2228-pr125-merge-order-ci-unblocked.md
+- 2026-10-13 | v0.5.0 shipped (PR #125, `b4b1c38`): package 0.5.0, cursor → v0.6.0; tag held for #126–#128 | .meta/version
+- 2026-10-13 2253 | Assessed next-on-main: #126–#128 ahead of the cursor, recommended as a v0.5.1 patch; v0.6.0 card found thin | sessions/2026-10-13-2253-main-next-assessment.md
+- 2026-10-14 | v0.5.1 fixes written (unlogged sessions): #126 merged via PR #129; #127+#128 in PR #130 | gh pr view 130
+- 2026-10-15 | Memory reconciled: PR #130 merged 2026-10-14 (`1c132d7`); version bump + tags are all that's left of v0.5.1 | gh pr view 130
+- 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
+- 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md
+- 2026-10-15 1347 | v0.6.0 built end to end: card, L1/L2, lazy blobs, caching audit (11 fixes), gate metric, 0.6.0; PR #134 ready | sessions/2026-10-15-1347-v060-card-expanded.md

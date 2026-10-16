@@ -502,6 +502,18 @@ class DescribeXmlPart:
         _rel_ref_count_.assert_called_once_with(part, "rId42")
         assert relationships_.pop.call_args_list == calls
 
+    def it_can_drop_the_relationships_nothing_refers_to_any_more(
+        self, request: FixtureRequest, relationships_: Mock
+    ):
+        relationships_.__contains__.side_effect = lambda rId: rId != "rId9"
+        property_mock(request, XmlPart, "_rels", return_value=relationships_)
+        sld = element("p:sld/p:cSld/p:spTree/p:pic/p:blipFill/a:blip{r:embed=rId3,r:link=rId4}")
+        part = XmlPart(None, None, None, sld)
+
+        part.drop_unreferenced_rels(["rId2", "rId3", "rId4", "rId2", "rId9"])
+
+        assert relationships_.pop.call_args_list == [call("rId2")]
+
     def it_knows_it_is_the_part_for_its_child_objects(self):
         xml_part = XmlPart(None, None, None, None)
         assert xml_part.part is xml_part

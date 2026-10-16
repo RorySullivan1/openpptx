@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import copy
 import re
-from typing import TYPE_CHECKING, Callable, cast
+from typing import TYPE_CHECKING, Callable, Sequence, cast
 
 from lxml import etree
 
@@ -49,6 +50,7 @@ from pptx.oxml.xmlchemy import (
     OneAndOnlyOne,
     OneOrMore,
     OptionalAttribute,
+    OxmlElement,
     RequiredAttribute,
     ZeroOrMore,
     ZeroOrOne,
@@ -97,6 +99,38 @@ class CT_RegularTextRun(BaseOxmlElement):
         """
         old = self.text
         self.t.text = old[:start] + self._escape_ctrl_chars(text) + old[end:]
+
+    def insert_lines_after(self, lines: Sequence[str]) -> None:
+        """Insert an `a:br` and then a run of each of `lines` after this run.
+
+        Each new `a:br` and run gets its own copy of this run's `a:rPr`, so the lines look like
+        this run. An empty line gets its `a:br` but no run.
+        """
+        anchor: BaseOxmlElement = self
+        for line in lines:
+            br = cast(CT_TextLineBreak, OxmlElement("a:br"))
+            if self.rPr is not None:
+                br.append(copy.deepcopy(self.rPr))
+            anchor.addnext(br)
+            anchor = br
+            if not line:
+                continue
+            r = cast(CT_RegularTextRun, OxmlElement("a:r"))
+            if self.rPr is not None:
+                r.append(copy.deepcopy(self.rPr))
+            r.append(OxmlElement("a:t"))
+            r.text = line
+            anchor.addnext(r)
+            anchor = r
+
+    @property
+    def rel_ids(self) -> list[str]:
+        """The rId of each relationship this run refers to, once per reference.
+
+        Any `r:` attribute in the run counts, such as the `r:id` of a hyperlink or the `r:embed`
+        of a picture fill.
+        """
+        return cast("list[str]", self.xpath(".//@r:*"))
 
     @staticmethod
     def _escape_ctrl_chars(s: str) -> str:
