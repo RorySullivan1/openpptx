@@ -1,23 +1,23 @@
-"""Unit-test suite for `pptx.oxml.dml.fill` module."""
+"""Unit-test suite for `openpptx.oxml.dml.fill` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.enum.dml import MSO_RECT_ALIGNMENT
-from pptx.oxml.dml.fill import (
+from openpptx.enum.dml import MSO_RECT_ALIGNMENT
+from openpptx.oxml.dml.fill import (
     CT_BlipFillProperties,
     CT_GradientFillProperties,
     CT_StretchInfoProperties,
     CT_TileInfoProperties,
 )
-from pptx.util import Emu
+from openpptx.util import Emu
 
 from ...unitutil.cxml import element, xml
 
 
 class Describe_CT_BlipFillProperties:
-    """Unit-test suite for `pptx.oxml.dml.fill.CT_BlipFillProperties`."""
+    """Unit-test suite for `openpptx.oxml.dml.fill.CT_BlipFillProperties`."""
 
     def it_provides_access_to_its_tile_and_stretch_choice_group(self):
         blipFill = element("a:blipFill")
@@ -42,7 +42,7 @@ class Describe_CT_BlipFillProperties:
 
 
 class Describe_CT_StretchInfoProperties:
-    """Unit-test suite for `pptx.oxml.dml.fill.CT_StretchInfoProperties`."""
+    """Unit-test suite for `openpptx.oxml.dml.fill.CT_StretchInfoProperties`."""
 
     def it_can_get_or_add_a_fillRect_child(self):
         stretch = element("a:stretch")
@@ -52,7 +52,7 @@ class Describe_CT_StretchInfoProperties:
 
 
 class Describe_CT_TileInfoProperties:
-    """Unit-test suite for `pptx.oxml.dml.fill.CT_TileInfoProperties`."""
+    """Unit-test suite for `openpptx.oxml.dml.fill.CT_TileInfoProperties`."""
 
     def it_provides_defaults_for_its_attributes(self):
         tile = element("a:tile")
@@ -79,7 +79,7 @@ class Describe_CT_TileInfoProperties:
 
 
 class Describe_CT_GradientFillProperties:
-    """Unit-test suite for `pptx.oxml.dml.fill.CT_GradientFillProperties`."""
+    """Unit-test suite for `openpptx.oxml.dml.fill.CT_GradientFillProperties`."""
 
     @pytest.mark.parametrize(
         ("gradFill_cxml", "expected_value"),

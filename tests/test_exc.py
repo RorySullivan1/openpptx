@@ -1,10 +1,10 @@
-"""Unit-test suite for `pptx.exc`: the exception hierarchy callers rely on."""
+"""Unit-test suite for `openpptx.exc`: the exception hierarchy callers rely on."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.exc import (
+from openpptx.exc import (
     ChartError,
     InvalidPackageError,
     InvalidTypeError,
@@ -15,7 +15,7 @@ from pptx.exc import (
     SlideError,
     TableError,
 )
-from pptx.util import Inches
+from openpptx.util import Inches
 
 
 class DescribeExceptionHierarchy:
@@ -41,33 +41,11 @@ class DescribeExceptionHierarchy:
         assert not issubclass(InvalidPackageError, ValueError)
 
 
-class DescribeDeprecatedPyPptxError:
-    """`PyPptxError`, the pre-openpptx name of the base class, still resolves, with a warning."""
-
-    def it_is_the_same_class_as_OpenPptxError(self):
-        with pytest.warns(DeprecationWarning, match="use OpenPptxError"):
-            from pptx.exc import PyPptxError
-
-        assert PyPptxError is OpenPptxError
-
-    def it_warns_through_the_pptx_exceptions_alias_too(self):
-        import pptx
-
-        with pytest.warns(DeprecationWarning):
-            assert pptx.exceptions.PyPptxError is OpenPptxError
-
-    def but_it_still_raises_AttributeError_for_an_unknown_name(self):
-        import pptx.exc
-
-        with pytest.raises(AttributeError, match="no attribute 'Nope'"):
-            pptx.exc.Nope  # noqa: B018
-
-
 class DescribeValidationErrors:
     """Property setters reject bad values with the new classes, still catchable as builtins."""
 
     def it_raises_InvalidValueError_for_an_out_of_range_value(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         textbox = prs.slides.add_slide(prs.slide_layouts[6]).shapes.add_textbox(
@@ -81,7 +59,7 @@ class DescribeValidationErrors:
             font.size = -1
 
     def it_raises_InvalidTypeError_for_a_value_of_the_wrong_type(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         textbox = prs.slides.add_slide(prs.slide_layouts[6]).shapes.add_textbox(

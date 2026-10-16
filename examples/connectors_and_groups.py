@@ -4,11 +4,11 @@ Creates shapes, connects them with an arrowed connector, and groups
 shapes together. Saves to connectors_and_groups.pptx.
 """
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.dml import MSO_LINE_END_TYPE
-from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.enum.dml import MSO_LINE_END_TYPE
+from openpptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank layout

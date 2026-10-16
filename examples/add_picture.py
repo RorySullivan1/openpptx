@@ -9,9 +9,9 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.util import Inches, Pt
 
 # Generate a simple gradient image in memory
 img = Image.new("RGB", (400, 300))

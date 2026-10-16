@@ -11,11 +11,11 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
-from pptx.enum.shapes import PP_PLACEHOLDER
-from pptx.exc import ShapeError, SlideError
-from pptx.shapes.placeholder import LayoutPlaceholder
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.enum.shapes import PP_PLACEHOLDER
+from openpptx.exc import ShapeError, SlideError
+from openpptx.shapes.placeholder import LayoutPlaceholder
+from openpptx.util import Inches
 
 CORPUS_DIR = Path(__file__).parent / "test_files" / "real_world"
 

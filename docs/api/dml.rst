@@ -1,35 +1,35 @@
 Formatting (DrawingML)
 ======================
 
-``pptx.dml.color``
-------------------
+``openpptx.dml.color``
+----------------------
 
-.. automodule:: pptx.dml.color
+.. automodule:: openpptx.dml.color
 
-``pptx.dml.fill``
------------------
+``openpptx.dml.fill``
+---------------------
 
-.. automodule:: pptx.dml.fill
+.. automodule:: openpptx.dml.fill
 
-``pptx.dml.line``
------------------
+``openpptx.dml.line``
+---------------------
 
-.. automodule:: pptx.dml.line
+.. automodule:: openpptx.dml.line
 
-``pptx.dml.effect``
--------------------
+``openpptx.dml.effect``
+-----------------------
 
-.. automodule:: pptx.dml.effect
+.. automodule:: openpptx.dml.effect
 
-``pptx.dml.threed``
--------------------
+``openpptx.dml.threed``
+-----------------------
 
-.. automodule:: pptx.dml.threed
+.. automodule:: openpptx.dml.threed
 
-``pptx.dml.chtfmt``
--------------------
+``openpptx.dml.chtfmt``
+-----------------------
 
-.. automodule:: pptx.dml.chtfmt
+.. automodule:: openpptx.dml.chtfmt
 
 Objects the API returns from private classes
 --------------------------------------------
@@ -37,7 +37,7 @@ Objects the API returns from private classes
 These classes have private names but are handed to callers, e.g. by
 ``text_frame.paragraphs`` or ``table.cell()``.
 
-.. autoclass:: pptx.dml.fill._GradientStops
+.. autoclass:: openpptx.dml.fill._GradientStops
 
-.. autoclass:: pptx.dml.fill._GradientStop
+.. autoclass:: openpptx.dml.fill._GradientStop
 

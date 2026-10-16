@@ -1,15 +1,15 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.chart.series` module."""
+"""Unit-test suite for `openpptx.chart.series` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.datalabel import DataLabels
-from pptx.chart.marker import Marker
-from pptx.chart.point import BubblePoints, CategoryPoints, XyPoints
-from pptx.chart.series import (
+from openpptx.chart.datalabel import DataLabels
+from openpptx.chart.marker import Marker
+from openpptx.chart.point import BubblePoints, CategoryPoints, XyPoints
+from openpptx.chart.series import (
     AreaSeries,
     BarSeries,
     BubbleSeries,
@@ -23,7 +23,7 @@ from pptx.chart.series import (
     _MarkerMixin,
     _SeriesFactory,
 )
-from pptx.dml.chtfmt import ChartFormat
+from openpptx.dml.chtfmt import ChartFormat
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import class_mock, function_mock, instance_mock
@@ -73,7 +73,7 @@ class Describe_BaseSeries:
 
     @pytest.fixture
     def ChartFormat_(self, request, chart_format_):
-        return class_mock(request, "pptx.chart.series.ChartFormat", return_value=chart_format_)
+        return class_mock(request, "openpptx.chart.series.ChartFormat", return_value=chart_format_)
 
     @pytest.fixture
     def chart_format_(self, request):
@@ -173,11 +173,11 @@ class Describe_BaseCategorySeries:
 
     @pytest.fixture
     def CategoryPoints_(self, request, points_):
-        return class_mock(request, "pptx.chart.series.CategoryPoints", return_value=points_)
+        return class_mock(request, "openpptx.chart.series.CategoryPoints", return_value=points_)
 
     @pytest.fixture
     def DataLabels_(self, request):
-        return class_mock(request, "pptx.chart.series.DataLabels")
+        return class_mock(request, "openpptx.chart.series.DataLabels")
 
     @pytest.fixture
     def data_labels_(self, request):
@@ -207,7 +207,7 @@ class Describe_MarkerMixin:
 
     @pytest.fixture
     def Marker_(self, request, marker_):
-        return class_mock(request, "pptx.chart.series.Marker", return_value=marker_)
+        return class_mock(request, "openpptx.chart.series.Marker", return_value=marker_)
 
     @pytest.fixture
     def marker_(self, request):
@@ -301,7 +301,7 @@ class Describe_BubbleSeries:
 
     @pytest.fixture
     def BubblePoints_(self, request, points_):
-        return class_mock(request, "pptx.chart.series.BubblePoints", return_value=points_)
+        return class_mock(request, "openpptx.chart.series.BubblePoints", return_value=points_)
 
     @pytest.fixture
     def points_(self, request):
@@ -445,7 +445,7 @@ class Describe_XySeries:
 
     @pytest.fixture
     def XyPoints_(self, request, points_):
-        return class_mock(request, "pptx.chart.series.XyPoints", return_value=points_)
+        return class_mock(request, "openpptx.chart.series.XyPoints", return_value=points_)
 
     @pytest.fixture
     def points_(self, request):
@@ -515,7 +515,7 @@ class DescribeSeriesCollection:
 
     @pytest.fixture
     def _SeriesFactory_(self, request, series_):
-        return function_mock(request, "pptx.chart.series._SeriesFactory", return_value=series_)
+        return function_mock(request, "openpptx.chart.series._SeriesFactory", return_value=series_)
 
     @pytest.fixture
     def series_(self, request):
@@ -546,6 +546,6 @@ class Describe_SeriesFactory:
     def call_fixture(self, request):
         xChart_cxml, cls_name = request.param
         ser = element(xChart_cxml).ser_lst[0]
-        SeriesCls_ = class_mock(request, "pptx.chart.series.%s" % cls_name)
+        SeriesCls_ = class_mock(request, "openpptx.chart.series.%s" % cls_name)
         series_ = SeriesCls_.return_value
         return ser, SeriesCls_, series_

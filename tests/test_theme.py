@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.theme` module."""
+"""Unit-test suite for `openpptx.theme` module."""
 
 from __future__ import annotations
 
@@ -6,23 +6,23 @@ import os
 
 import pytest
 
-import pptx
-from pptx.dml.fill import FillFormat
-from pptx.dml.line import LineFormat
-from pptx.enum.dml import MSO_FILL, MSO_THEME_COLOR
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.package import Package
-from pptx.theme import EffectScheme, EffectStyle, Theme
-from pptx.util import Pt
+import openpptx
+from openpptx.dml.fill import FillFormat
+from openpptx.dml.line import LineFormat
+from openpptx.enum.dml import MSO_FILL, MSO_THEME_COLOR
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.package import Package
+from openpptx.theme import EffectScheme, EffectStyle, Theme
+from openpptx.util import Pt
 
 from .unitutil.cxml import element
 
-_DEFAULT_TEMPLATE = os.path.join(os.path.dirname(pptx.__file__), "templates", "default.pptx")
+_DEFAULT_TEMPLATE = os.path.join(os.path.dirname(openpptx.__file__), "templates", "default.pptx")
 
 
 class DescribeTheme:
-    """Unit-test suite for `pptx.theme.Theme` objects."""
+    """Unit-test suite for `openpptx.theme.Theme` objects."""
 
     def it_provides_access_to_effect_scheme(self):
         theme_xml = (
@@ -99,7 +99,7 @@ class DescribeTheme:
 
 
 class DescribeEffectScheme:
-    """Unit-test suite for `pptx.theme.EffectScheme` objects."""
+    """Unit-test suite for `openpptx.theme.EffectScheme` objects."""
 
     @pytest.fixture
     def effect_scheme(self):
@@ -150,7 +150,7 @@ class DescribeEffectScheme:
 
 
 class DescribeEffectStyle:
-    """Unit-test suite for `pptx.theme.EffectStyle` objects."""
+    """Unit-test suite for `openpptx.theme.EffectStyle` objects."""
 
     @pytest.fixture
     def effect_scheme(self):
@@ -208,7 +208,7 @@ _FMT_SCHEME_THEME_XML = (
 
 
 class DescribeTheme_FormatSchemeStyles:
-    """Unit-test suite for the fill- and line-style lists of `pptx.theme.Theme`."""
+    """Unit-test suite for the fill- and line-style lists of `openpptx.theme.Theme`."""
 
     def it_provides_the_fill_styles_in_order(self):
         theme = Theme(parse_xml(_FMT_SCHEME_THEME_XML))

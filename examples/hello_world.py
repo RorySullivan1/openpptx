@@ -4,7 +4,7 @@ Creates a single title slide with a title and subtitle, sets document
 metadata, and saves to hello_world.pptx.
 """
 
-from pptx import Presentation
+from openpptx import Presentation
 
 prs = Presentation()
 

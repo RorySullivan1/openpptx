@@ -1,12 +1,12 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.oxml.embeddedfont` module."""
+"""Unit-test suite for `openpptx.oxml.embeddedfont` module."""
 
 from __future__ import annotations
 
 from typing import cast
 
-from pptx.oxml.embeddedfont import (
+from openpptx.oxml.embeddedfont import (
     CT_EmbeddedFontDataId,
     CT_EmbeddedFontList,
     CT_EmbeddedFontListEntry,
@@ -17,7 +17,7 @@ from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_EmbeddedFontList:
-    """Unit-test suite for `pptx.oxml.embeddedfont.CT_EmbeddedFontList` objects."""
+    """Unit-test suite for `openpptx.oxml.embeddedfont.CT_EmbeddedFontList` objects."""
 
     def it_can_add_an_embeddedFont_entry(self):
         embeddedFontLst = cast(CT_EmbeddedFontList, element("p:embeddedFontLst"))
@@ -46,7 +46,7 @@ class DescribeCT_EmbeddedFontList:
 
 
 class DescribeCT_EmbeddedFontListEntry:
-    """Unit-test suite for `pptx.oxml.embeddedfont.CT_EmbeddedFontListEntry` objects."""
+    """Unit-test suite for `openpptx.oxml.embeddedfont.CT_EmbeddedFontListEntry` objects."""
 
     def it_can_construct_a_new_entry(self):
         entry = CT_EmbeddedFontListEntry.new("Calibri")
@@ -98,7 +98,7 @@ class DescribeCT_EmbeddedFontListEntry:
 
 
 class DescribeCT_Font:
-    """Unit-test suite for `pptx.oxml.embeddedfont.CT_Font` objects."""
+    """Unit-test suite for `openpptx.oxml.embeddedfont.CT_Font` objects."""
 
     def it_provides_access_to_its_typeface(self):
         font = cast(CT_Font, element("p:font{typeface=Calibri}"))
@@ -122,7 +122,7 @@ class DescribeCT_Font:
 
 
 class DescribeCT_EmbeddedFontDataId:
-    """Unit-test suite for `pptx.oxml.embeddedfont.CT_EmbeddedFontDataId` objects."""
+    """Unit-test suite for `openpptx.oxml.embeddedfont.CT_EmbeddedFontDataId` objects."""
 
     def it_provides_access_to_its_rId(self):
         regular = cast(CT_EmbeddedFontDataId, element("p:regular{r:id=rId1}"))

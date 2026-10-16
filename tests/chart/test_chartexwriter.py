@@ -1,20 +1,20 @@
-"""Unit-test suite for `pptx.chart.chartexwriter` module."""
+"""Unit-test suite for `openpptx.chart.chartexwriter` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.chartex import ChartEx
-from pptx.chart.chartexwriter import (
+from openpptx.chart.chartex import ChartEx
+from openpptx.chart.chartexwriter import (
     ChartExWorkbookWriter,
     ChartExXmlWriter,
     chartex_type,
     is_chartex_type,
 )
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
-from pptx.exc import ChartError
-from pptx.oxml import parse_xml
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
+from openpptx.exc import ChartError
+from openpptx.oxml import parse_xml
 
 from ..unitutil.chartex import xlsx_column
 
@@ -43,7 +43,7 @@ def _chartex(chart_type: XL_CHART_TYPE, chart_data: CategoryChartData) -> ChartE
 
 
 class DescribeChartExXmlWriter:
-    """Unit-test suite for `pptx.chart.chartexwriter.ChartExXmlWriter` objects."""
+    """Unit-test suite for `openpptx.chart.chartexwriter.ChartExXmlWriter` objects."""
 
     @pytest.mark.parametrize(
         ("chart_type", "layout_id", "dim_type", "has_axes"),
@@ -141,7 +141,7 @@ class DescribeChartExXmlWriter:
 
 
 class DescribeChartExTypes:
-    """Unit-test suite for the chartex type table in `pptx.chart.chartexwriter`."""
+    """Unit-test suite for the chartex type table in `openpptx.chart.chartexwriter`."""
 
     @pytest.mark.parametrize(
         ("chart_type", "expected_value"),
@@ -162,7 +162,7 @@ class DescribeChartExTypes:
 
 
 class DescribeChartExWorkbookWriter:
-    """Unit-test suite for `pptx.chart.chartexwriter.ChartExWorkbookWriter` objects."""
+    """Unit-test suite for `openpptx.chart.chartexwriter.ChartExWorkbookWriter` objects."""
 
     def it_repeats_parent_labels_on_every_row_they_span(self):
         xlsx_blob = ChartExWorkbookWriter(_tree_data()).xlsx_blob

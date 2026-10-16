@@ -1,17 +1,17 @@
-"""Unit-test suite for `pptx.dml.threed` module."""
+"""Unit-test suite for `openpptx.dml.threed` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.dml.threed import Bevel
-from pptx.enum.dml import MSO_BEVEL_PRESET
+from openpptx.dml.threed import Bevel
+from openpptx.enum.dml import MSO_BEVEL_PRESET
 
 from ..unitutil.cxml import element, xml
 
 
 class DescribeBevel:
-    """Unit-test suite for `pptx.dml.threed.Bevel`."""
+    """Unit-test suite for `openpptx.dml.threed.Bevel`."""
 
     def it_returns_None_for_preset_when_not_set(self):
         bevel = Bevel(element("a:bevelT"))

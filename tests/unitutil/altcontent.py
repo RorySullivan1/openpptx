@@ -113,7 +113,7 @@ SHAPES_XML = TEXTBOX_XML + MODEL3D_XML + ZOOM_XML + EQUATION_XML + UNKNOWN_XML
 
 def altcontent_pptx() -> BytesIO:
     """Return a stream holding a one-slide `.pptx` whose slide has the five shapes above."""
-    from pptx import Presentation
+    from openpptx import Presentation
 
     prs = Presentation()
     prs.slides.add_slide(prs.slide_layouts[6])

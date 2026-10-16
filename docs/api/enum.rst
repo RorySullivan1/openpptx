@@ -5,28 +5,28 @@ Enumerations used as property values across the API. Each is an ``int`` enum who
 members also carry a docstring; several have a shorter alias, e.g. ``MSO_SHAPE`` for
 ``MSO_AUTO_SHAPE_TYPE``.
 
-``pptx.enum.action``
---------------------
+``openpptx.enum.action``
+------------------------
 
 .. _PpActionType:
 
 PP_ACTION_TYPE
 ~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.action.PP_ACTION_TYPE
+.. autoclass:: openpptx.enum.action.PP_ACTION_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
 
-``pptx.enum.animation``
------------------------
+``openpptx.enum.animation``
+---------------------------
 
 .. _MsoAnimEffect:
 
 MSO_ANIMATION_EFFECT
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.animation.MSO_ANIMATION_EFFECT
+.. autoclass:: openpptx.enum.animation.MSO_ANIMATION_EFFECT
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -36,7 +36,7 @@ MSO_ANIMATION_EFFECT
 MSO_ANIMATION_TRIGGER
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.animation.MSO_ANIMATION_TRIGGER
+.. autoclass:: openpptx.enum.animation.MSO_ANIMATION_TRIGGER
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -46,7 +46,7 @@ MSO_ANIMATION_TRIGGER
 PP_ANIMATION_CLASS
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.animation.PP_ANIMATION_CLASS
+.. autoclass:: openpptx.enum.animation.PP_ANIMATION_CLASS
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -56,7 +56,7 @@ PP_ANIMATION_CLASS
 PP_TRANSITION_SPEED
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.animation.PP_TRANSITION_SPEED
+.. autoclass:: openpptx.enum.animation.PP_TRANSITION_SPEED
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -66,20 +66,20 @@ PP_TRANSITION_SPEED
 PP_TRANSITION_TYPE
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.animation.PP_TRANSITION_TYPE
+.. autoclass:: openpptx.enum.animation.PP_TRANSITION_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
 
-``pptx.enum.chart``
--------------------
+``openpptx.enum.chart``
+-----------------------
 
 .. _XlAxisCrosses:
 
 XL_AXIS_CROSSES
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_AXIS_CROSSES
+.. autoclass:: openpptx.enum.chart.XL_AXIS_CROSSES
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -89,7 +89,7 @@ XL_AXIS_CROSSES
 XL_ERROR_BAR_DIRECTION
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_ERROR_BAR_DIRECTION
+.. autoclass:: openpptx.enum.chart.XL_ERROR_BAR_DIRECTION
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -99,7 +99,7 @@ XL_ERROR_BAR_DIRECTION
 XL_ERROR_BAR_INCLUDE
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_ERROR_BAR_INCLUDE
+.. autoclass:: openpptx.enum.chart.XL_ERROR_BAR_INCLUDE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -109,7 +109,7 @@ XL_ERROR_BAR_INCLUDE
 XL_ERROR_BAR_TYPE
 ~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_ERROR_BAR_TYPE
+.. autoclass:: openpptx.enum.chart.XL_ERROR_BAR_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -119,7 +119,7 @@ XL_ERROR_BAR_TYPE
 XL_CATEGORY_TYPE
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_CATEGORY_TYPE
+.. autoclass:: openpptx.enum.chart.XL_CATEGORY_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -129,7 +129,7 @@ XL_CATEGORY_TYPE
 XL_CHART_TYPE
 ~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_CHART_TYPE
+.. autoclass:: openpptx.enum.chart.XL_CHART_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -139,7 +139,7 @@ XL_CHART_TYPE
 XL_DATA_LABEL_POSITION
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_DATA_LABEL_POSITION
+.. autoclass:: openpptx.enum.chart.XL_DATA_LABEL_POSITION
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -149,7 +149,7 @@ XL_DATA_LABEL_POSITION
 XL_LEGEND_POSITION
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_LEGEND_POSITION
+.. autoclass:: openpptx.enum.chart.XL_LEGEND_POSITION
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -159,7 +159,7 @@ XL_LEGEND_POSITION
 XL_MARKER_STYLE
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_MARKER_STYLE
+.. autoclass:: openpptx.enum.chart.XL_MARKER_STYLE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -169,7 +169,7 @@ XL_MARKER_STYLE
 XL_TICK_MARK
 ~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_TICK_MARK
+.. autoclass:: openpptx.enum.chart.XL_TICK_MARK
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -179,7 +179,7 @@ XL_TICK_MARK
 XL_TICK_LABEL_POSITION
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_TICK_LABEL_POSITION
+.. autoclass:: openpptx.enum.chart.XL_TICK_LABEL_POSITION
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -189,7 +189,7 @@ XL_TICK_LABEL_POSITION
 XL_TRENDLINE_TYPE
 ~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_TRENDLINE_TYPE
+.. autoclass:: openpptx.enum.chart.XL_TRENDLINE_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -199,7 +199,7 @@ XL_TRENDLINE_TYPE
 XL_DISPLAY_BLANKS_AS
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_DISPLAY_BLANKS_AS
+.. autoclass:: openpptx.enum.chart.XL_DISPLAY_BLANKS_AS
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -209,7 +209,7 @@ XL_DISPLAY_BLANKS_AS
 XL_GROUPING
 ~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_GROUPING
+.. autoclass:: openpptx.enum.chart.XL_GROUPING
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -219,20 +219,20 @@ XL_GROUPING
 XL_BAR_DIRECTION
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.chart.XL_BAR_DIRECTION
+.. autoclass:: openpptx.enum.chart.XL_BAR_DIRECTION
    :members:
    :undoc-members:
    :no-show-inheritance:
 
-``pptx.enum.dml``
------------------
+``openpptx.enum.dml``
+---------------------
 
 .. _MsoColorType:
 
 MSO_COLOR_TYPE
 ~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_COLOR_TYPE
+.. autoclass:: openpptx.enum.dml.MSO_COLOR_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -242,7 +242,7 @@ MSO_COLOR_TYPE
 MSO_FILL_TYPE
 ~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_FILL_TYPE
+.. autoclass:: openpptx.enum.dml.MSO_FILL_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -252,7 +252,7 @@ MSO_FILL_TYPE
 MSO_LINE_DASH_STYLE
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_LINE_DASH_STYLE
+.. autoclass:: openpptx.enum.dml.MSO_LINE_DASH_STYLE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -262,7 +262,7 @@ MSO_LINE_DASH_STYLE
 MSO_PATTERN_TYPE
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_PATTERN_TYPE
+.. autoclass:: openpptx.enum.dml.MSO_PATTERN_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -272,7 +272,7 @@ MSO_PATTERN_TYPE
 MSO_THEME_COLOR_INDEX
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_THEME_COLOR_INDEX
+.. autoclass:: openpptx.enum.dml.MSO_THEME_COLOR_INDEX
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -282,7 +282,7 @@ MSO_THEME_COLOR_INDEX
 MSO_LINE_COMPOUND_TYPE
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_LINE_COMPOUND_TYPE
+.. autoclass:: openpptx.enum.dml.MSO_LINE_COMPOUND_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -292,7 +292,7 @@ MSO_LINE_COMPOUND_TYPE
 MSO_RECT_ALIGNMENT
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_RECT_ALIGNMENT
+.. autoclass:: openpptx.enum.dml.MSO_RECT_ALIGNMENT
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -302,7 +302,7 @@ MSO_RECT_ALIGNMENT
 MSO_LINE_END_TYPE
 ~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_LINE_END_TYPE
+.. autoclass:: openpptx.enum.dml.MSO_LINE_END_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -312,7 +312,7 @@ MSO_LINE_END_TYPE
 MSO_LINE_END_SIZE
 ~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_LINE_END_SIZE
+.. autoclass:: openpptx.enum.dml.MSO_LINE_END_SIZE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -322,7 +322,7 @@ MSO_LINE_END_SIZE
 MSO_BEVEL_PRESET
 ~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_BEVEL_PRESET
+.. autoclass:: openpptx.enum.dml.MSO_BEVEL_PRESET
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -332,7 +332,7 @@ MSO_BEVEL_PRESET
 MSO_SHADOW_TYPE
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_SHADOW_TYPE
+.. autoclass:: openpptx.enum.dml.MSO_SHADOW_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -342,7 +342,7 @@ MSO_SHADOW_TYPE
 MSO_LINE_CAP_STYLE
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_LINE_CAP_STYLE
+.. autoclass:: openpptx.enum.dml.MSO_LINE_CAP_STYLE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -352,7 +352,7 @@ MSO_LINE_CAP_STYLE
 MSO_LINE_JOIN_STYLE
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_LINE_JOIN_STYLE
+.. autoclass:: openpptx.enum.dml.MSO_LINE_JOIN_STYLE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -362,46 +362,46 @@ MSO_LINE_JOIN_STYLE
 MSO_GRADIENT_TYPE
 ~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.dml.MSO_GRADIENT_TYPE
+.. autoclass:: openpptx.enum.dml.MSO_GRADIENT_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
 
-``pptx.enum.lang``
-------------------
+``openpptx.enum.lang``
+----------------------
 
 .. _MsoLanguageId:
 
 MSO_LANGUAGE_ID
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.lang.MSO_LANGUAGE_ID
+.. autoclass:: openpptx.enum.lang.MSO_LANGUAGE_ID
    :members:
    :undoc-members:
    :no-show-inheritance:
 
-``pptx.enum.pres``
-------------------
+``openpptx.enum.pres``
+----------------------
 
 .. _PpSlideShowType:
 
 PP_SLIDE_SHOW_TYPE
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.pres.PP_SLIDE_SHOW_TYPE
+.. autoclass:: openpptx.enum.pres.PP_SLIDE_SHOW_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
 
-``pptx.enum.shapes``
---------------------
+``openpptx.enum.shapes``
+------------------------
 
 .. _MsoAutoShapeType:
 
 MSO_AUTO_SHAPE_TYPE
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE
+.. autoclass:: openpptx.enum.shapes.MSO_AUTO_SHAPE_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -411,7 +411,7 @@ MSO_AUTO_SHAPE_TYPE
 MSO_CONNECTOR_TYPE
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.shapes.MSO_CONNECTOR_TYPE
+.. autoclass:: openpptx.enum.shapes.MSO_CONNECTOR_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -421,7 +421,7 @@ MSO_CONNECTOR_TYPE
 MSO_SHAPE_TYPE
 ~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.shapes.MSO_SHAPE_TYPE
+.. autoclass:: openpptx.enum.shapes.MSO_SHAPE_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -431,7 +431,7 @@ MSO_SHAPE_TYPE
 PP_MEDIA_TYPE
 ~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.shapes.PP_MEDIA_TYPE
+.. autoclass:: openpptx.enum.shapes.PP_MEDIA_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -441,7 +441,7 @@ PP_MEDIA_TYPE
 PP_PLACEHOLDER_TYPE
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.shapes.PP_PLACEHOLDER_TYPE
+.. autoclass:: openpptx.enum.shapes.PP_PLACEHOLDER_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -451,20 +451,20 @@ PP_PLACEHOLDER_TYPE
 PROG_ID
 ~~~~~~~
 
-.. autoclass:: pptx.enum.shapes.PROG_ID
+.. autoclass:: openpptx.enum.shapes.PROG_ID
    :members:
    :undoc-members:
    :no-show-inheritance:
 
-``pptx.enum.text``
-------------------
+``openpptx.enum.text``
+----------------------
 
 .. _MsoAutoSize:
 
 MSO_AUTO_SIZE
 ~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_AUTO_SIZE
+.. autoclass:: openpptx.enum.text.MSO_AUTO_SIZE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -474,7 +474,7 @@ MSO_AUTO_SIZE
 MSO_TEXT_UNDERLINE_TYPE
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_TEXT_UNDERLINE_TYPE
+.. autoclass:: openpptx.enum.text.MSO_TEXT_UNDERLINE_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -484,7 +484,7 @@ MSO_TEXT_UNDERLINE_TYPE
 MSO_VERTICAL_ANCHOR
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_VERTICAL_ANCHOR
+.. autoclass:: openpptx.enum.text.MSO_VERTICAL_ANCHOR
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -494,7 +494,7 @@ MSO_VERTICAL_ANCHOR
 PP_PARAGRAPH_ALIGNMENT
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.PP_PARAGRAPH_ALIGNMENT
+.. autoclass:: openpptx.enum.text.PP_PARAGRAPH_ALIGNMENT
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -504,7 +504,7 @@ PP_PARAGRAPH_ALIGNMENT
 MSO_TEXT_STRIKE_TYPE
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_TEXT_STRIKE_TYPE
+.. autoclass:: openpptx.enum.text.MSO_TEXT_STRIKE_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -514,7 +514,7 @@ MSO_TEXT_STRIKE_TYPE
 MSO_TEXT_CAPS
 ~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_TEXT_CAPS
+.. autoclass:: openpptx.enum.text.MSO_TEXT_CAPS
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -524,7 +524,7 @@ MSO_TEXT_CAPS
 MSO_TEXT_FONT_ALIGN
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_TEXT_FONT_ALIGN
+.. autoclass:: openpptx.enum.text.MSO_TEXT_FONT_ALIGN
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -535,7 +535,7 @@ MSO_TEXT_FONT_ALIGN
 MSO_TEXT_VERTICAL_TYPE
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_TEXT_VERTICAL_TYPE
+.. autoclass:: openpptx.enum.text.MSO_TEXT_VERTICAL_TYPE
    :members:
    :undoc-members:
    :no-show-inheritance:
@@ -545,7 +545,7 @@ MSO_TEXT_VERTICAL_TYPE
 MSO_PRESET_TEXT_SHAPE
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pptx.enum.text.MSO_PRESET_TEXT_SHAPE
+.. autoclass:: openpptx.enum.text.MSO_PRESET_TEXT_SHAPE
    :members:
    :undoc-members:
    :no-show-inheritance:

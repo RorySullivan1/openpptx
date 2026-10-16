@@ -1,18 +1,18 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.oxml.tablestyles` module."""
+"""Unit-test suite for `openpptx.oxml.tablestyles` module."""
 
 from __future__ import annotations
 
 from typing import cast
 
-from pptx.oxml.tablestyles import CT_TableStyleList
+from openpptx.oxml.tablestyles import CT_TableStyleList
 
 from ..unitutil.cxml import element
 
 
 class DescribeCT_TableStyleList:
-    """Unit-test suite for `pptx.oxml.tablestyles.CT_TableStyleList`."""
+    """Unit-test suite for `openpptx.oxml.tablestyles.CT_TableStyleList`."""
 
     def it_provides_access_to_its_def_attribute(self):
         tblStyleLst = cast(

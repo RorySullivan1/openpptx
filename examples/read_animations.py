@@ -16,8 +16,8 @@ Writes nothing.
 
 import sys
 
-from pptx import Presentation
-from pptx.enum.animation import PP_TRANSITION_TYPE
+from openpptx import Presentation
+from openpptx.enum.animation import PP_TRANSITION_TYPE
 
 
 def seconds(value):

@@ -4,16 +4,20 @@ started: 2026-10-16
 branch: v1.0.0
 pr:
 
-Release milestone: API freeze, docs, SemVer, PyPI. Owner decisions 2026-10-16: distribution name `openpptx`
-(the PyPI name `pypptx` is an unrelated 2015 project; the import stays `pptx`), and a complete rebrand, the
-repo included (`RorySullivan1/openpptx`); the contract is the
-documented surface (oxml/opc/parts are internal, not renamed); docs on GitHub Pages; the LICENSE carries
-python-pptx's notice. Detail is in the card, `.meta/roadmap/stages/04-stable-release/v1.0.0.md`.
+Release milestone: API freeze, docs, SemVer, PyPI. Owner decisions 2026-10-16:
+- Complete rebrand to `openpptx`: distribution, import package and repo (`RorySullivan1/openpptx`). The
+  PyPI name `pypptx` belongs to an unrelated 2015 project.
+- No users yet, so nothing renamed before 1.0.0 gets a deprecation shim.
+- The contract is the documented surface (oxml/opc/parts are internal, not renamed).
+- Docs on GitHub Pages; the LICENSE carries python-pptx's notice.
+
+Detail is in the card, `.meta/roadmap/stages/04-stable-release/v1.0.0.md`.
 
 ## Goals
-- Ship as `openpptx`: renamed distribution, full metadata, root LICENSE with python-pptx's notice.
-- Public API contract: audit the API layer, stability and deprecation page, public-name snapshot test,
-  `DeprecationWarning` shims for anything renamed.
+- Ship as `openpptx`: renamed distribution and import package, full metadata, root LICENSE with
+  python-pptx's notice.
+- Public API contract: audit the API layer, stability and deprecation page (in force from 1.0.0),
+  public-name snapshot test.
 - Docs: guides per area, migration guide from python-pptx, CHANGELOG back to v0.1.0, Pages deploy.
 - Release pipeline: Trusted Publishing on a `v*` tag; `1.0.0rc1` first, then `1.0.0`.
 
@@ -22,6 +26,6 @@ python-pptx's notice. Detail is in the card, `.meta/roadmap/stages/04-stable-rel
 - [ ] `sphinx-build -W -E` clean; Pages serves the reference, guides, stability page and migration guide.
 - [ ] sdist and wheel `openpptx` carry LICENSE with both notices; `twine check` passes; the built wheel runs
       every example on 3.9 and 3.13.
-- [ ] The public-API snapshot test passes; each deprecated alias warns and has a test.
+- [ ] The public-API snapshot test passes.
 - [ ] PowerPoint 16 opens every example's output without repair.
 - [ ] `pip install openpptx==1.0.0rc1` works from PyPI (owner-run); migration guide reviewed (human-gated).

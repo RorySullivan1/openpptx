@@ -20,7 +20,7 @@ session. Good for noisy, error-prone, or narrowly-scoped jobs.
 ## Status
 
 **Defined:**
-- `python-developer` — the hands-on executor for `src/pptx/` + `tests/`: implements OOXML
+- `python-developer` — the hands-on executor for `src/openpptx/` + `tests/`: implements OOXML
   support bottom-up (oxml → parts → API proxy) and verifies with `pytest`.
 - `software-architect` — the **objective** structure brain (read-only, `plan`): designs
   layer boundaries and conventions, and hands the build to `python-developer`.

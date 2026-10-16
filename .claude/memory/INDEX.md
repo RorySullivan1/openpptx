@@ -1,8 +1,8 @@
 # MEMORY INDEX  ·  keep ≤ ~80 lines, ≤ ~200 chars per line
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
-- openpptx (was pypptx until 2026-10-16): pure-Python `.pptx` lib (dist `openpptx`, import `pptx`, repo
-  `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
+- openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
+  repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
 - 0.7.1 SHIPPED (PR #136, merge `2627ddd`). **In flight: v1.0.0 on branch `v1.0.0`**, card filled in 2026-10-16, no code
   yet. Rebrand done; rest of step 1 = root LICENSE + `[project.urls]`/classifiers. Owner actions are listed in the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
@@ -47,6 +47,9 @@
 - [2026-10-16] Owner: COMPLETE rebrand to openpptx, the repo included (supersedes "repo stays pypptx"). History keeps
   the old name: shipped cards, session logs, release-tags. `PyPptxError` → `OpenPptxError` with a deprecated
   module-`__getattr__` alias — sessions/2026-10-16-1305-v100-card-expanded.md
+- [2026-10-16] Owner: import renamed too, `pptx` → `openpptx` (no users yet). Supersedes "import stays pptx". With no
+  users, nothing renamed before 1.0.0 gets a shim (the `PyPptxError` alias was dropped); the deprecation policy
+  starts at 1.0.0 — same log
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.

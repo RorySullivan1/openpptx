@@ -1,30 +1,30 @@
 Presentation and slides
 =======================
 
-``pptx.api``
-------------
+``openpptx.api``
+----------------
 
-.. automodule:: pptx.api
+.. automodule:: openpptx.api
 
-``pptx.presentation``
----------------------
+``openpptx.presentation``
+-------------------------
 
-.. automodule:: pptx.presentation
+.. automodule:: openpptx.presentation
 
-``pptx.slide``
---------------
-
-.. automodule:: pptx.slide
-
-``pptx.transition``
--------------------
-
-.. automodule:: pptx.transition
-
-``pptx.animation``
+``openpptx.slide``
 ------------------
 
-.. automodule:: pptx.animation
+.. automodule:: openpptx.slide
+
+``openpptx.transition``
+-----------------------
+
+.. automodule:: openpptx.transition
+
+``openpptx.animation``
+----------------------
+
+.. automodule:: openpptx.animation
 
 Objects the API returns from private classes
 --------------------------------------------
@@ -32,5 +32,5 @@ Objects the API returns from private classes
 These classes have private names but are handed to callers, e.g. by
 ``text_frame.paragraphs`` or ``table.cell()``.
 
-.. autoclass:: pptx.slide._Background
+.. autoclass:: openpptx.slide._Background
 

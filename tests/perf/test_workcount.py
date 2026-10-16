@@ -28,10 +28,10 @@ def it_does_no_more_work_than_the_budget_allows():
     counts = workcount.measure()
 
     assert counts["decks"] == budget["decks"], "the corpus changed; rerun with --update"
-    ceiling = int(budget["pptx_calls"] * (1 + workcount.TOLERANCE))
-    assert counts["pptx_calls"] <= ceiling, (
-        "the corpus workload now makes %d calls into pptx, over the budget of %d (+%d%% allowed)."
+    ceiling = int(budget["openpptx_calls"] * (1 + workcount.TOLERANCE))
+    assert counts["openpptx_calls"] <= ceiling, (
+        "the corpus workload now makes %d calls into openpptx, over the budget of %d (+%d%% allowed)."
         " Find the regression, or if the extra work is intended, rerun"
         " `python -m tests.perf.workcount --update` and commit the new budget."
-        % (counts["pptx_calls"], budget["pptx_calls"], workcount.TOLERANCE * 100)
+        % (counts["openpptx_calls"], budget["openpptx_calls"], workcount.TOLERANCE * 100)
     )

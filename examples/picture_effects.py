@@ -14,10 +14,10 @@ import io
 
 from PIL import Image
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.util import Inches, Pt
 
 FILENAME = "picture_effects.pptx"
 TRANSPARENT = RGBColor(0xFF, 0x00, 0x00)

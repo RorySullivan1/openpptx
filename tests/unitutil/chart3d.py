@@ -99,10 +99,10 @@ CHART_XML = (
 
 def chart_3d_pptx() -> BytesIO:
     """Return a stream holding a one-slide `.pptx` whose one chart is `CHART_XML` above."""
-    from pptx import Presentation
-    from pptx.chart.data import CategoryChartData
-    from pptx.enum.chart import XL_CHART_TYPE
-    from pptx.util import Inches
+    from openpptx import Presentation
+    from openpptx.chart.data import CategoryChartData
+    from openpptx.enum.chart import XL_CHART_TYPE
+    from openpptx.util import Inches
 
     chart_data = CategoryChartData()
     chart_data.categories = CATEGORIES

@@ -1,4 +1,4 @@
-"""Test suite for pptx.shapes.picture module."""
+"""Test suite for openpptx.shapes.picture module."""
 
 from __future__ import annotations
 
@@ -6,13 +6,13 @@ from datetime import timedelta
 
 import pytest
 
-from pptx.dml.color import RGBColor
-from pptx.dml.line import LineFormat
-from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_MEDIA_TYPE
-from pptx.parts.image import Image
-from pptx.parts.slide import SlidePart
-from pptx.shapes.picture import Audio, Movie, Picture, _BasePicture, _MediaFormat
-from pptx.util import Pt
+from openpptx.dml.color import RGBColor
+from openpptx.dml.line import LineFormat
+from openpptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_MEDIA_TYPE
+from openpptx.parts.image import Image
+from openpptx.parts.slide import SlidePart
+from openpptx.shapes.picture import Audio, Movie, Picture, _BasePicture, _MediaFormat
+from openpptx.util import Pt
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import call, class_mock, instance_mock, property_mock
@@ -207,7 +207,7 @@ class DescribeMovie:
 
     @pytest.fixture
     def _MediaFormat_(self, request, media_format_):
-        return class_mock(request, "pptx.shapes.picture._MediaFormat", return_value=media_format_)
+        return class_mock(request, "openpptx.shapes.picture._MediaFormat", return_value=media_format_)
 
     @pytest.fixture
     def media_format_(self, request):
@@ -223,7 +223,7 @@ class DescribeMovie:
 
 
 class Describe_BaseMediaShape:
-    """Unit-test suite for `pptx.shapes.picture._BaseMediaShape` objects (via `Movie`)."""
+    """Unit-test suite for `openpptx.shapes.picture._BaseMediaShape` objects (via `Movie`)."""
 
     @pytest.mark.parametrize(
         "prop_name, other_prop_name",
@@ -330,7 +330,7 @@ class DescribeAudio:
 
     @pytest.fixture
     def _MediaFormat_(self, request, media_format_):
-        return class_mock(request, "pptx.shapes.picture._MediaFormat", return_value=media_format_)
+        return class_mock(request, "openpptx.shapes.picture._MediaFormat", return_value=media_format_)
 
     @pytest.fixture
     def media_format_(self, request):
@@ -401,8 +401,8 @@ class DescribePicture:
         assert picture.transparency_color is None
 
     def it_can_read_transparency_color(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         pic_xml = (
             '<p:pic %s>'
@@ -428,8 +428,8 @@ class DescribePicture:
         assert picture.transparency_color == RGBColor(0x00, 0xFF, 0x00)
 
     def it_can_remove_transparency_color(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         pic_xml = (
             '<p:pic %s>'

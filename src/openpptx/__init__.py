@@ -1,0 +1,143 @@
+"""Initialization module for openpptx package."""
+
+from __future__ import annotations
+
+import sys
+from typing import TYPE_CHECKING
+
+import openpptx.exc as exceptions
+from openpptx.api import Presentation
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.package import Part as _BlobPart
+from openpptx.opc.package import PartFactory, XmlPart
+from openpptx.parts.chart import ChartPart
+from openpptx.parts.chartex import ChartExPart
+from openpptx.parts.comments import (
+    AuthorsPart,
+    CommentAuthorsPart,
+    CommentsPart,
+    ModernCommentsPart,
+)
+from openpptx.parts.coreprops import CorePropertiesPart
+from openpptx.parts.custprops import CustomPropertiesPart
+from openpptx.parts.diagram import (
+    DiagramColorsPart,
+    DiagramDataPart,
+    DiagramDrawingPart,
+    DiagramLayoutPart,
+    DiagramStylePart,
+)
+from openpptx.parts.image import ImagePart
+from openpptx.parts.media import MediaPart
+from openpptx.parts.presentation import PresentationPart
+from openpptx.parts.presprops import PresPropsPart
+from openpptx.parts.slide import (
+    HandoutMasterPart,
+    NotesMasterPart,
+    NotesSlidePart,
+    SlideLayoutPart,
+    SlideMasterPart,
+    SlidePart,
+)
+from openpptx.parts.tablestyles import TableStylesPart
+from openpptx.parts.tags import TagsPart
+
+if TYPE_CHECKING:
+    from openpptx.opc.package import Part
+
+__version__ = "0.7.1"
+
+sys.modules["openpptx.exceptions"] = exceptions
+del sys
+
+__all__ = ["Presentation"]
+
+content_type_to_part_class_map: dict[str, type[Part]] = {
+    CT.PML_PRESENTATION_MAIN: PresentationPart,
+    CT.PML_PRES_MACRO_MAIN: PresentationPart,
+    CT.PML_TEMPLATE_MAIN: PresentationPart,
+    CT.PML_SLIDESHOW_MAIN: PresentationPart,
+    CT.OPC_CORE_PROPERTIES: CorePropertiesPart,
+    CT.PML_HANDOUT_MASTER: HandoutMasterPart,
+    CT.PML_NOTES_MASTER: NotesMasterPart,
+    CT.PML_NOTES_SLIDE: NotesSlidePart,
+    CT.PML_SLIDE: SlidePart,
+    CT.PML_SLIDE_LAYOUT: SlideLayoutPart,
+    CT.PML_SLIDE_MASTER: SlideMasterPart,
+    CT.DML_CHART: ChartPart,
+    CT.OFC_CHART_EX: ChartExPart,
+    CT.DML_DIAGRAM_COLORS: DiagramColorsPart,
+    CT.DML_DIAGRAM_DATA: DiagramDataPart,
+    CT.DML_DIAGRAM_DRAWING: DiagramDrawingPart,
+    CT.DML_DIAGRAM_LAYOUT: DiagramLayoutPart,
+    CT.DML_DIAGRAM_STYLE: DiagramStylePart,
+    CT.BMP: ImagePart,
+    CT.GIF: ImagePart,
+    CT.JPEG: ImagePart,
+    CT.MS_PHOTO: ImagePart,
+    CT.PNG: ImagePart,
+    CT.TIFF: ImagePart,
+    CT.X_EMF: ImagePart,
+    CT.X_WMF: ImagePart,
+    CT.ASF: MediaPart,
+    CT.AVI: MediaPart,
+    CT.M4A: MediaPart,
+    CT.MOV: MediaPart,
+    CT.MP3: MediaPart,
+    CT.MP4: MediaPart,
+    CT.MPG: MediaPart,
+    CT.MS_VIDEO: MediaPart,
+    CT.SWF: MediaPart,
+    CT.VIDEO: MediaPart,
+    CT.WAV: MediaPart,
+    CT.WMV: MediaPart,
+    CT.X_M4A: MediaPart,
+    CT.X_MS_VIDEO: MediaPart,
+    CT.X_WAV: MediaPart,
+    CT.OFC_CUSTOM_PROPERTIES: CustomPropertiesPart,
+    CT.PML_COMMENTS: CommentsPart,
+    CT.PML_COMMENT_AUTHORS: CommentAuthorsPart,
+    CT.PML_AUTHORS: AuthorsPart,
+    CT.PML_MODERN_COMMENTS: ModernCommentsPart,
+    CT.PML_TAGS: TagsPart,
+    CT.PML_PRES_PROPS: PresPropsPart,
+    CT.PML_TABLE_STYLES: TableStylesPart,
+    CT.OFC_THEME: XmlPart,
+    CT.OFC_THEME_OVERRIDE: XmlPart,
+    # -- embedded font data is opaque; held and written back as a blob --
+    CT.X_FONTDATA: _BlobPart,
+    CT.X_FONT_TTF: _BlobPart,
+    # -- accommodate "image/jpg" as an alias for "image/jpeg" --
+    "image/jpg": ImagePart,
+}
+
+PartFactory.part_type_for.update(content_type_to_part_class_map)
+
+del (
+    AuthorsPart,
+    ChartPart,
+    ChartExPart,
+    CommentAuthorsPart,
+    CommentsPart,
+    ModernCommentsPart,
+    CorePropertiesPart,
+    CustomPropertiesPart,
+    DiagramColorsPart,
+    DiagramDataPart,
+    DiagramDrawingPart,
+    DiagramLayoutPart,
+    DiagramStylePart,
+    ImagePart,
+    MediaPart,
+    SlidePart,
+    SlideLayoutPart,
+    SlideMasterPart,
+    PresentationPart,
+    PresPropsPart,
+    TableStylesPart,
+    TagsPart,
+    XmlPart,
+    _BlobPart,
+    CT,
+    PartFactory,
+)

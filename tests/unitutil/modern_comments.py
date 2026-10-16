@@ -113,7 +113,7 @@ def modern_comments_pptx() -> BytesIO:
     Thread 1 (Alice, slide-anchored, active) has replies from Bob then Alice. Thread 2 (Bob,
     anchored to a shape) is resolved and has no replies.
     """
-    from pptx import Presentation
+    from openpptx import Presentation
 
     prs = Presentation()
     prs.slides.add_slide(prs.slide_layouts[6])

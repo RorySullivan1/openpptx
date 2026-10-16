@@ -1,19 +1,19 @@
-"""Unit-test suite for the `pptx.oxml.transition` module."""
+"""Unit-test suite for the `openpptx.oxml.transition` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.enum.animation import PP_TRANSITION_SPEED, PP_TRANSITION_TYPE
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.oxml.transition import CT_SlideTransition, effective_transition
+from openpptx.enum.animation import PP_TRANSITION_SPEED, PP_TRANSITION_TYPE
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.oxml.transition import CT_SlideTransition, effective_transition
 
 from ..unitutil.cxml import element
 
 
 class DescribeCT_SlideTransition:
-    """Unit-test suite for `pptx.oxml.transition.CT_SlideTransition` objects."""
+    """Unit-test suite for `openpptx.oxml.transition.CT_SlideTransition` objects."""
 
     def it_is_the_element_class_for_a_transition(self):
         assert isinstance(element("p:transition"), CT_SlideTransition)
@@ -81,7 +81,7 @@ def _sld_with(content: str):
 
 
 class Describe_effective_transition:
-    """Unit-test suite for `pptx.oxml.transition.effective_transition()`."""
+    """Unit-test suite for `openpptx.oxml.transition.effective_transition()`."""
 
     def it_is_None_when_there_is_no_transition(self):
         assert effective_transition(_sld_with("")) is None

@@ -1,24 +1,24 @@
-"""Unit-test suite for `pptx.presentation` module."""
+"""Unit-test suite for `openpptx.presentation` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.custom_show import CustomShows
-from pptx.fonts import EmbeddedFonts
-from pptx.dml.color import RGBColor
-from pptx.enum.pres import PP_SLIDE_SHOW_TYPE
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.parts.coreprops import CorePropertiesPart
-from pptx.parts.presentation import PresentationPart
-from pptx.parts.presprops import PresPropsPart
-from pptx.parts.slide import HandoutMasterPart, NotesMasterPart
-from pptx.parts.tablestyles import TableStylesPart
-from pptx.presentation import Presentation, Section, Sections, SlideShowSettings, TableStyles
-from pptx.slide import SlideLayouts, SlideMaster, SlideMasters, Slides
-from pptx.text.styles import TextListStyle
-from pptx.util import Pt
+from openpptx.custom_show import CustomShows
+from openpptx.fonts import EmbeddedFonts
+from openpptx.dml.color import RGBColor
+from openpptx.enum.pres import PP_SLIDE_SHOW_TYPE
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.parts.coreprops import CorePropertiesPart
+from openpptx.parts.presentation import PresentationPart
+from openpptx.parts.presprops import PresPropsPart
+from openpptx.parts.slide import HandoutMasterPart, NotesMasterPart
+from openpptx.parts.tablestyles import TableStylesPart
+from openpptx.presentation import Presentation, Section, Sections, SlideShowSettings, TableStyles
+from openpptx.slide import SlideLayouts, SlideMaster, SlideMasters, Slides
+from openpptx.text.styles import TextListStyle
+from openpptx.util import Pt
 
 from .unitutil.cxml import element, xml
 from .unitutil.mock import class_mock, instance_mock, property_mock
@@ -388,7 +388,7 @@ class DescribePresentation:
 
     @pytest.fixture
     def SlideMasters_(self, request, slide_masters_):
-        return class_mock(request, "pptx.presentation.SlideMasters", return_value=slide_masters_)
+        return class_mock(request, "openpptx.presentation.SlideMasters", return_value=slide_masters_)
 
     @pytest.fixture
     def slide_master_(self, request):
@@ -400,7 +400,7 @@ class DescribePresentation:
 
     @pytest.fixture
     def Slides_(self, request, slides_):
-        return class_mock(request, "pptx.presentation.Slides", return_value=slides_)
+        return class_mock(request, "openpptx.presentation.Slides", return_value=slides_)
 
     @pytest.fixture
     def slides_(self, request):
@@ -408,7 +408,7 @@ class DescribePresentation:
 
 
 class DescribeSections:
-    """Unit-test suite for `pptx.presentation.Sections` objects."""
+    """Unit-test suite for `openpptx.presentation.Sections` objects."""
 
     def _prs_elm_with_sections(self):
         xml_str = (
@@ -464,7 +464,7 @@ class DescribeSections:
 
 
 class DescribeSection:
-    """Unit-test suite for `pptx.presentation.Section` objects."""
+    """Unit-test suite for `openpptx.presentation.Section` objects."""
 
     def _section_elm(self, name="Test", slide_ids=()):
         xml_parts = [
@@ -531,7 +531,7 @@ class _FakePresentationPart:
 
 
 class DescribeSlideShowSettings:
-    """Unit-test suite for `pptx.presentation.SlideShowSettings` objects."""
+    """Unit-test suite for `openpptx.presentation.SlideShowSettings` objects."""
 
     def it_reads_defaults_when_presProps_is_absent(self):
         settings = SlideShowSettings(_FakePresentationPart())
@@ -640,10 +640,10 @@ class DescribeSlideShowSettings:
 
 
 class DescribeTableStyles:
-    """Unit-test suite for `pptx.presentation.TableStyles` objects."""
+    """Unit-test suite for `openpptx.presentation.TableStyles` objects."""
 
     def _table_styles_part(self, styles: tuple[tuple[str, str], ...] = (), def_: str | None = None):
-        from pptx.oxml import parse_xml
+        from openpptx.oxml import parse_xml
 
         parts = ['<a:tblStyleLst %s' % nsdecls("a")]
         if def_ is not None:

@@ -21,16 +21,16 @@ from lxml import etree
 import datetime as dt
 from collections import Counter
 
-from pptx import Presentation
-from pptx.enum.animation import (
+from openpptx import Presentation
+from openpptx.enum.animation import (
     MSO_ANIMATION_EFFECT,
     MSO_ANIMATION_TRIGGER,
     PP_ANIMATION_CLASS,
     PP_TRANSITION_SPEED,
     PP_TRANSITION_TYPE,
 )
-from pptx.exc import InvalidPackageError, PackageNotFoundError
-from pptx.util import Inches
+from openpptx.exc import InvalidPackageError, PackageNotFoundError
+from openpptx.util import Inches
 
 from .unitutil.deckwalk import walk, walk_timing
 

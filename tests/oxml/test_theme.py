@@ -1,15 +1,15 @@
-"""Unit-test suite for `pptx.oxml.theme` module."""
+"""Unit-test suite for `openpptx.oxml.theme` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.opc.constants import CONTENT_TYPE as CT
-from pptx.opc.package import PartFactory, XmlPart
-from pptx.opc.packuri import PackURI
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.oxml.theme import (
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.package import PartFactory, XmlPart
+from openpptx.opc.packuri import PackURI
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.oxml.theme import (
     CT_BaseStylesOverride,
     CT_ColorScheme,
     CT_FillStyleList,

@@ -11,9 +11,9 @@ Demonstrates: feature-manifest.md "Charts — Trendlines" and "Charts — Error 
 Saves to chart_trendlines_error_bars.pptx.
 """
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import (
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import (
     XL_CHART_TYPE,
     XL_ERROR_BAR_DIRECTION,
     XL_ERROR_BAR_INCLUDE,
@@ -21,7 +21,7 @@ from pptx.enum.chart import (
     XL_LEGEND_POSITION,
     XL_TRENDLINE_TYPE,
 )
-from pptx.util import Inches
+from openpptx.util import Inches
 
 FILENAME = "chart_trendlines_error_bars.pptx"
 

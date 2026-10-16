@@ -1,13 +1,13 @@
-"""Unit-test suite for the `pptx.chart.point` module."""
+"""Unit-test suite for the `openpptx.chart.point` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.datalabel import DataLabel
-from pptx.chart.marker import Marker
-from pptx.chart.point import BubblePoints, CategoryPoints, Point, XyPoints
-from pptx.dml.chtfmt import ChartFormat
+from openpptx.chart.datalabel import DataLabel
+from openpptx.chart.marker import Marker
+from openpptx.chart.point import BubblePoints, CategoryPoints, Point, XyPoints
+from openpptx.dml.chtfmt import ChartFormat
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import class_mock, instance_mock
@@ -48,7 +48,7 @@ class Describe_BasePoints:
 
     @pytest.fixture
     def Point_(self, request, point_):
-        return class_mock(request, "pptx.chart.point.Point", return_value=point_)
+        return class_mock(request, "openpptx.chart.point.Point", return_value=point_)
 
     @pytest.fixture
     def point_(self, request):
@@ -162,7 +162,7 @@ class DescribePoint:
 
     @pytest.fixture
     def ChartFormat_(self, request, chart_format_):
-        return class_mock(request, "pptx.chart.point.ChartFormat", return_value=chart_format_)
+        return class_mock(request, "openpptx.chart.point.ChartFormat", return_value=chart_format_)
 
     @pytest.fixture
     def chart_format_(self, request):
@@ -170,7 +170,7 @@ class DescribePoint:
 
     @pytest.fixture
     def DataLabel_(self, request, data_label_):
-        return class_mock(request, "pptx.chart.point.DataLabel", return_value=data_label_)
+        return class_mock(request, "openpptx.chart.point.DataLabel", return_value=data_label_)
 
     @pytest.fixture
     def data_label_(self, request):
@@ -178,7 +178,7 @@ class DescribePoint:
 
     @pytest.fixture
     def Marker_(self, request, marker_):
-        return class_mock(request, "pptx.chart.point.Marker", return_value=marker_)
+        return class_mock(request, "openpptx.chart.point.Marker", return_value=marker_)
 
     @pytest.fixture
     def marker_(self, request):

@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for find/replace across runs: `pptx.text.search` and its `TextFrame` and
+"""Unit-test suite for find/replace across runs: `openpptx.text.search` and its `TextFrame` and
 `_Paragraph` methods."""
 
 from __future__ import annotations
@@ -10,10 +10,10 @@ from typing import cast
 
 import pytest
 
-from pptx.exc import InvalidTypeError, InvalidValueError
-from pptx.oxml.text import CT_TextBody, CT_TextParagraph
-from pptx.text.search import TextChar, TextMatch
-from pptx.text.text import TextFrame, _Paragraph
+from openpptx.exc import InvalidTypeError, InvalidValueError
+from openpptx.oxml.text import CT_TextBody, CT_TextParagraph
+from openpptx.text.search import TextChar, TextMatch
+from openpptx.text.text import TextFrame, _Paragraph
 
 from ..unitutil.cxml import element, xml
 

@@ -17,8 +17,8 @@ Dependencies (installed automatically): lxml, Pillow, XlsxWriter, typing\_extens
 ## Quick Start
 
 ```python
-from pptx import Presentation
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 

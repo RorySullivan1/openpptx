@@ -16,12 +16,12 @@ Demonstrates: feature-manifest.md "Charts" (3D variants, 3D view, 3D surfaces).
 Saves to chart_3d_view.pptx.
 """
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.chart.plot import Bar3DPlot, Pie3DPlot
-from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.chart.plot import Bar3DPlot, Pie3DPlot
+from openpptx.dml.color import RGBColor
+from openpptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
+from openpptx.util import Inches, Pt
 
 FILENAME = "chart_3d_view.pptx"
 FLOOR = RGBColor(0xD9, 0xD9, 0xD9)

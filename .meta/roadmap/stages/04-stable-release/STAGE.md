@@ -5,5 +5,5 @@ SemVer backwards-compatibility.
 
 **Versions:** v1.0.0 (card filled in 2026-10-16).
 
-**Milestone (stage exit):** `openpptx 1.0.0` on PyPI (the name `pypptx` is taken; the import
-stays `pptx`) with hosted docs and a documented deprecation policy.
+**Milestone (stage exit):** `openpptx 1.0.0` on PyPI (the name `pypptx` is taken; distribution
+and import are both `openpptx`) with hosted docs and a documented deprecation policy.

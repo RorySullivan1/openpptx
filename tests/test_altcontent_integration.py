@@ -3,11 +3,11 @@ equations): they are listed in `slide.shapes`, and shape-tree operations act on 
 
 from __future__ import annotations
 
-from pptx import Presentation
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.oxml.ns import qn
-from pptx.oxml.shapes.shared import tree_elm
-from pptx.shapes.altcontent import AlternateContentShape
+from openpptx import Presentation
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.oxml.ns import qn
+from openpptx.oxml.shapes.shared import tree_elm
+from openpptx.shapes.altcontent import AlternateContentShape
 
 from .unitutil.altcontent import altcontent_pptx
 from .unitutil.cxml import element

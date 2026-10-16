@@ -4,8 +4,8 @@ Creates two source presentations, imports a slide from one into the other,
 then merges all slides from a third. Saves to merge_presentations.pptx.
 """
 
-from pptx import Presentation
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.util import Inches, Pt
 
 # Create source presentation A
 prs_a = Presentation()

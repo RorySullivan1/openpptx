@@ -1,0 +1,1337 @@
+"""Slide-related objects, including masters, layouts, and notes."""
+
+from __future__ import annotations
+
+import datetime as dt
+import os
+from typing import IO, TYPE_CHECKING, Iterator, cast
+
+from openpptx.dml.fill import FillFormat
+from openpptx.enum.shapes import PP_PLACEHOLDER
+from openpptx.exc import InvalidTypeError, InvalidXmlError, PackageError, SlideError
+from openpptx.shapes.shapetree import (
+    LayoutPlaceholders,
+    LayoutShapes,
+    MasterPlaceholders,
+    MasterShapes,
+    NotesSlidePlaceholders,
+    NotesSlideShapes,
+    SlidePlaceholders,
+    SlideShapes,
+)
+from openpptx.shared import ElementProxy, ParentedElementProxy, PartElementProxy
+from openpptx.text.search import TextFinder, TextReplacer
+from openpptx.theme import Theme
+from openpptx.transition import SlideTransition
+from openpptx.util import lazyproperty
+
+if TYPE_CHECKING:
+    from openpptx.animation import SlideAnimations
+    from openpptx.oxml.presentation import CT_SlideIdList, CT_SlideMasterIdList
+    from openpptx.oxml.slide import (
+        CT_CommonSlideData,
+        CT_HandoutMaster,
+        CT_NotesMaster,
+        CT_NotesSlide,
+        CT_Slide,
+        CT_SlideLayout,
+        CT_SlideLayoutIdList,
+        CT_SlideMaster,
+    )
+    from openpptx.opc.package import XmlPart
+    from openpptx.oxml.theme import CT_OfficeStyleSheet
+    from openpptx.parts.presentation import PresentationPart
+    from openpptx.oxml.comment import (
+        CT_Comment,
+        CT_ModernComment,
+        CT_ModernCommentReply,
+    )
+    from openpptx.parts.comments import CommentAuthorsPart
+    from openpptx.parts.slide import SlideLayoutPart, SlideMasterPart, SlidePart
+    from openpptx.parts.tags import TagsPart
+    from openpptx.presentation import Presentation
+    from openpptx.shapes.placeholder import LayoutPlaceholder, MasterPlaceholder
+    from openpptx.shapes.shapetree import NotesSlidePlaceholder
+    from openpptx.text.search import Pattern, TextMatch
+    from openpptx.text.styles import MasterTextStyles
+    from openpptx.text.text import TextFrame
+
+
+class _BaseSlide(PartElementProxy):
+    """Base class for slide objects, including masters, layouts and notes."""
+
+    _element: CT_Slide
+
+    @lazyproperty
+    def background(self) -> _Background:
+        """|_Background| object providing slide background properties.
+
+        This property returns a |_Background| object whether or not the
+        slide, master, or layout has an explicitly defined background.
+
+        The same |_Background| object is returned on every call for the same
+        slide object.
+        """
+        return _Background(self._element.cSld)
+
+    @property
+    def name(self) -> str:
+        """String representing the internal name of this slide.
+
+        Returns an empty string (`''`) if no name is assigned. Assigning an empty string or |None|
+        to this property causes any name to be removed.
+        """
+        return self._element.cSld.name
+
+    @name.setter
+    def name(self, value: str | None) -> None:
+        new_value = "" if value is None else value
+        self._element.cSld.name = new_value
+
+
+class _BaseMaster(_BaseSlide):
+    """Base class for master objects such as |SlideMaster| and |NotesMaster|.
+
+    Provides access to placeholders and regular shapes.
+    """
+
+    @lazyproperty
+    def placeholders(self) -> MasterPlaceholders:
+        """|MasterPlaceholders| collection of placeholder shapes in this master.
+
+        Sequence sorted in `idx` order.
+        """
+        return MasterPlaceholders(self._element.spTree, self)
+
+    @lazyproperty
+    def shapes(self) -> MasterShapes:
+        """
+        Instance of |MasterShapes| containing sequence of shape objects
+        appearing on this slide.
+        """
+        return MasterShapes(self._element.spTree, self)
+
+
+class HandoutMaster(_BaseMaster):
+    """The handout master, which lays out the pages printed as audience handouts. Read only.
+
+    Obtained from `Presentation.handout_master`. Provides access to its shapes and placeholders
+    (header, date, footer and page number), as |SlideMaster| does.
+    """
+
+    _element: CT_HandoutMaster  # pyright: ignore[reportIncompatibleVariableOverride]
+
+
+class NotesMaster(_BaseMaster):
+    """Proxy for the notes master XML document.
+
+    Provides access to shapes, the most commonly used of which are placeholders.
+    """
+
+    _element: CT_NotesMaster  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    @lazyproperty
+    def header_footer(self) -> HeaderFooter:
+        """|HeaderFooter| object controlling header/footer visibility on notes."""
+        return HeaderFooter(self._element)
+
+
+class NotesSlide(_BaseSlide):
+    """Notes slide object.
+
+    Provides access to slide notes placeholder and other shapes on the notes handout
+    page.
+    """
+
+    element: CT_NotesSlide  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    def clone_master_placeholders(self, notes_master: NotesMaster) -> None:
+        """Selectively add placeholder shape elements from `notes_master`.
+
+        Selected placeholder shape elements from `notes_master` are added to the shapes
+        collection of this notes slide. Z-order of placeholders is preserved. Certain
+        placeholders (header, date, footer) are not cloned.
+        """
+
+        def iter_cloneable_placeholders() -> Iterator[MasterPlaceholder]:
+            """Generate a reference to each cloneable placeholder in `notes_master`.
+
+            These are the placeholders that should be cloned to a notes slide when the a new notes
+            slide is created.
+            """
+            cloneable = (
+                PP_PLACEHOLDER.SLIDE_IMAGE,
+                PP_PLACEHOLDER.BODY,
+                PP_PLACEHOLDER.SLIDE_NUMBER,
+            )
+            for placeholder in notes_master.placeholders:
+                if placeholder.element.ph_type in cloneable:
+                    yield placeholder
+
+        shapes = self.shapes
+        for placeholder in iter_cloneable_placeholders():
+            shapes.clone_placeholder(cast("LayoutPlaceholder", placeholder))
+
+    @property
+    def notes_placeholder(self) -> NotesSlidePlaceholder | None:
+        """the notes placeholder on this notes slide, the shape that contains the actual notes text.
+
+        Return |None| if no notes placeholder is present; while this is probably uncommon, it can
+        happen if the notes master does not have a body placeholder, or if the notes placeholder
+        has been deleted from the notes slide.
+        """
+        for placeholder in self.placeholders:
+            if placeholder.placeholder_format.type == PP_PLACEHOLDER.BODY:
+                return placeholder
+        return None
+
+    @property
+    def notes_text_frame(self) -> TextFrame | None:
+        """The text frame of the notes placeholder on this notes slide.
+
+        |None| if there is no notes placeholder. This is a shortcut to accommodate the common case
+        of simply adding "notes" text to the notes "page".
+        """
+        notes_placeholder = self.notes_placeholder
+        if notes_placeholder is None:
+            return None
+        return notes_placeholder.text_frame
+
+    @lazyproperty
+    def placeholders(self) -> NotesSlidePlaceholders:
+        """Instance of |NotesSlidePlaceholders| for this notes-slide.
+
+        Contains the sequence of placeholder shapes in this notes slide.
+        """
+        return NotesSlidePlaceholders(self.element.spTree, self)
+
+    @lazyproperty
+    def shapes(self) -> NotesSlideShapes:
+        """Sequence of shape objects appearing on this notes slide."""
+        return NotesSlideShapes(self._element.spTree, self)
+
+
+class Slide(_BaseSlide):
+    """Slide object. Provides access to shapes and slide-level properties."""
+
+    part: SlidePart  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    @property
+    def animations(self) -> SlideAnimations:
+        """|SlideAnimations| of the animation effects on this slide, in play order. Read only.
+
+        Empty when the slide has no animations.
+        """
+        from openpptx.animation import SlideAnimations
+
+        return SlideAnimations(self._element, self)
+
+    @property
+    def comments(self) -> SlideComments:
+        """Access to comments on this slide.
+
+        Returns a |SlideComments| object providing iteration, len(), add, and delete.
+        """
+        return SlideComments(self)
+
+    @property
+    def has_comments(self) -> bool:
+        """True if this slide has any comments."""
+        return self.part.has_comments
+
+    @property
+    def threaded_comments(self) -> ThreadedComments:
+        """The modern (threaded) comment threads on this slide.
+
+        These are the comments PowerPoint 365 creates, with replies and a resolved state. They
+        are stored separately from the legacy comments available on :attr:`comments`.
+        """
+        return ThreadedComments(self)
+
+    @property
+    def tags(self) -> TagsPart:
+        """The |TagsPart| for this slide providing dict-like access to key-value tags.
+
+        A tags part is created automatically if one doesn't exist. Supports ``tags[key]``,
+        ``tags[key] = value``, ``del tags[key]``, ``key in tags``, ``len(tags)``,
+        and ``tags.items()``.
+        """
+        return self.part.tags_part
+
+    @property
+    def follow_master_background(self) -> bool:
+        """|True| if this slide inherits the slide master background.
+
+        Assigning |False| causes background inheritance from the master to be
+        interrupted; if there is no custom background for this slide,
+        a default background is added. If a custom background already exists
+        for this slide, assigning |False| has no effect.
+
+        Assigning |True| causes any custom background for this slide to be
+        deleted and inheritance from the master restored.
+        """
+        return self._element.bg is None
+
+    def find_text(self, pattern: Pattern, *, regex: bool = False) -> list[TextMatch]:
+        """Every match of `pattern` in this slide's text, as |TextMatch| objects.
+
+        Searches each shape with a text frame in shape-tree order, group members included and
+        each table's cells row by row, then the notes slide when this slide has one; a notes
+        slide is never created. Layouts, masters, charts, SmartArt and comments are not searched,
+        nor is placeholder prompt text inherited from the layout. Each match's `shape` is the
+        shape holding it (the graphic frame for a table cell).
+
+        `pattern` is interpreted as by `TextFrame.find_all()`. Does not change the slide.
+        """
+        return TextFinder(pattern, regex=regex).find_in_slide(self)
+
+    @property
+    def has_notes_slide(self) -> bool:
+        """`True` if this slide has a notes slide, `False` otherwise.
+
+        A notes slide is created by :attr:`.notes_slide` when one doesn't exist; use this property
+        to test for a notes slide without the possible side effect of creating one.
+        """
+        return self.part.has_notes_slide
+
+    @property
+    def notes_slide(self) -> NotesSlide:
+        """The |NotesSlide| instance for this slide.
+
+        If the slide does not have a notes slide, one is created. The same single instance is
+        returned on each call.
+        """
+        return self.part.notes_slide
+
+    @lazyproperty
+    def header_footer(self) -> HeaderFooter:
+        """|HeaderFooter| object controlling header/footer visibility on this slide.
+
+        Provides per-slide overrides for date/time, footer, header, and slide
+        number placeholder visibility.
+        """
+        return HeaderFooter(self._element)
+
+    @lazyproperty
+    def placeholders(self) -> SlidePlaceholders:
+        """Sequence of placeholder shapes in this slide."""
+        return SlidePlaceholders(self._element.spTree, self)
+
+    @lazyproperty
+    def shapes(self) -> SlideShapes:
+        """Sequence of shape objects appearing on this slide."""
+        return SlideShapes(self._element.spTree, self)
+
+    @property
+    def transition(self) -> SlideTransition:
+        """|SlideTransition| describing the transition into this slide, read only.
+
+        Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
+        slide has no transition.
+        """
+        return SlideTransition(self._element)
+
+    def replace_text(
+        self, old: Pattern, new: str, *, count: int | None = None, regex: bool = False
+    ) -> int:
+        """Replace matches of `old` with `new` in this slide's text; return the count replaced.
+
+        Covers the text `find_text()` searches, in the same order, and replaces as
+        `TextFrame.replace()` does. `count` limits the replacements over the whole slide.
+        """
+        return TextReplacer(old, new, count=count, regex=regex).replace_in_slide(self)
+
+    @property
+    def slide_id(self) -> int:
+        """Integer value that uniquely identifies this slide within this presentation.
+
+        The slide id does not change if the position of this slide in the slide sequence is changed
+        by adding, rearranging, or deleting slides.
+        """
+        return self.part.slide_id
+
+    @property
+    def slide_layout(self) -> SlideLayout:
+        """|SlideLayout| object this slide inherits appearance from."""
+        return self.part.slide_layout
+
+    @property
+    def slide_number(self) -> int:
+        """The display slide number for this slide.
+
+        Computed from the slide's position in the presentation and the presentation's
+        ``first_slide_number`` setting. Read-only.
+        """
+        prs = cast("Presentation", self._parent)
+        first_num = prs._element.firstSlideNum
+        return prs.slides.index(self) + (first_num if first_num is not None else 1)
+
+
+class Slides(ParentedElementProxy):
+    """Sequence of slides belonging to an instance of |Presentation|.
+
+    Has list semantics for access to individual slides. Supports indexed access, len(), and
+    iteration.
+    """
+
+    part: PresentationPart  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    def __init__(self, sldIdLst: CT_SlideIdList, prs: Presentation):
+        super(Slides, self).__init__(sldIdLst, prs)
+        self._sldIdLst = sldIdLst
+
+    def __getitem__(self, idx: int) -> Slide:
+        """Provide indexed access, (e.g. 'slides[0]')."""
+        try:
+            sldId = self._sldIdLst.sldId_lst[idx]
+        except IndexError:
+            raise SlideError("slide index out of range")
+        return self.part.related_slide(sldId.rId)
+
+    def __iter__(self) -> Iterator[Slide]:
+        """Support iteration, e.g. `for slide in slides:`."""
+        for sldId in self._sldIdLst.sldId_lst:
+            yield self.part.related_slide(sldId.rId)
+
+    def __len__(self) -> int:
+        """Support len() built-in function, e.g. `len(slides) == 4`."""
+        return len(self._sldIdLst)
+
+    def add_slide(self, slide_layout: SlideLayout) -> Slide:
+        """Return a newly added slide that inherits layout from `slide_layout`."""
+        rId, slide = self.part.add_slide(slide_layout)
+        slide.shapes.clone_layout_placeholders(slide_layout)
+        self._sldIdLst.add_sldId(rId)
+        return slide
+
+    def get(self, slide_id: int, default: Slide | None = None) -> Slide | None:
+        """Return the slide identified by int `slide_id` in this presentation.
+
+        Returns `default` if not found.
+        """
+        slide = self.part.get_slide(slide_id)
+        if slide is None:
+            return default
+        return slide
+
+    def index(self, slide: Slide) -> int:
+        """Map `slide` to its zero-based position in this slide sequence.
+
+        Raises |ValueError| on *slide* not present.
+        """
+        for idx, this_slide in enumerate(self):
+            if this_slide == slide:
+                return idx
+        raise SlideError("%s is not in slide collection" % slide)
+
+    def duplicate(self, slide: Slide) -> Slide:
+        """Return a new slide that is a deep copy of `slide`.
+
+        The new slide is appended to the end of the slide collection. All shapes,
+        images, charts, and other content are duplicated. Raises |ValueError| if
+        `slide` is not in this collection.
+        """
+        self.index(slide)  # raises if slide not in collection
+        rId, new_slide = self.part.duplicate_slide(slide.part)
+        self._sldIdLst.add_sldId(rId)
+        return new_slide
+
+    def import_slide(self, slide: Slide) -> Slide:
+        """Import a slide from another presentation into this one.
+
+        The slide's content (shapes, images, charts, media) is copied. The slide's
+        layout is matched by name in this presentation; if no match is found, the
+        layout and its master are imported. Returns the newly created |Slide|.
+        """
+        rId, new_slide = self.part.import_slide(slide.part)
+        self._sldIdLst.add_sldId(rId)
+        return new_slide
+
+    def merge(self, presentation: Presentation) -> list[Slide]:
+        """Import all slides from another presentation, preserving order.
+
+        Returns a list of the newly created |Slide| objects.
+        """
+        new_slides = []
+        for slide in presentation.slides:
+            new_slides.append(self.import_slide(slide))
+        return new_slides
+
+    def delete(self, slide: Slide) -> None:
+        """Remove `slide` from the presentation.
+
+        The slide part and its relationship are removed. Raises |ValueError| if `slide` is not
+        in this collection.
+        """
+        idx = self.index(slide)
+        sldId = self._sldIdLst.sldId_lst[idx]
+        rId = sldId.rId
+        self._sldIdLst.remove(sldId)
+        self.part.drop_custom_show_refs(rId)
+        self.part.drop_rel(rId)
+
+    def move(self, old_idx: int, new_idx: int) -> None:
+        """Move the slide at position `old_idx` to position `new_idx`.
+
+        Both indices are zero-based. Raises |IndexError| if either index is out of range.
+        """
+        sldId_lst = self._sldIdLst.sldId_lst
+        if old_idx < 0 or old_idx >= len(sldId_lst):
+            raise IndexError("old_idx out of range")
+        if new_idx < 0 or new_idx >= len(sldId_lst):
+            raise IndexError("new_idx out of range")
+        sldId = sldId_lst[old_idx]
+        if new_idx >= len(sldId_lst) - 1:
+            # Move to end
+            self._sldIdLst.append(sldId)
+        else:
+            target = sldId_lst[new_idx] if new_idx < old_idx else sldId_lst[new_idx + 1]
+            target.addprevious(sldId)
+
+
+class SlideLayout(_BaseSlide):
+    """Slide layout object.
+
+    Provides access to placeholders, regular shapes, and slide layout-level properties.
+    """
+
+    _element: CT_SlideLayout  # pyright: ignore[reportIncompatibleVariableOverride]
+    part: SlideLayoutPart  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    @lazyproperty
+    def header_footer(self) -> HeaderFooter:
+        """|HeaderFooter| object controlling header/footer visibility on this layout."""
+        return HeaderFooter(self._element)
+
+    def iter_cloneable_placeholders(self) -> Iterator[LayoutPlaceholder]:
+        """Generate layout-placeholders on this slide-layout that should be cloned to a new slide.
+
+        Used when creating a new slide from this slide-layout.
+        """
+        latent_ph_types = (
+            PP_PLACEHOLDER.DATE,
+            PP_PLACEHOLDER.FOOTER,
+            PP_PLACEHOLDER.SLIDE_NUMBER,
+        )
+        for ph in self.placeholders:
+            if ph.element.ph_type not in latent_ph_types:
+                yield ph
+
+    @lazyproperty
+    def placeholders(self) -> LayoutPlaceholders:
+        """Sequence of placeholder shapes in this slide layout.
+
+        Placeholders appear in `idx` order.
+        """
+        return LayoutPlaceholders(self._element.spTree, self)
+
+    @lazyproperty
+    def shapes(self) -> LayoutShapes:
+        """Sequence of shapes appearing on this slide layout."""
+        return LayoutShapes(self._element.spTree, self)
+
+    @property
+    def slide_master(self) -> SlideMaster:
+        """Slide master from which this slide-layout inherits properties."""
+        return self.part.slide_master
+
+    @property
+    def transition(self) -> SlideTransition:
+        """|SlideTransition| describing the transition into this layout, read only.
+
+        Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
+        layout has no transition.
+        This is the transition stored on the layout itself; openpptx does not resolve whether
+        PowerPoint applies it to slides that have none.
+        """
+        return SlideTransition(self._element)
+
+    @property
+    def used_by_slides(self) -> tuple[Slide, ...]:
+        """Tuple of slide objects based on this slide layout."""
+        # ---getting Slides collection requires going around the horn a bit---
+        slides = self.part.package.presentation_part.presentation.slides
+        return tuple(s for s in slides if s.slide_layout == self)
+
+
+class SlideLayouts(ParentedElementProxy):
+    """Sequence of slide layouts belonging to a slide-master.
+
+    Supports indexed access, len(), iteration, index(), remove(), add_slide_layout() and
+    duplicate().
+    """
+
+    part: SlideMasterPart  # pyright: ignore[reportIncompatibleMethodOverride]
+    parent: SlideMaster  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    def __init__(self, sldLayoutIdLst: CT_SlideLayoutIdList, parent: SlideMaster):
+        super(SlideLayouts, self).__init__(sldLayoutIdLst, parent)
+        self._sldLayoutIdLst = sldLayoutIdLst
+
+    def __getitem__(self, idx: int) -> SlideLayout:
+        """Provides indexed access, e.g. `slide_layouts[2]`."""
+        try:
+            sldLayoutId = self._sldLayoutIdLst.sldLayoutId_lst[idx]
+        except IndexError:
+            raise SlideError("slide layout index out of range")
+        return self.part.related_slide_layout(sldLayoutId.rId)
+
+    def __iter__(self) -> Iterator[SlideLayout]:
+        """Generate each |SlideLayout| in the collection, in sequence."""
+        for sldLayoutId in self._sldLayoutIdLst.sldLayoutId_lst:
+            yield self.part.related_slide_layout(sldLayoutId.rId)
+
+    def __len__(self) -> int:
+        """Support len() built-in function, e.g. `len(slides) == 4`."""
+        return len(self._sldLayoutIdLst)
+
+    def add_slide_layout(self, name: str, *, blank: bool = False) -> SlideLayout:
+        """Add a new layout named `name` to the end of this master's layouts and return it.
+
+        Like PowerPoint's *Insert Layout*, the new layout has a title placeholder and date,
+        footer and slide-number placeholders, each taking its position from the master's
+        placeholder of that type (one the master lacks is left out). With `blank=True` it has no
+        placeholders. Add more with `layout.shapes.add_placeholder()`, then add slides on the
+        layout with `prs.slides.add_slide(layout)`. The layout is kept even while no slide uses
+        it.
+        """
+        slide_layout = self.part.add_slide_layout_part(name).slide_layout
+        if not blank:
+            master_placeholders = self.parent.placeholders
+            for ph_type in (
+                PP_PLACEHOLDER.TITLE,
+                PP_PLACEHOLDER.DATE,
+                PP_PLACEHOLDER.FOOTER,
+                PP_PLACEHOLDER.SLIDE_NUMBER,
+            ):
+                if master_placeholders.get(ph_type) is not None:
+                    slide_layout.shapes.add_placeholder(ph_type)
+        return slide_layout
+
+    def duplicate(self, slide_layout: SlideLayout, name: str | None = None) -> SlideLayout:
+        """Add a copy of `slide_layout`, one of these layouts, directly after it; return it.
+
+        The copy is named `name`, by default PowerPoint's "1_<name>" (or "2_<name>" and so on,
+        until the name is free). It shares the original's images, and has its own copy of its
+        placeholders and other shapes, so changing one layout leaves the other as it was. Raises
+        |SlideError| when `slide_layout` belongs to another master.
+        """
+        self.index(slide_layout)
+        if name is None:
+            names = {layout.name for layout in self}
+            n = 1
+            while "%d_%s" % (n, slide_layout.name) in names:
+                n += 1
+            name = "%d_%s" % (n, slide_layout.name)
+        return self.part.duplicate_slide_layout_part(slide_layout.part, name).slide_layout
+
+    def get_by_name(self, name: str, default: SlideLayout | None = None) -> SlideLayout | None:
+        """Return SlideLayout object having `name`, or `default` if not found."""
+        for slide_layout in self:
+            if slide_layout.name == name:
+                return slide_layout
+        return default
+
+    def index(self, slide_layout: SlideLayout) -> int:
+        """Return zero-based index of `slide_layout` in this collection.
+
+        Raises `ValueError` if `slide_layout` is not present in this collection.
+        """
+        for idx, this_layout in enumerate(self):
+            if slide_layout == this_layout:
+                return idx
+        raise SlideError("layout not in this SlideLayouts collection")
+
+    def remove(self, slide_layout: SlideLayout) -> None:
+        """Remove `slide_layout` from the collection.
+
+        Raises ValueError when `slide_layout` is in use; a slide layout which is the basis for one
+        or more slides cannot be removed.
+        """
+        # ---raise if layout is in use---
+        if slide_layout.used_by_slides:
+            raise SlideError("cannot remove slide-layout in use by one or more slides")
+
+        # ---target layout is identified by its index in this collection---
+        target_idx = self.index(slide_layout)
+
+        # --remove layout from p:sldLayoutIds of its master
+        # --this stops layout from showing up, but doesn't remove it from package
+        target_sldLayoutId = self._sldLayoutIdLst.sldLayoutId_lst[target_idx]
+        self._sldLayoutIdLst.remove(target_sldLayoutId)
+
+        # --drop relationship from master to layout
+        # --this removes layout from package, along with everything (only) it refers to,
+        # --including images (not used elsewhere) and hyperlinks
+        slide_layout.slide_master.part.drop_rel(target_sldLayoutId.rId)
+
+
+class SlideMaster(_BaseMaster):
+    """Slide master object.
+
+    Provides access to slide layouts. Access to placeholders, regular shapes, and slide master-level
+    properties is inherited from |_BaseMaster|.
+    """
+
+    _element: CT_SlideMaster  # pyright: ignore[reportIncompatibleVariableOverride]
+    part: SlideMasterPart  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    @lazyproperty
+    def header_footer(self) -> HeaderFooter:
+        """|HeaderFooter| object controlling header/footer visibility on this master."""
+        return HeaderFooter(self._element)
+
+    @lazyproperty
+    def slide_layouts(self) -> SlideLayouts:
+        """|SlideLayouts| object providing access to this slide-master's layouts."""
+        return SlideLayouts(self._element.get_or_add_sldLayoutIdLst(), self)
+
+    @property
+    def text_styles(self) -> MasterTextStyles:
+        """|MasterTextStyles| giving the master's default title, body, and other text formatting.
+
+        Formatting set here applies to every slide and layout that doesn't override it, e.g.
+        ``slide_master.text_styles.body[0].font.size = Pt(20)`` sets the size of first-level
+        body text.
+        """
+        from openpptx.text.styles import MasterTextStyles
+
+        return MasterTextStyles(self._element)
+
+    @property
+    def theme(self) -> Theme | None:
+        """A |Theme| object for this slide master's theme, or None."""
+        theme_part = self.part.theme_part
+        if theme_part is None:
+            return None
+        return Theme(theme_part._element)
+
+    @property
+    def transition(self) -> SlideTransition:
+        """|SlideTransition| describing the transition into this master, read only.
+
+        Always returns a |SlideTransition|; its `type` is `PP_TRANSITION_TYPE.NONE` when the
+        master has no transition.
+        This is the transition stored on the master itself; openpptx does not resolve whether
+        PowerPoint applies it to slides that have none.
+        """
+        return SlideTransition(self._element)
+
+    def apply_theme(
+        self, source: Presentation | SlideMaster | str | os.PathLike[str] | IO[bytes]
+    ) -> Theme:
+        """Replace this master's theme (colors, fonts, and formats) with a copy of `source`'s.
+
+        `source` is a |Presentation| (its first master's theme is used), a |SlideMaster|, or
+        the path or file-like object of a `.thmx` theme file or a `.pptx`/`.potx` file. Only
+        the theme is copied; the source's layouts and masters are not. Slides keep their
+        scheme-color and theme-font references, which now resolve against the new theme.
+
+        Raises |InvalidXmlError| when the source theme lacks any of the twelve color slots or
+        the major/minor fonts, since references on existing slides would then not resolve.
+        Returns the new |Theme|.
+        """
+        source_theme_part = _source_theme_part(source)
+        _validate_theme(source_theme_part._element)
+        new_theme_part = self.part.apply_theme(source_theme_part)
+        return Theme(new_theme_part._element)
+
+
+class SlideMasters(ParentedElementProxy):
+    """Sequence of |SlideMaster| objects belonging to a presentation.
+
+    Has list access semantics, supporting indexed access, len(), and iteration.
+    """
+
+    part: PresentationPart  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    def __init__(self, sldMasterIdLst: CT_SlideMasterIdList, parent: Presentation):
+        super(SlideMasters, self).__init__(sldMasterIdLst, parent)
+        self._sldMasterIdLst = sldMasterIdLst
+
+    def __getitem__(self, idx: int) -> SlideMaster:
+        """Provides indexed access, e.g. `slide_masters[2]`."""
+        try:
+            sldMasterId = self._sldMasterIdLst.sldMasterId_lst[idx]
+        except IndexError:
+            raise SlideError("slide master index out of range")
+        return self.part.related_slide_master(sldMasterId.rId)
+
+    def __iter__(self) -> Iterator[SlideMaster]:
+        """Generate each |SlideMaster| instance in the collection, in sequence."""
+        for smi in self._sldMasterIdLst.sldMasterId_lst:
+            yield self.part.related_slide_master(smi.rId)
+
+    def __len__(self) -> int:
+        """Support len() built-in function, e.g. `len(slide_masters) == 4`."""
+        return len(self._sldMasterIdLst)
+
+
+class HeaderFooter:
+    """Provides access to header/footer visibility and content settings.
+
+    Controls whether date/time, footer, header, and slide number placeholders
+    are shown, and provides access to footer text and date format.
+    """
+
+    def __init__(
+        self,
+        slide_elm: CT_Slide | CT_SlideLayout | CT_SlideMaster | CT_NotesMaster,
+    ):
+        self._slide_elm = slide_elm
+
+    @property
+    def date_format(self) -> str | None:
+        """The date format type string from the date placeholder field.
+
+        Read-only. Returns the ``type`` attribute value from the ``a:fld`` element
+        in the date placeholder, e.g. ``"datetime1"``, ``"datetimeFigureOut"``.
+        Returns |None| when no date placeholder or no field element is found.
+        """
+        ph = self._placeholder_by_type(PP_PLACEHOLDER.DATE)
+        if ph is None:
+            return None
+        from openpptx.oxml.text import CT_TextField
+
+        txBody = ph.txBody
+        if txBody is None:
+            return None
+        for p in txBody.p_lst:
+            for child in p:
+                if isinstance(child, CT_TextField) and child.field_type is not None:
+                    return child.field_type
+        return None
+
+    @property
+    def footer_text(self) -> str | None:
+        """Text content of the footer placeholder.
+
+        Read/write. Returns |None| when no footer placeholder is present.
+        Setting this value replaces the text in the first run of the
+        footer placeholder. Setting to |None| clears the footer text.
+        """
+        ph = self._placeholder_by_type(PP_PLACEHOLDER.FOOTER)
+        if ph is None:
+            return None
+        txBody = ph.txBody
+        if txBody is None:
+            return None
+        paragraphs = txBody.p_lst
+        if not paragraphs:
+            return None
+        return paragraphs[0].text
+
+    @footer_text.setter
+    def footer_text(self, value: str | None) -> None:
+        ph = self._placeholder_by_type(PP_PLACEHOLDER.FOOTER)
+        if ph is None:
+            return
+        txBody = ph.txBody
+        if txBody is None:
+            return
+        paragraphs = txBody.p_lst
+        if not paragraphs:
+            return
+        p = paragraphs[0]
+        runs = p.r_lst
+        if runs:
+            runs[0].text = value or ""
+        else:
+            p.add_r(value or "")
+
+    @property
+    def is_date_auto(self) -> bool | None:
+        """Whether the date placeholder uses an auto-updating date field.
+
+        Read-only. Returns |True| when the date placeholder contains an
+        ``a:fld`` element (auto-updating), |False| when it uses a regular
+        text run (fixed date), or |None| when no date placeholder exists.
+        """
+        ph = self._placeholder_by_type(PP_PLACEHOLDER.DATE)
+        if ph is None:
+            return None
+        from openpptx.oxml.text import CT_TextField
+
+        txBody = ph.txBody
+        if txBody is None:
+            return None
+        for p in txBody.p_lst:
+            for child in p:
+                if isinstance(child, CT_TextField):
+                    return True
+        return False
+
+    @property
+    def show_date(self) -> bool:
+        """Whether the date/time placeholder is visible."""
+        hf = self._slide_elm.hf
+        if hf is None:
+            return True
+        return hf.dt is not False
+
+    @show_date.setter
+    def show_date(self, value: bool) -> None:
+        hf = self._slide_elm.get_or_add_hf()
+        hf.dt = value
+
+    @property
+    def show_footer(self) -> bool:
+        """Whether the footer placeholder is visible."""
+        hf = self._slide_elm.hf
+        if hf is None:
+            return True
+        return hf.ftr is not False
+
+    @show_footer.setter
+    def show_footer(self, value: bool) -> None:
+        hf = self._slide_elm.get_or_add_hf()
+        hf.ftr = value
+
+    @property
+    def show_header(self) -> bool:
+        """Whether the header placeholder is visible."""
+        hf = self._slide_elm.hf
+        if hf is None:
+            return True
+        return hf.hdr is not False
+
+    @show_header.setter
+    def show_header(self, value: bool) -> None:
+        hf = self._slide_elm.get_or_add_hf()
+        hf.hdr = value
+
+    @property
+    def show_slide_number(self) -> bool:
+        """Whether the slide number placeholder is visible."""
+        hf = self._slide_elm.hf
+        if hf is None:
+            return True
+        return hf.sldNum is not False
+
+    @show_slide_number.setter
+    def show_slide_number(self, value: bool) -> None:
+        hf = self._slide_elm.get_or_add_hf()
+        hf.sldNum = value
+
+    def _placeholder_by_type(self, ph_type: PP_PLACEHOLDER):
+        """Return the placeholder shape element with the given type, or None."""
+        spTree = self._slide_elm.cSld.spTree
+        for ph_elm in spTree.iter_ph_elms():
+            if ph_elm.ph_type == ph_type:
+                return ph_elm
+        return None
+
+
+class _Background(ElementProxy):
+    """Provides access to slide background properties.
+
+    Note that the presence of this object does not by itself imply an
+    explicitly-defined background; a slide with an inherited background still
+    has a |_Background| object.
+    """
+
+    def __init__(self, cSld: CT_CommonSlideData):
+        super(_Background, self).__init__(cSld)
+        self._cSld = cSld
+
+    @lazyproperty
+    def fill(self) -> FillFormat:
+        """|FillFormat| instance for this background.
+
+        This |FillFormat| object is used to interrogate or specify the fill
+        of the slide background.
+
+        Note that accessing this property is potentially destructive. A slide
+        background can also be specified by a background style reference and
+        accessing this property will remove that reference, if present, and
+        replace it with NoFill. This is frequently the case for a slide
+        master background.
+
+        This is also the case when there is no explicitly defined background
+        (background is inherited); merely accessing this property will cause
+        the background to be set to NoFill and the inheritance link will be
+        interrupted. This is frequently the case for a slide background.
+
+        Of course, if you are accessing this property in order to set the
+        fill, then these changes are of no consequence, but the existing
+        background cannot be reliably interrogated using this property unless
+        you have already established it is an explicit fill.
+
+        If the background is already a fill, then accessing this property
+        makes no changes to the current background.
+        """
+        bgPr = self._cSld.get_or_add_bgPr()
+        return FillFormat.from_fill_parent(bgPr)
+
+
+class SlideComments:
+    """Collection of comments on a slide.
+
+    Supports iteration, len(), add(), and delete().
+    """
+
+    def __init__(self, slide: Slide):
+        self._slide = slide
+
+    def __len__(self) -> int:
+        if not self._slide.part.has_comments:
+            return 0
+        return len(self._slide.part.comments_part)
+
+    def __iter__(self) -> Iterator[Comment]:
+        if not self._slide.part.has_comments:
+            return
+        authors_part = self._slide.part.package.comment_authors
+        for cm in self._slide.part.comments_part:
+            yield Comment(cm, authors_part)
+
+    def __getitem__(self, idx: int) -> Comment:
+        comments = list(self)
+        if idx < 0 or idx >= len(comments):
+            raise IndexError("comment index out of range")
+        return comments[idx]
+
+    def add(
+        self, author_name: str, author_initials: str, text: str, x: int = 0, y: int = 0
+    ) -> Comment:
+        """Add a comment to this slide and return the new |Comment|.
+
+        `author_name` and `author_initials` identify the author; an author already recorded
+        under that name and those initials is reused, otherwise one is added to the
+        presentation's comment authors. `text` is the comment body. `x` and `y` place the
+        comment marker and are written unchanged to the comment's `p:pos` element.
+        """
+        from lxml import etree
+
+        from openpptx.oxml.ns import qn
+
+        authors_part = self._slide.part.package.comment_authors
+        author = authors_part.get_or_add_author(author_name, author_initials)
+
+        # Increment lastIdx to get next comment index for this author
+        next_idx = author.lastIdx + 1
+        author.set("lastIdx", str(next_idx))
+
+        comments_part = self._slide.part.comments_part
+        cm = etree.SubElement(comments_part._element, qn("p:cm"))
+        cm.set("authorId", str(author.id))
+        cm.set("idx", str(next_idx))
+
+        pos = etree.SubElement(cm, qn("p:pos"))
+        pos.set("x", str(x))
+        pos.set("y", str(y))
+
+        text_elm = etree.SubElement(cm, qn("p:text"))
+        text_elm.text = text
+
+        return Comment(cm, authors_part)
+
+    def clear(self) -> None:
+        """Remove all comments from this slide."""
+        if not self._slide.part.has_comments:
+            return
+        comments_part = self._slide.part.comments_part
+        for cm in list(comments_part._element.cm_lst):
+            comments_part._element.remove(cm)
+
+
+class Comment:
+    """A single comment on a slide."""
+
+    def __init__(self, cm: CT_Comment, authors_part: CommentAuthorsPart):
+        self._cm = cm
+        self._authors_part = authors_part
+
+    @property
+    def author(self) -> str:
+        """Name of the comment author."""
+        author = self._authors_part.get_author(self._cm.authorId)
+        return author.name if author is not None else ""
+
+    @property
+    def text(self) -> str:
+        """The comment text."""
+        text_elm = self._cm.text
+        if text_elm is None:
+            return ""
+        return text_elm.text or ""
+
+    @text.setter
+    def text(self, value: str) -> None:
+        if self._cm.text is None:
+            from lxml import etree
+
+            from openpptx.oxml.ns import qn
+
+            text_elm = etree.SubElement(self._cm, qn("p:text"))
+            text_elm.text = value
+        else:
+            self._cm.text.text = value
+
+    @property
+    def position(self) -> tuple[int, int]:
+        """(x, y) position of the comment anchor in EMU."""
+        pos = self._cm.pos
+        if pos is None:
+            return (0, 0)
+        return (int(pos.get("x", "0")), int(pos.get("y", "0")))
+
+    @property
+    def datetime(self) -> str | None:
+        """ISO 8601 datetime string of the comment, or None."""
+        return self._cm.dt
+
+    def delete(self) -> None:
+        """Remove this comment from its slide."""
+        self._cm.getparent().remove(self._cm)
+
+
+class ThreadedComments:
+    """The modern (threaded) comment threads on a slide, in document order.
+
+    Supports iteration, len(), indexed access, and add().
+    """
+
+    def __init__(self, slide: Slide):
+        self._slide = slide
+
+    def __len__(self) -> int:
+        comments_part = self._slide.part.modern_comments_part
+        return 0 if comments_part is None else len(comments_part)
+
+    def __iter__(self) -> Iterator[ThreadedComment]:
+        comments_part = self._slide.part.modern_comments_part
+        if comments_part is None:
+            return
+        for cm in comments_part:
+            yield ThreadedComment(cm, self._presentation_part)
+
+    def __getitem__(self, idx: int) -> ThreadedComment:
+        threads = list(self)
+        if idx < 0 or idx >= len(threads):
+            raise IndexError("threaded comment index out of range")
+        return threads[idx]
+
+    def add(self, text: str, author: str, initials: str | None = None) -> ThreadedComment:
+        """Start a new thread whose first comment is `text`, and return it.
+
+        `author` is the display name PowerPoint shows; an author already recorded under that
+        name is reused, otherwise one is added with `initials`. The thread is anchored to the
+        slide and stamped with the current local time, as PowerPoint does.
+        """
+        slide_part = self._slide.part
+        author_elm = self._presentation_part.get_or_add_authors_part().get_or_add_author(
+            author, initials
+        )
+        comments_part = slide_part.get_or_add_modern_comments_part()
+        cm = comments_part.add_thread(
+            author_id=author_elm.id,
+            created=_now_xsd_datetime(),
+            sld_id=slide_part.slide_id,
+            creation_id=slide_part._element.cSld.get_or_add_creation_id(),
+            text=text,
+        )
+        return ThreadedComment(cm, self._presentation_part)
+
+    @property
+    def _presentation_part(self) -> PresentationPart:
+        return cast("PresentationPart", self._slide.part.package.presentation_part)
+
+
+class _BaseThreadedComment:
+    """Properties common to the comment that starts a thread and each reply to it."""
+
+    def __init__(
+        self,
+        element: CT_ModernComment | CT_ModernCommentReply,
+        presentation_part: PresentationPart,
+    ):
+        self._element = element
+        self._presentation_part = presentation_part
+
+    @property
+    def author(self) -> str:
+        """Display name of the author, or "" when the author isn't in the authors part."""
+        author = self._author
+        return "" if author is None else author.name
+
+    @property
+    def author_initials(self) -> str:
+        """Initials of the author, or "" when they aren't recorded."""
+        author = self._author
+        return "" if author is None or author.initials is None else author.initials
+
+    @property
+    def created(self) -> dt.datetime | None:
+        """When this comment was made, or None if the file records an unreadable time.
+
+        Timezone-aware when the file records a zone; naive (local time) otherwise, which is how
+        PowerPoint writes it.
+        """
+        return self._element.created_datetime
+
+    @property
+    def id(self) -> str:
+        """GUID identifying this comment, e.g. "{62A8A96D-E5A8-4BFC-B993-A6EAE3907CAD}"."""
+        return self._element.id
+
+    @property
+    def text(self) -> str:
+        """The comment text; paragraphs are separated by a line feed."""
+        return self._element.text
+
+    @property
+    def _author(self):
+        authors_part = self._presentation_part.authors_part
+        if authors_part is None:
+            return None
+        return authors_part.get_author(self._element.authorId)
+
+
+class ThreadedComment(_BaseThreadedComment):
+    """A modern comment thread: the comment that started it plus its replies."""
+
+    _element: CT_ModernComment
+
+    _ANCHORS = {
+        "pc:sldMkLst": "slide",
+        "ac:deMkLst": "shape",
+        "ac:txMkLst": "text",
+    }
+
+    @property
+    def anchor(self) -> str:
+        """What the thread is attached to: "slide", "shape", "text" or "unknown"."""
+        return self._ANCHORS.get(self._element.anchor_tag or "", "unknown")
+
+    @property
+    def position(self) -> tuple[int, int] | None:
+        """(x, y) offset in EMU of the comment marker from its anchor, or None if not recorded."""
+        pos = self._element.pos
+        return None if pos is None else (int(pos.x), int(pos.y))
+
+    def reply(self, text: str, author: str, initials: str | None = None) -> CommentReply:
+        """Add a reply with body `text` to the end of this thread and return it.
+
+        `author` and `initials` are handled as in |ThreadedComments.add|.
+        """
+        author_elm = self._presentation_part.get_or_add_authors_part().get_or_add_author(
+            author, initials
+        )
+        reply = self._element.add_reply(author_elm.id, _now_xsd_datetime(), text)
+        return CommentReply(reply, self._presentation_part)
+
+    @property
+    def replies(self) -> list[CommentReply]:
+        """The replies to this thread, oldest first as stored in the file."""
+        return [CommentReply(reply, self._presentation_part) for reply in self._element.reply_lst]
+
+    @property
+    def resolved(self) -> bool:
+        """True when the thread has been resolved.
+
+        Assigning True resolves the thread; assigning False reopens it.
+        """
+        return self._element.status == "resolved"
+
+    @resolved.setter
+    def resolved(self, value: bool) -> None:
+        self._element.status = "resolved" if value else "active"
+
+    @property
+    def status(self) -> str:
+        """The thread's status: "active", "resolved" or "closed"."""
+        return self._element.status
+
+
+class CommentReply(_BaseThreadedComment):
+    """One reply in a modern comment thread."""
+
+    _element: CT_ModernCommentReply
+
+
+def _now_xsd_datetime() -> str:
+    """The current local time as an `xsd:dateTime` with milliseconds and no zone.
+
+    This is the form PowerPoint writes in the `created` attribute of a modern comment.
+    """
+    return dt.datetime.now().isoformat(timespec="milliseconds")
+
+
+def _source_theme_part(
+    source: Presentation | SlideMaster | str | os.PathLike[str] | IO[bytes],
+) -> XmlPart:
+    """Return the theme part `source` provides, for |SlideMaster.apply_theme|."""
+    if isinstance(source, SlideMaster):
+        master = source
+    elif isinstance(source, (str, os.PathLike)) or hasattr(source, "read"):
+        from openpptx.opc.constants import CONTENT_TYPE as CT
+        from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+        from openpptx.package import Package
+
+        pkg_file = os.fspath(source) if isinstance(source, os.PathLike) else source
+        main_part = Package.open(cast("str | IO[bytes]", pkg_file)).part_related_by(
+            RT.OFFICE_DOCUMENT
+        )
+        if main_part.content_type == CT.OFC_THEME:
+            return cast("XmlPart", main_part)
+        presentation = getattr(main_part, "presentation", None)
+        if presentation is None:
+            raise PackageError(
+                "theme source must be a .thmx, .pptx, or .potx file, got main part of type %s"
+                % main_part.content_type
+            )
+        master = presentation.slide_master
+    elif hasattr(source, "slide_master"):
+        master = cast("Presentation", source).slide_master
+    else:
+        raise InvalidTypeError(
+            "theme source must be a Presentation, SlideMaster, path, or file-like object, got %s"
+            % type(source).__name__
+        )
+    theme_part = master.part.theme_part
+    if theme_part is None:
+        raise PackageError("source slide master has no theme")
+    return theme_part
+
+
+_REQUIRED_COLOR_SLOTS = (
+    "dk1",
+    "lt1",
+    "dk2",
+    "lt2",
+    "accent1",
+    "accent2",
+    "accent3",
+    "accent4",
+    "accent5",
+    "accent6",
+    "hlink",
+    "folHlink",
+)
+
+
+def _validate_theme(theme: CT_OfficeStyleSheet) -> None:
+    """Raise |InvalidXmlError| unless `theme` defines every color slot and both theme fonts.
+
+    Slides refer to theme colors by slot name (via the master's color map) and to theme fonts
+    as `+mj-*`/`+mn-*`, so a theme missing either would leave those references dangling.
+    """
+    themeElements = theme.themeElements
+    clrScheme = None if themeElements is None else themeElements.clrScheme
+    fontScheme = None if themeElements is None else themeElements.fontScheme
+    if clrScheme is None:
+        raise InvalidXmlError("source theme has no color scheme")
+    missing = [
+        slot
+        for slot in _REQUIRED_COLOR_SLOTS
+        if getattr(clrScheme, slot) is None or len(getattr(clrScheme, slot)) == 0
+    ]
+    if missing:
+        raise InvalidXmlError("source theme color scheme lacks slot(s): %s" % ", ".join(missing))
+    if fontScheme is None:
+        raise InvalidXmlError("source theme has no font scheme")
+    for font_name in ("majorFont", "minorFont"):
+        font = getattr(fontScheme, font_name)
+        if font is None or font.latin is None:
+            raise InvalidXmlError("source theme font scheme lacks a %s Latin typeface" % font_name)

@@ -1,10 +1,10 @@
-"""Unit-test suite for `pptx.chart.datatable` module."""
+"""Unit-test suite for `openpptx.chart.datatable` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.datatable import DataTable
+from openpptx.chart.datatable import DataTable
 
 from ..unitutil.cxml import element, xml
 

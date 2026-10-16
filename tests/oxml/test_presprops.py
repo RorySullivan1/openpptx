@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.oxml.presprops` module."""
+"""Unit-test suite for `openpptx.oxml.presprops` module."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ from typing import cast
 
 import pytest
 
-from pptx.oxml.presprops import CT_PresentationProperties, CT_ShowProperties
+from openpptx.oxml.presprops import CT_PresentationProperties, CT_ShowProperties
 
 from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_PresentationProperties:
-    """Unit-test suite for `pptx.oxml.presprops.CT_PresentationProperties`."""
+    """Unit-test suite for `openpptx.oxml.presprops.CT_PresentationProperties`."""
 
     def it_has_no_showPr_by_default(self):
         presentationPr = cast(CT_PresentationProperties, element("p:presentationPr"))
@@ -33,7 +33,7 @@ class DescribeCT_PresentationProperties:
 
 
 class DescribeCT_ShowProperties:
-    """Unit-test suite for `pptx.oxml.presprops.CT_ShowProperties`."""
+    """Unit-test suite for `openpptx.oxml.presprops.CT_ShowProperties`."""
 
     @pytest.mark.parametrize(
         ("showPr_cxml", "expected_value"),
@@ -95,7 +95,7 @@ class DescribeShowPrCustomShow:
     """`p:showPr/p:custShow` shares its tag with the `p:custShowLst/p:custShow` definition."""
 
     def it_reads_the_custom_show_id_through_the_shared_element_class(self):
-        from pptx.oxml.presentation import CT_CustomShow
+        from openpptx.oxml.presentation import CT_CustomShow
 
         showPr = element("p:showPr/p:custShow{id=3}")
         definition = element("p:custShowLst/p:custShow{name=A,id=3}")[0]

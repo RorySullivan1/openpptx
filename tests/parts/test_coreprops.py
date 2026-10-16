@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.parts.coreprops` module."""
+"""Unit-test suite for `openpptx.parts.coreprops` module."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ import datetime as dt
 
 import pytest
 
-from pptx.opc.constants import CONTENT_TYPE as CT
-from pptx.oxml.coreprops import CT_CoreProperties
-from pptx.parts.coreprops import CorePropertiesPart
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.oxml.coreprops import CT_CoreProperties
+from openpptx.parts.coreprops import CorePropertiesPart
 
 
 class DescribeCorePropertiesPart:
-    """Unit-test suite for `pptx.parts.coreprops.CorePropertiesPart` objects."""
+    """Unit-test suite for `openpptx.parts.coreprops.CorePropertiesPart` objects."""
 
     @pytest.mark.parametrize(
         ("prop_name", "expected_value"),

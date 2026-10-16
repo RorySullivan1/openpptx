@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.oxml.tags` module."""
+"""Unit-test suite for `openpptx.oxml.tags` module."""
 
 from __future__ import annotations
 
@@ -6,13 +6,13 @@ import re
 
 import pytest
 
-from pptx.oxml.tags import CT_CustomerDataList, CT_TagsData
+from openpptx.oxml.tags import CT_CustomerDataList, CT_TagsData
 
 from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_CustomerDataList:
-    """Unit-test suite for `pptx.oxml.tags.CT_CustomerDataList` objects."""
+    """Unit-test suite for `openpptx.oxml.tags.CT_CustomerDataList` objects."""
 
     def it_provides_access_to_its_tags_reference(self):
         custDataLst = element("p:custDataLst/(p:custData{r:id=rId1},p:tags{r:id=rId2})")

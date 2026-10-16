@@ -9,16 +9,16 @@ import zipfile
 
 import pytest
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import qn
-from pptx.oxml.shapes.shared import tree_elm
-from pptx.parts.chartex import ChartExPart
-from pptx.shapes.graphfrm import GraphicFrame
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import qn
+from openpptx.oxml.shapes.shared import tree_elm
+from openpptx.parts.chartex import ChartExPart
+from openpptx.shapes.graphfrm import GraphicFrame
+from openpptx.util import Inches
 
 from .unitutil.chartex import (
     HISTOGRAM_VALUES,

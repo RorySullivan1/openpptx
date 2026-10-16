@@ -1,10 +1,10 @@
-"""Unit-test suite for `pptx.oxml.chart.chartex` module."""
+"""Unit-test suite for `openpptx.oxml.chart.chartex` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.oxml.chart.chartex import (
+from openpptx.oxml.chart.chartex import (
     CT_ChartExChart,
     CT_ChartExDataItem,
     CT_ChartExSeries,
@@ -21,7 +21,7 @@ SERIES_CXML = (
 
 
 class DescribeCT_ChartExSpace:
-    """Unit-test suite for `pptx.oxml.chart.chartex.CT_ChartExSpace` objects."""
+    """Unit-test suite for `openpptx.oxml.chart.chartex.CT_ChartExSpace` objects."""
 
     def it_provides_access_to_its_series(self):
         chartSpace = element("cx:chartSpace/%s" % SERIES_CXML)
@@ -64,7 +64,7 @@ class DescribeCT_ChartExSpace:
 
 
 class DescribeCT_ChartExDataItem:
-    """Unit-test suite for `pptx.oxml.chart.chartex.CT_ChartExDataItem` objects."""
+    """Unit-test suite for `openpptx.oxml.chart.chartex.CT_ChartExDataItem` objects."""
 
     def it_finds_its_category_and_value_dimensions(self):
         data = element(
@@ -88,7 +88,7 @@ class DescribeCT_ChartExDataItem:
 
 
 class DescribeCT_ChartExLevel:
-    """Unit-test suite for `pptx.oxml.chart.chartex.CT_ChartExLevel` objects."""
+    """Unit-test suite for `openpptx.oxml.chart.chartex.CT_ChartExLevel` objects."""
 
     def it_lists_its_point_texts_by_index(self):
         lvl = element(
@@ -99,7 +99,7 @@ class DescribeCT_ChartExLevel:
 
 
 class DescribeCT_ChartExChart:
-    """Unit-test suite for `pptx.oxml.chart.chartex.CT_ChartExChart` objects."""
+    """Unit-test suite for `openpptx.oxml.chart.chartex.CT_ChartExChart` objects."""
 
     def it_is_also_the_graphic_frame_reference_to_the_part(self):
         chart = element("cx:chart{r:id=rId2}")
@@ -110,7 +110,7 @@ class DescribeCT_ChartExChart:
 
 
 class DescribeCT_ChartExSeries:
-    """Unit-test suite for `pptx.oxml.chart.chartex.CT_ChartExSeries` objects."""
+    """Unit-test suite for `openpptx.oxml.chart.chartex.CT_ChartExSeries` objects."""
 
     def it_knows_its_layout_and_data_id(self):
         chart = element(SERIES_CXML)

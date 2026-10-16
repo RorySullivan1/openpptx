@@ -45,7 +45,7 @@ The v0.6.0 card sets the boundaries this work honors:
   an XML value, the first still wins. End to end it is within noise; the work count fell 0.8%.
 - **Work-count regression gate (Phase 5)** (2026-10-01). `tests/perf/test_workcount.py` runs in
   the normal suite. It opens, reads (`tests/unitutil/deckwalk.walk`) and saves every corpus deck
-  once to warm the caches, then again under cProfile, and counts the calls made into `pptx/`
+  once to warm the caches, then again under cProfile, and counts the calls made into `openpptx/`
   code, recursive calls included. It fails if the count exceeds `tests/perf/workcount_budget.json` by more than 2%. Runs
   agree to within a call, so it does not flake as a timing gate would. The budget is pinned to
   the Python it was measured on (3.11; the ubuntu 3.11 CI cell) and skips elsewhere, and skips
@@ -63,20 +63,20 @@ The v0.6.0 card sets the boundaries this work honors:
 ## What already exists (verify, do not reimplement)
 
 - **Shape name / ID indexes** — `_BaseShapes._get_name_index` / `_get_id_index`
-  (`src/pptx/shapes/shapetree.py`): built lazily on first lookup, dict-cached, and cleared by
+  (`src/openpptx/shapes/shapetree.py`): built lazily on first lookup, dict-cached, and cleared by
   the shape collection's own add/insert methods. Until v0.6.0 they went stale after a rename or a
   raw-XML removal (lead L1). Since then each hit is checked: the element must still be a member
   with that name or id, and a stale hit or a miss rebuilds the index once (`_shape_elm_named`).
   `bench_lookup.py` checks lookups stay flat across 10 / 100 / 1000 shapes (~5 µs, 1.02×).
-- **Lazy part loading** — `_ZipPkgReader` (`src/pptx/opc/serialized.py`) reads each part's
-  bytes on demand; `LazyXmlPart` (`src/pptx/opc/package.py`) defers parsing for parts usually
+- **Lazy part loading** — `_ZipPkgReader` (`src/openpptx/opc/serialized.py`) reads each part's
+  bytes on demand; `LazyXmlPart` (`src/openpptx/opc/package.py`) defers parsing for parts usually
   left untouched (presProps, tableStyles, diagram and chartex parts).
 
 ## Findings from the #51 exploration
 
 Measured on a synthetic text-heavy deck (CPython 3.11, 4 cores):
 
-- **Time goes to openpptx's own Python**, not to C: cProfile put ~86% of the job in `pptx/`
+- **Time goes to openpptx's own Python**, not to C: cProfile put ~86% of the job in `openpptx/`
   code before the caches (~81% after). cProfile over-weights Python calls, but the lever is the
   pure-Python layer — the opposite of #51's original "75–80% already in C" premise.
 - **`__slots__` on proxies is not viable as written.** `@lazyproperty` (199 uses) caches in the
@@ -190,7 +190,7 @@ the three medians.
 ## v0.7.0 branch close (2026-10-16)
 
 Same Windows box (CPython 3.13.13). v0.7.0 adds find/replace across runs
-(`pptx.text.search`) and touches no existing hot path: the new code runs only when called.
+(`openpptx.text.search`) and touches no existing hot path: the new code runs only when called.
 
 **Wall-clock**, v0.6.0 (`origin/main`, `100a9c8`) against the branch, on the same deck files in
 `tests/perf/_corpus/`. Three interleaved rounds in separate processes, each a median of 15 runs;
@@ -267,7 +267,7 @@ Open is median of 5 cold opens.
 `iter10x` repeats the inner walk
 10 times to amplify the cost of
 `paragraphs`/`runs` rebuilding on every access
-(`TextFrame.paragraphs`, `_Paragraph.runs` in `src/pptx/text/text.py`).
+(`TextFrame.paragraphs`, `_Paragraph.runs` in `src/openpptx/text/text.py`).
 
 | fixture | open | iter1x | iter10x | save |
 | --- | --- | --- | --- | --- |

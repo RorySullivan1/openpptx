@@ -1,4 +1,4 @@
-"""Unit-test suite for the `pptx.oxml.xmlchemy` module.
+"""Unit-test suite for the `openpptx.oxml.xmlchemy` module.
 
 Focused on the metaclass and element and attribute definition classes. A major part of the fixture
 is provided by the metaclass-built test classes at the end of the file.
@@ -11,11 +11,11 @@ import threading
 import pytest
 from lxml import etree
 
-from pptx.exc import InvalidXmlError
-from pptx.oxml import register_element_cls, xmlchemy
-from pptx.oxml.ns import _nsmap, qn  # pyright: ignore[reportPrivateUsage]
-from pptx.oxml.simpletypes import BaseIntType
-from pptx.oxml.xmlchemy import (
+from openpptx.exc import InvalidXmlError
+from openpptx.oxml import register_element_cls, xmlchemy
+from openpptx.oxml.ns import _nsmap, qn  # pyright: ignore[reportPrivateUsage]
+from openpptx.oxml.simpletypes import BaseIntType
+from openpptx.oxml.xmlchemy import (
     BaseOxmlElement,
     Choice,
     OneAndOnlyOne,
@@ -33,7 +33,7 @@ from ..unitutil.cxml import element
 
 
 class DescribeCompiledXPath:
-    """Unit-test suite for `pptx.oxml.xmlchemy.compiled_xpath` and `BaseOxmlElement.xpath`."""
+    """Unit-test suite for `openpptx.oxml.xmlchemy.compiled_xpath` and `BaseOxmlElement.xpath`."""
 
     def it_compiles_each_expression_once(self):
         xpath = compiled_xpath("./p:nvSpPr/p:cNvPr")

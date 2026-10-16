@@ -1,4 +1,4 @@
-"""Unit test suite for `pptx.media` module."""
+"""Unit test suite for `openpptx.media` module."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import io
 
 import pytest
 
-from pptx.media import Audio, Video
-from pptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.media import Audio, Video
+from openpptx.opc.constants import CONTENT_TYPE as CT
 
 from .unitutil.file import absjoin, test_file_dir
 from .unitutil.mock import initializer_mock, instance_mock, method_mock, property_mock
@@ -16,7 +16,7 @@ TEST_VIDEO_PATH = absjoin(test_file_dir, "dummy.mp4")
 
 
 class DescribeVideo:
-    """Unit-test suite for `pptx.media.Video` objects."""
+    """Unit-test suite for `openpptx.media.Video` objects."""
 
     def it_can_construct_from_a_path(self, video_, from_blob_):
         with open(TEST_VIDEO_PATH, "rb") as f:
@@ -136,7 +136,7 @@ class DescribeVideo:
 
 
 class DescribeAudio:
-    """Unit-test suite for `pptx.media.Audio` objects."""
+    """Unit-test suite for `openpptx.media.Audio` objects."""
 
     def it_can_construct_from_a_path(self, audio_, from_blob_, tmp_path):
         blob = b"01234-mp3-bytes"

@@ -33,8 +33,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
-from pptx import Presentation
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.util import Inches
 
 
 @dataclass

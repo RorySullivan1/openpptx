@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.dml.effect` module."""
+"""Unit-test suite for `openpptx.dml.effect` module."""
 
 from __future__ import annotations
 
@@ -6,12 +6,12 @@ import io
 
 import pytest
 
-from pptx import Presentation
-from pptx.dml.color import ColorFormat, RGBColor
-from pptx.dml.effect import GlowFormat, ReflectionFormat, ShadowFormat, SoftEdgeFormat
-from pptx.enum.dml import MSO_RECT_ALIGNMENT, MSO_SHADOW_TYPE, MSO_THEME_COLOR
-from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
-from pptx.util import Emu, Pt
+from openpptx import Presentation
+from openpptx.dml.color import ColorFormat, RGBColor
+from openpptx.dml.effect import GlowFormat, ReflectionFormat, ShadowFormat, SoftEdgeFormat
+from openpptx.enum.dml import MSO_RECT_ALIGNMENT, MSO_SHADOW_TYPE, MSO_THEME_COLOR
+from openpptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
+from openpptx.util import Emu, Pt
 
 from ..unitutil.cxml import element, xml
 
@@ -174,8 +174,8 @@ class DescribeShadowFormat:
         assert reloaded_other.shadow.color.rgb == RGBColor(0x00, 0x80, 0xFF)
 
     def it_provides_access_to_shadow_color(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Shadow with an sRGB color
         spPr_xml = (
@@ -196,8 +196,8 @@ class DescribeShadowFormat:
         assert shadow.shadow_type == MSO_SHADOW_TYPE.OUTER
 
     def it_provides_access_to_shadow_color_alpha(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Shadow with 40% opacity (alpha = 0.4)
         spPr_xml = (
@@ -221,8 +221,8 @@ class DescribeShadowFormat:
         assert shadow.color.alpha == 1.0
 
     def it_reads_inner_shadow_color(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         spPr_xml = (
             '<p:spPr %s><a:effectLst>'

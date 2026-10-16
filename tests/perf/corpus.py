@@ -17,8 +17,8 @@ from pathlib import Path
 
 from PIL import Image as PIL_Image
 
-from pptx import Presentation
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.util import Inches, Pt
 
 TEST_FILES = Path(__file__).resolve().parent.parent / "test_files"
 IMAGE_PATH = TEST_FILES / "python-powered.png"

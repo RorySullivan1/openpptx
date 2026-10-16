@@ -5,8 +5,8 @@ a slide and on a shape, creating presentation sections, and custom properties.
 Saves to comments_and_metadata.pptx.
 """
 
-from pptx import Presentation
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 

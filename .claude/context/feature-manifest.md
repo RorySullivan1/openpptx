@@ -32,10 +32,10 @@ The codebase is organized in four layers, from low-level to high-level:
 
 | Layer | Packages | Role |
 |---|---|---|
-| OPC | `pptx.opc` | Open Packaging Convention — ZIP I/O, content types, relationships |
-| OXML | `pptx.oxml` | lxml-based element classes mapped to ECMA-376 XML schema types |
-| Parts | `pptx.parts` | Package parts — slide, image, chart, media, core properties |
-| API | `pptx.api`, `pptx.presentation`, `pptx.slide`, `pptx.shapes`, `pptx.text`, `pptx.chart`, `pptx.dml`, `pptx.table`, `pptx.action` | User-facing Pythonic object model |
+| OPC | `openpptx.opc` | Open Packaging Convention — ZIP I/O, content types, relationships |
+| OXML | `openpptx.oxml` | lxml-based element classes mapped to ECMA-376 XML schema types |
+| Parts | `openpptx.parts` | Package parts — slide, image, chart, media, core properties |
+| API | `openpptx.api`, `openpptx.presentation`, `openpptx.slide`, `openpptx.shapes`, `openpptx.text`, `openpptx.chart`, `openpptx.dml`, `openpptx.table`, `openpptx.action` | User-facing Pythonic object model |
 
 ---
 
@@ -247,7 +247,7 @@ These are inherent constraints of a file-format library that edits XML. They can
 - Text-level 3D scene, fill, and outline effects
 
 ### Text Range Model Limitations
-- VBA's `TextRange` provides `Characters()`, `Words()`, `Sentences()`, `Lines()`, `Find()`, `Replace()`, `InsertBefore()`, `InsertAfter()`. The `Lines()` method requires a rendering engine to know where visual line breaks occur. `Find()`/`Replace()` are implemented across runs (v0.7.0, `pptx.text.search`); `Lines()` stays out of scope, and `Characters()`, `Words()`, `Sentences()`, `InsertBefore()` and `InsertAfter()` remain gaps (below).
+- VBA's `TextRange` provides `Characters()`, `Words()`, `Sentences()`, `Lines()`, `Find()`, `Replace()`, `InsertBefore()`, `InsertAfter()`. The `Lines()` method requires a rendering engine to know where visual line breaks occur. `Find()`/`Replace()` are implemented across runs (v0.7.0, `openpptx.text.search`); `Lines()` stays out of scope, and `Characters()`, `Words()`, `Sentences()`, `InsertBefore()` and `InsertAfter()` remain gaps (below).
 
 ---
 

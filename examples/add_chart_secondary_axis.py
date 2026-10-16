@@ -7,16 +7,16 @@ very different scales can be read on the same chart.
 Saves to add_chart_secondary_axis.pptx.
 """
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.dml.color import RGBColor
-from pptx.enum.chart import (
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.dml.color import RGBColor
+from openpptx.enum.chart import (
     XL_CHART_TYPE,
     XL_LABEL_POSITION,
     XL_LEGEND_POSITION,
     XL_MARKER_STYLE,
 )
-from pptx.util import Inches, Pt
+from openpptx.util import Inches, Pt
 
 # -- Palette --
 COLUMN_BLUE = RGBColor(0x1B, 0x6B, 0xB5)

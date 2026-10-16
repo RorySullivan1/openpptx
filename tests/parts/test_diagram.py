@@ -1,16 +1,16 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.parts.diagram` module."""
+"""Unit-test suite for `openpptx.parts.diagram` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.opc.constants import CONTENT_TYPE as CT
-from pptx.opc.package import PartFactory
-from pptx.opc.packuri import PackURI
-from pptx.oxml.diagram import CT_DataModel
-from pptx.parts.diagram import (
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.package import PartFactory
+from openpptx.opc.packuri import PackURI
+from openpptx.oxml.diagram import CT_DataModel
+from openpptx.parts.diagram import (
     DiagramColorsPart,
     DiagramDataPart,
     DiagramDrawingPart,
@@ -27,7 +27,7 @@ DATA_BLOB = (
 
 
 class DescribeDiagramParts:
-    """Unit-test suite for the `pptx.parts.diagram` part classes."""
+    """Unit-test suite for the `openpptx.parts.diagram` part classes."""
 
     @pytest.mark.parametrize(
         ("content_type", "expected_cls"),
@@ -43,8 +43,8 @@ class DescribeDiagramParts:
         assert PartFactory.part_type_for[content_type] is expected_cls
 
     def it_never_parses_when_only_the_blob_is_read_back(self, request):
-        parse_xml_ = function_mock(request, "pptx.opc.package.parse_xml")
-        package_ = instance_mock(request, "pptx.package.Package")
+        parse_xml_ = function_mock(request, "openpptx.opc.package.parse_xml")
+        package_ = instance_mock(request, "openpptx.package.Package")
 
         part = DiagramDataPart.load(
             PackURI("/ppt/diagrams/data1.xml"), CT.DML_DIAGRAM_DATA, package_, DATA_BLOB
@@ -55,10 +55,10 @@ class DescribeDiagramParts:
 
 
 class DescribeDiagramDataPart:
-    """Unit-test suite for `pptx.parts.diagram.DiagramDataPart` objects."""
+    """Unit-test suite for `openpptx.parts.diagram.DiagramDataPart` objects."""
 
     def it_provides_access_to_its_data_model(self, request):
-        package_ = instance_mock(request, "pptx.package.Package")
+        package_ = instance_mock(request, "openpptx.package.Package")
         part = DiagramDataPart.load(
             PackURI("/ppt/diagrams/data1.xml"), CT.DML_DIAGRAM_DATA, package_, DATA_BLOB
         )

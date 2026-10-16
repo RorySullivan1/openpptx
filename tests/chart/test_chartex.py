@@ -1,11 +1,11 @@
-"""Unit-test suite for `pptx.chart.chartex` module."""
+"""Unit-test suite for `openpptx.chart.chartex` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.chartex import ChartEx, ChartExSeries
-from pptx.enum.chart import XL_CHART_TYPE
+from openpptx.chart.chartex import ChartEx, ChartExSeries
+from openpptx.enum.chart import XL_CHART_TYPE
 
 from ..unitutil.cxml import element
 
@@ -17,7 +17,7 @@ def _chartSpace(*layout_ids: str):
 
 
 class DescribeChartEx:
-    """Unit-test suite for `pptx.chart.chartex.ChartEx` objects."""
+    """Unit-test suite for `openpptx.chart.chartex.ChartEx` objects."""
 
     @pytest.mark.parametrize(
         ("layout_ids", "expected_value"),
@@ -51,7 +51,7 @@ class DescribeChartEx:
 
 
 class DescribeChartExSeries:
-    """Unit-test suite for `pptx.chart.chartex.ChartExSeries` objects."""
+    """Unit-test suite for `openpptx.chart.chartex.ChartExSeries` objects."""
 
     def it_reads_its_name_values_and_categories(self):
         chartSpace = element(

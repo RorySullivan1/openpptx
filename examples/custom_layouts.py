@@ -13,10 +13,10 @@ Demonstrates: feature-manifest.md "Slide Masters & Layouts" (custom layouts).
 Saves to custom_layouts.pptx.
 """
 
-from pptx import Presentation
-from pptx.enum.shapes import PP_PLACEHOLDER
-from pptx.shapes.placeholder import SlidePlaceholder
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.enum.shapes import PP_PLACEHOLDER
+from openpptx.shapes.placeholder import SlidePlaceholder
+from openpptx.util import Inches
 
 FILENAME = "custom_layouts.pptx"
 

@@ -212,7 +212,7 @@ DIAGRAM_PARTS = {
 
 def smartart_pptx() -> BytesIO:
     """Return a stream holding a one-slide `.pptx` whose slide has one SmartArt graphic frame."""
-    from pptx import Presentation
+    from openpptx import Presentation
 
     prs = Presentation()
     prs.slides.add_slide(prs.slide_layouts[6])
