@@ -917,12 +917,13 @@ class _Relationship:
         assert isinstance(self._target, Part)
         return self._target
 
-    @lazyproperty
+    @property
     def target_partname(self) -> PackURI:
         """|PackURI| instance containing partname targeted by this relationship.
 
         Raises `ValueError` on reference if target_mode is external. Use :attr:`target_mode` to
-        check before referencing.
+        check before referencing. Read from the target on each access, because slide parts are
+        renamed to follow slide order (`PresentationPart.rename_slide_parts()`).
         """
         if self.is_external:
             raise ValueError(
@@ -932,12 +933,14 @@ class _Relationship:
         assert isinstance(self._target, Part)
         return self._target.partname
 
-    @lazyproperty
+    @property
     def target_ref(self) -> str:
         """str reference to relationship target.
 
         For internal relationships this is the relative partname, suitable for serialization
-        purposes. For an external relationship it is typically a URL.
+        purposes. For an external relationship it is typically a URL. Not cached, for the same
+        reason as :attr:`target_partname`: a reference cached by one save named the old part
+        after a rename.
         """
         if isinstance(self._target, str):
             return self._target

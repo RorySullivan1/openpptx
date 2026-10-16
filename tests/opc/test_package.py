@@ -1004,6 +1004,16 @@ class Describe_Relationships:
 class Describe_Relationship:
     """Unit-test suite for `pptx.opc.package._Relationship` objects."""
 
+    def it_names_its_target_by_the_partname_the_target_has_now(self):
+        part = Part(PackURI("/ppt/slides/slide1.xml"), CT.PML_SLIDE, None)
+        relationship = _Relationship("/ppt", "rId1", RT.SLIDE, RTM.INTERNAL, part)
+        assert relationship.target_ref == "slides/slide1.xml"
+
+        part.partname = PackURI("/ppt/slides/slide2.xml")
+
+        assert relationship.target_partname == "/ppt/slides/slide2.xml"
+        assert relationship.target_ref == "slides/slide2.xml"
+
 
     def it_keeps_an_internal_relationship_whose_target_is_a_fragment(self):
         # -- a hyperlink to a place in the document, like a footnote; it names no part --
