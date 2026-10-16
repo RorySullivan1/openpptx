@@ -1,6 +1,6 @@
 """Report the transitions and animations in a deck.
 
-pypptx reads transitions and animations but does not author them, so point this script at a
+openpptx reads transitions and animations but does not author them, so point this script at a
 deck made in PowerPoint:
 
     python read_animations.py deck.pptx
@@ -16,8 +16,8 @@ Writes nothing.
 
 import sys
 
-from pptx import Presentation
-from pptx.enum.animation import PP_TRANSITION_TYPE
+from openpptx import Presentation
+from openpptx.enum.animation import PP_TRANSITION_TYPE
 
 
 def seconds(value):

@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.oxml.comment` modern (threaded) comment element classes."""
+"""Unit-test suite for `openpptx.oxml.comment` modern (threaded) comment element classes."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import re
 
 import pytest
 
-from pptx.oxml.comment import (  # pyright: ignore[reportPrivateUsage]
+from openpptx.oxml.comment import (  # pyright: ignore[reportPrivateUsage]
     CT_ModernAuthor,
     CT_ModernAuthorList,
     CT_ModernComment,
@@ -20,7 +20,7 @@ from ..unitutil.cxml import element
 
 
 class DescribeCT_ModernAuthorList:
-    """Unit-test suite for `pptx.oxml.comment.CT_ModernAuthorList` and its authors."""
+    """Unit-test suite for `openpptx.oxml.comment.CT_ModernAuthorList` and its authors."""
 
     def it_provides_access_to_its_authors(self):
         authorLst = element(
@@ -53,7 +53,7 @@ class DescribeCT_ModernAuthorList:
 
 
 class DescribeCT_ModernComment:
-    """Unit-test suite for `pptx.oxml.comment.CT_ModernComment` and `CT_ModernCommentReply`."""
+    """Unit-test suite for `openpptx.oxml.comment.CT_ModernComment` and `CT_ModernCommentReply`."""
 
     def it_knows_its_identity_attributes(self):
         cm = element("p188:cm{id=c1,authorId=a1,created=2024-05-01T09:30:00.123,title=Todo}")
@@ -135,7 +135,7 @@ class DescribeCT_ModernComment:
 
 
 class DescribeCT_ModernCommentList:
-    """Unit-test suite for `pptx.oxml.comment.CT_ModernCommentList`."""
+    """Unit-test suite for `openpptx.oxml.comment.CT_ModernCommentList`."""
 
     def it_provides_access_to_its_threads(self):
         cmLst = element(
@@ -147,7 +147,7 @@ class DescribeCT_ModernCommentList:
 
 
 class Describe_parse_xsd_datetime:
-    """Unit-test suite for `pptx.oxml.comment._parse_xsd_datetime`."""
+    """Unit-test suite for `openpptx.oxml.comment._parse_xsd_datetime`."""
 
     @pytest.mark.parametrize(
         ("value", "expected_value"),

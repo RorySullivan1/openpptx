@@ -9,16 +9,16 @@ import zipfile
 
 import pytest
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import qn
-from pptx.oxml.shapes.shared import tree_elm
-from pptx.parts.chartex import ChartExPart
-from pptx.shapes.graphfrm import GraphicFrame
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import qn
+from openpptx.oxml.shapes.shared import tree_elm
+from openpptx.parts.chartex import ChartExPart
+from openpptx.shapes.graphfrm import GraphicFrame
+from openpptx.util import Inches
 
 from .unitutil.chartex import (
     HISTOGRAM_VALUES,
@@ -40,7 +40,7 @@ def _waterfall_data() -> CategoryChartData:
 
 
 def _without_chart_style_parts(stream: io.BytesIO) -> io.BytesIO:
-    """Return a copy of the saved deck in `stream` shaped as pypptx 0.5.0 wrote it.
+    """Return a copy of the saved deck in `stream` shaped as openpptx 0.5.0 wrote it.
 
     That is, with no chart-style or color-style parts, relationships or content types.
     """
@@ -188,7 +188,7 @@ class DescribeAddingChartexCharts:
             )
 
     def it_repairs_a_chart_saved_without_style_parts_when_the_deck_is_reloaded(self):
-        # -- regression for #132: a pypptx 0.5.0 chartex deck must open after a plain re-save --
+        # -- regression for #132: a openpptx 0.5.0 chartex deck must open after a plain re-save --
         prs = Presentation()
         slide = prs.slides.add_slide(prs.slide_layouts[6])
         for chart_type in (XL_CHART_TYPE.WATERFALL, XL_CHART_TYPE.FUNNEL):

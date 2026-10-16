@@ -1,6 +1,6 @@
 # Caching audit (v0.6.0)
 
-Every `@lazyproperty` and every hand-rolled cache in `src/pptx/`, put in one bucket and judged
+Every `@lazyproperty` and every hand-rolled cache in `src/openpptx/`, put in one bucket and judged
 sound or fixed. Audited 2026-10-15 on branch `v0.6.0`. At branch open there were 203 decorated
 properties in 44 files. The "204 in 45 files" on the card came from a grep that also counted the
 decorator's own docstring in `util.py`. The fixes below turned 13 of them into plain properties
@@ -41,7 +41,7 @@ row, and L1 and L2 before the audit.
 does each pass of `for shape in slide.shapes`. Each object has its own cached `fill`, `line` and
 `adjustments`.
 
-**Cost.** Over the corpus walk, calls into `pptx` rose about 0.4% and wall time 1–3% (three
+**Cost.** Over the corpus walk, calls into `openpptx` rose about 0.4% and wall time 1–3% (three
 interleaved runs). Most of the cost is paid back by choice-group getters, which now find a member
 with one `iterchildren()` scan instead of a loop. The work-count gate now counts total calls
 rather than cProfile's primitive calls. The old count rose 4.4% for the same change, because
@@ -52,7 +52,7 @@ un-nesting `lazyproperty.__get__` calls made them count (see `performance.md`).
 **Rule.** The property wraps `self._element`, or a child that no API removes or replaces. The
 proxy reads the XML on every access, so caching it caches nothing that can go stale. Children
 fetched with `get_or_add_*` were checked against every `_remove_*`, `get_or_change_to_*` and
-`remove()` call in `src/pptx/`.
+`remove()` call in `src/openpptx/`.
 
 | Module | Properties | Why the child stays |
 |---|---|---|

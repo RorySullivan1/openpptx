@@ -1,19 +1,19 @@
-"""Unit-test suite for `pptx.text.styles` module."""
+"""Unit-test suite for `openpptx.text.styles` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.enum.text import PP_ALIGN
-from pptx.text.styles import MasterTextStyles, TextLevelStyle, TextListStyle
-from pptx.text.text import Font
-from pptx.util import Emu, Pt
+from openpptx.enum.text import PP_ALIGN
+from openpptx.text.styles import MasterTextStyles, TextLevelStyle, TextListStyle
+from openpptx.text.text import Font
+from openpptx.util import Emu, Pt
 
 from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_TextListStyle:
-    """Unit-test suite for `pptx.oxml.text.CT_TextListStyle` objects."""
+    """Unit-test suite for `openpptx.oxml.text.CT_TextListStyle` objects."""
 
     def it_finds_the_paragraph_properties_for_a_level(self):
         lstStyle = element("a:lstStyle/(a:defPPr,a:lvl1pPr{marL=1},a:lvl3pPr{marL=3})")
@@ -37,7 +37,7 @@ class DescribeCT_TextListStyle:
 
 
 class DescribeMasterTextStyles:
-    """Unit-test suite for `pptx.text.styles.MasterTextStyles` objects."""
+    """Unit-test suite for `openpptx.text.styles.MasterTextStyles` objects."""
 
     @pytest.mark.parametrize(
         ("prop_name", "tagname"),
@@ -77,7 +77,7 @@ class DescribeMasterTextStyles:
 
 
 class DescribeTextListStyle:
-    """Unit-test suite for `pptx.text.styles.TextListStyle` objects."""
+    """Unit-test suite for `openpptx.text.styles.TextListStyle` objects."""
 
     def it_has_nine_levels(self):
         lstStyle = element("a:lstStyle")
@@ -109,7 +109,7 @@ class DescribeTextListStyle:
 
 
 class DescribeTextLevelStyle:
-    """Unit-test suite for `pptx.text.styles.TextLevelStyle` objects."""
+    """Unit-test suite for `openpptx.text.styles.TextLevelStyle` objects."""
 
     @pytest.mark.parametrize(
         ("prop_name", "pPr_cxml", "expected"),

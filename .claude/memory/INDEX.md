@@ -1,12 +1,14 @@
 # MEMORY INDEX  ·  keep ≤ ~80 lines, ≤ ~200 chars per line
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
-- pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.0 SHIPPED (PR #135, merge `0db7ef1`). **In flight: v0.7.1 on branch `v0.7.1`**: review-fix patch (owner, 2026-10-16),
-  built from `v1.0.0`'s ship-bookkeeping commit. v1.0.0 card is still a sketch: expand it before building.
+- openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
+  repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
+- 0.7.1 SHIPPED (PR #136, merge `2627ddd`). **In flight: v1.0.0 on branch `v1.0.0`**, card filled in 2026-10-16, no code
+  yet. Rebrand done; rest of step 1 = root LICENSE + `[project.urls]`/classifiers. Owner actions are listed in the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
+- Sessions can't push tags; owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
+  lightweight; see that file); no Releases yet.
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 - API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra).
@@ -39,6 +41,15 @@
   work-count gate counts total calls, re-budgeted from main — sessions/2026-10-15-1347-v060-card-expanded.md
 - [2026-10-15] Owner: v0.7.0 find/replace is DECK-WIDE too (slide shapes, groups, tables, existing notes; not layouts/
   masters/charts/SmartArt); property test uses hypothesis (already a dev dep) — .meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md
+- [2026-10-16] Owner, v1.0.0: PyPI `pypptx` is an unrelated 2015 project, so the dist becomes **`openpptx`** (import stays
+  `pptx`, repo stays `pypptx`). The contract is the DOCUMENTED surface (oxml/opc/parts internal, not renamed;
+  snapshot test). Docs on GitHub Pages. LICENSE adds python-pptx's MIT notice — sessions/2026-10-16-1305-v100-card-expanded.md
+- [2026-10-16] Owner: COMPLETE rebrand to openpptx, the repo included (supersedes "repo stays pypptx"). History keeps
+  the old name: shipped cards, session logs, release-tags. `PyPptxError` → `OpenPptxError` with a deprecated
+  module-`__getattr__` alias — sessions/2026-10-16-1305-v100-card-expanded.md
+- [2026-10-16] Owner: import renamed too, `pptx` → `openpptx` (no users yet). Supersedes "import stays pptx". With no
+  users, nothing renamed before 1.0.0 gets a shim (the `PyPptxError` alias was dropped); the deprecation policy
+  starts at 1.0.0 — same log
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
@@ -67,3 +78,5 @@
 - 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
 - 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
 - 2026-10-16 | v0.7.1 built: 9 review findings → template/count errors up front, TextMatch eq, `\v` → a:br, regex context, rel drops | sessions/2026-10-16-1300-v071-review-fixes.md
+- 2026-10-16 | v0.7.1 merged (PR #136, `2627ddd`, 7/7 CI); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
+- 2026-10-16 1305 | v1.0.0 card filled in: `openpptx` dist, documented-surface contract, Pages, LICENSE | sessions/2026-10-16-1305-v100-card-expanded.md

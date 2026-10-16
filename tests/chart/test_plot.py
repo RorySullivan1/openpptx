@@ -1,15 +1,15 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.chart.plot` module."""
+"""Unit-test suite for `openpptx.chart.plot` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.category import Categories
-from pptx.chart.chart import Chart
-from pptx.chart.chartlines import DropLines, HiLowLines, SeriesLines, UpDownBars
-from pptx.chart.plot import (
+from openpptx.chart.category import Categories
+from openpptx.chart.chart import Chart
+from openpptx.chart.chartlines import DropLines, HiLowLines, SeriesLines, UpDownBars
+from openpptx.chart.plot import (
     Area3DPlot,
     AreaPlot,
     BarPlot,
@@ -26,9 +26,9 @@ from pptx.chart.plot import (
     XyPlot,
     _BasePlot,
 )
-from pptx.chart.series import SeriesCollection
-from pptx.exc import ChartError
-from pptx.enum.chart import XL_BAR_DIRECTION, XL_CHART_TYPE as XL, XL_GROUPING
+from openpptx.chart.series import SeriesCollection
+from openpptx.exc import ChartError
+from openpptx.enum.chart import XL_BAR_DIRECTION, XL_CHART_TYPE as XL, XL_GROUPING
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import class_mock, instance_mock
@@ -200,7 +200,7 @@ class Describe_BasePlot:
 
     @pytest.fixture
     def Categories_(self, request, categories_):
-        return class_mock(request, "pptx.chart.plot.Categories", return_value=categories_)
+        return class_mock(request, "openpptx.chart.plot.Categories", return_value=categories_)
 
     @pytest.fixture
     def categories_(self, request):
@@ -212,7 +212,7 @@ class Describe_BasePlot:
 
     @pytest.fixture
     def DataLabels_(self, request, data_labels_):
-        return class_mock(request, "pptx.chart.plot.DataLabels", return_value=data_labels_)
+        return class_mock(request, "openpptx.chart.plot.DataLabels", return_value=data_labels_)
 
     @pytest.fixture
     def data_labels_(self, request):
@@ -221,7 +221,7 @@ class Describe_BasePlot:
     @pytest.fixture
     def SeriesCollection_(self, request, series_collection_):
         return class_mock(
-            request, "pptx.chart.plot.SeriesCollection", return_value=series_collection_
+            request, "openpptx.chart.plot.SeriesCollection", return_value=series_collection_
         )
 
     @pytest.fixture
@@ -393,7 +393,7 @@ class DescribePlotFactory:
     def call_fixture(self, request, chart_):
         xChart_cxml, PlotCls = request.param
         plot_ = instance_mock(request, PlotCls, name="plot_")
-        class_spec = "pptx.chart.plot.%s" % PlotCls.__name__
+        class_spec = "openpptx.chart.plot.%s" % PlotCls.__name__
         PlotClass_ = class_mock(request, class_spec, return_value=plot_)
         xChart = element(xChart_cxml)
         return xChart, chart_, PlotClass_, plot_

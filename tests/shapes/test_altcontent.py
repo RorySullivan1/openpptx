@@ -1,13 +1,13 @@
-"""Unit-test suite for `pptx.shapes.altcontent` module."""
+"""Unit-test suite for `openpptx.shapes.altcontent` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.exc import ShapeError
-from pptx.oxml.ns import qn
-from pptx.shapes.altcontent import AlternateContentShape
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.exc import ShapeError
+from openpptx.oxml.ns import qn
+from openpptx.shapes.altcontent import AlternateContentShape
 
 from ..unitutil.cxml import element
 
@@ -22,7 +22,7 @@ def _shape(alternateContent_cxml: str, container: str = "mc:Fallback") -> Altern
 
 
 class DescribeAlternateContentShape:
-    """Unit-test suite for `pptx.shapes.altcontent.AlternateContentShape` objects."""
+    """Unit-test suite for `openpptx.shapes.altcontent.AlternateContentShape` objects."""
 
     @pytest.mark.parametrize(
         ("choice_cxml", "expected_value"),
@@ -46,7 +46,7 @@ class DescribeAlternateContentShape:
         alternateContent = element("mc:AlternateContent/(mc:Choice,mc:Fallback/p:pic)")
         choice = alternateContent[0]
         # -- cxml can't declare an arbitrary prefix, so re-parent the choice under one that does --
-        from pptx.oxml import parse_xml
+        from openpptx.oxml import parse_xml
 
         declared = parse_xml(
             '<mc:Choice xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"'

@@ -4,9 +4,9 @@ Creates a slide with character bullets at multiple indent levels.
 Saves to bullet_lists.pptx.
 """
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank layout

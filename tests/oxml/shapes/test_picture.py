@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.oxml.shapes.picture` module."""
+"""Unit-test suite for `openpptx.oxml.shapes.picture` module."""
 
 from __future__ import annotations
 
@@ -6,15 +6,15 @@ from typing import cast
 
 import pytest
 
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.oxml.shapes.picture import P14_MEDIA_EXT_URI, CT_Picture
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.oxml.shapes.picture import P14_MEDIA_EXT_URI, CT_Picture
 
 from ...unitutil.cxml import element
 
 
 class DescribeCT_Picture:
-    """Unit-test suite for `pptx.oxml.shapes.picture.CT_Picture` objects."""
+    """Unit-test suite for `openpptx.oxml.shapes.picture.CT_Picture` objects."""
 
     @pytest.mark.parametrize(
         "desc, xml_desc",
@@ -197,7 +197,7 @@ class DescribeCT_Picture:
 
 
 class DescribeCT_Media:
-    """Unit-test suite for `pptx.oxml.shapes.picture.CT_Media` objects."""
+    """Unit-test suite for `openpptx.oxml.shapes.picture.CT_Media` objects."""
 
     def it_can_get_and_set_r_embed(self):
         media = element("p14:media")

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
+from openpptx import Presentation
 
 ITERATIONS = 5
 

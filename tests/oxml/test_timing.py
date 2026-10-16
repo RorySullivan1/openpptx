@@ -1,11 +1,11 @@
-"""Unit-test suite for the `pptx.oxml.timing` module."""
+"""Unit-test suite for the `openpptx.oxml.timing` module."""
 
 from __future__ import annotations
 
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.oxml.simpletypes import ST_TLTime
-from pptx.oxml.timing import (
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.oxml.simpletypes import ST_TLTime
+from openpptx.oxml.timing import (
     CT_BuildList,
     CT_SlideTiming,
     CT_TimeNodeList,
@@ -77,7 +77,7 @@ def _effect_cTn(timing: CT_SlideTiming) -> CT_TLCommonTimeNodeData:
 
 
 class DescribeCT_SlideTiming:
-    """Unit-test suite for `pptx.oxml.timing.CT_SlideTiming` objects."""
+    """Unit-test suite for `openpptx.oxml.timing.CT_SlideTiming` objects."""
 
     def it_provides_access_to_its_time_node_list_and_build_list(self):
         timing = _timing()
@@ -94,7 +94,7 @@ class DescribeCT_SlideTiming:
 
 
 class DescribeCT_TimeNodeList:
-    """Unit-test suite for `pptx.oxml.timing.CT_TimeNodeList` objects."""
+    """Unit-test suite for `openpptx.oxml.timing.CT_TimeNodeList` objects."""
 
     def it_lists_its_time_nodes_in_document_order(self):
         root_cTn = _root_cTn(_timing())
@@ -112,7 +112,7 @@ class DescribeCT_TimeNodeList:
 
 
 class DescribeCT_TLCommonTimeNodeData:
-    """Unit-test suite for `pptx.oxml.timing.CT_TLCommonTimeNodeData` objects."""
+    """Unit-test suite for `openpptx.oxml.timing.CT_TLCommonTimeNodeData` objects."""
 
     def it_knows_its_timing_and_node_type(self):
         root_cTn = _root_cTn(_timing())
@@ -148,7 +148,7 @@ class DescribeCT_TLCommonTimeNodeData:
 
 
 class DescribeCT_TLTimeCondition:
-    """Unit-test suite for `pptx.oxml.timing.CT_TLTimeCondition` objects."""
+    """Unit-test suite for `openpptx.oxml.timing.CT_TLTimeCondition` objects."""
 
     def it_knows_its_event_and_delay(self):
         clickPar_cTn = _timing().xpath(".//p:cTn[@nodeType='clickPar']")[0]
@@ -171,7 +171,7 @@ class DescribeCT_TLTimeCondition:
 
 
 class DescribeCT_TLBehavior:
-    """Unit-test suite for the behavior elements, `pptx.oxml.timing.CT_TLBehavior`."""
+    """Unit-test suite for the behavior elements, `openpptx.oxml.timing.CT_TLBehavior`."""
 
     def it_provides_access_to_its_timing_and_its_target(self):
         anim = _timing().xpath(".//p:anim")[0]
@@ -189,7 +189,7 @@ class DescribeCT_TLBehavior:
 
 
 class DescribeCT_TLMediaNode:
-    """Unit-test suite for the media nodes, e.g. `pptx.oxml.timing.CT_TLMediaNodeVideo`."""
+    """Unit-test suite for the media nodes, e.g. `openpptx.oxml.timing.CT_TLMediaNodeVideo`."""
 
     def it_provides_access_to_its_timing_and_its_target(self):
         video = _timing().xpath(".//p:video")[0]
@@ -202,7 +202,7 @@ class DescribeCT_TLMediaNode:
 
 
 class DescribeCT_BuildList:
-    """Unit-test suite for `pptx.oxml.timing.CT_BuildList` objects."""
+    """Unit-test suite for `openpptx.oxml.timing.CT_BuildList` objects."""
 
     def it_provides_access_to_its_paragraph_builds(self):
         bldLst = _timing().bldLst

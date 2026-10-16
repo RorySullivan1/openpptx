@@ -1,20 +1,20 @@
-"""Unit-test suite for `pptx.custom_show` module."""
+"""Unit-test suite for `openpptx.custom_show` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.custom_show import CustomShow, CustomShows
-from pptx.exc import SlideError
-from pptx.parts.presentation import PresentationPart
-from pptx.slide import Slide
+from openpptx.custom_show import CustomShow, CustomShows
+from openpptx.exc import SlideError
+from openpptx.parts.presentation import PresentationPart
+from openpptx.slide import Slide
 
 from .unitutil.cxml import element, xml
 from .unitutil.mock import Mock, instance_mock
 
 
 class DescribeCustomShows:
-    """Unit-test suite for `pptx.custom_show.CustomShows` objects."""
+    """Unit-test suite for `openpptx.custom_show.CustomShows` objects."""
 
     def it_supports_len(self):
         custom_shows = CustomShows(
@@ -105,7 +105,7 @@ class DescribeCustomShows:
         assert len(custom_shows) == 0
 
     def it_stops_the_slide_show_settings_selecting_a_removed_show(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -151,7 +151,7 @@ class DescribeCustomShows:
 
 
 class DescribeCustomShow:
-    """Unit-test suite for `pptx.custom_show.CustomShow` objects."""
+    """Unit-test suite for `openpptx.custom_show.CustomShow` objects."""
 
     def it_knows_its_name(self):
         custom_show = CustomShow(element("p:custShow{name=Intro,id=0}"), None)

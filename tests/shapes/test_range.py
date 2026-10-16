@@ -1,16 +1,16 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit test suite for pptx.shapes.range module."""
+"""Unit test suite for openpptx.shapes.range module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.shapes.base import BaseShape
-from pptx.shapes.range import ShapeRange
-from pptx.util import Emu, Inches
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.shapes.base import BaseShape
+from openpptx.shapes.range import ShapeRange
+from openpptx.util import Emu, Inches
 
 
 class FakeParent:

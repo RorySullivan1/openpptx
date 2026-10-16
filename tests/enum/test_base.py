@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.enum.base`."""
+"""Unit-test suite for `openpptx.enum.base`."""
 
 from __future__ import annotations
 
@@ -7,18 +7,18 @@ import pkgutil
 
 import pytest
 
-import pptx.enum
+import openpptx.enum
 
-from pptx.enum.action import PP_ACTION, PP_ACTION_TYPE
-from pptx.enum.base import BaseXmlEnum
-from pptx.enum.dml import MSO_LINE_DASH_STYLE
+from openpptx.enum.action import PP_ACTION, PP_ACTION_TYPE
+from openpptx.enum.base import BaseXmlEnum
+from openpptx.enum.dml import MSO_LINE_DASH_STYLE
 
 
 def _xml_enums() -> list[type[BaseXmlEnum]]:
-    """Every XML-mapped enumeration defined in `pptx.enum`."""
+    """Every XML-mapped enumeration defined in `openpptx.enum`."""
     found: dict[str, type[BaseXmlEnum]] = {}
-    for info in pkgutil.iter_modules(pptx.enum.__path__):
-        module = importlib.import_module("pptx.enum.%s" % info.name)
+    for info in pkgutil.iter_modules(openpptx.enum.__path__):
+        module = importlib.import_module("openpptx.enum.%s" % info.name)
         for obj in vars(module).values():
             if isinstance(obj, type) and issubclass(obj, BaseXmlEnum) and obj is not BaseXmlEnum:
                 found[obj.__name__] = obj
@@ -26,7 +26,7 @@ def _xml_enums() -> list[type[BaseXmlEnum]]:
 
 
 class DescribeBaseEnum:
-    """Unit-test suite for `pptx.enum.base.BaseEnum`."""
+    """Unit-test suite for `openpptx.enum.base.BaseEnum`."""
 
     def it_produces_members_each_equivalent_to_an_integer_value(self):
         assert PP_ACTION_TYPE.END_SHOW == 6
@@ -61,7 +61,7 @@ class DescribeBaseEnum:
 
 
 class DescribeBaseXmlEnum:
-    """Unit-test suite for `pptx.enum.base.BaseXmlEnum`."""
+    """Unit-test suite for `openpptx.enum.base.BaseXmlEnum`."""
 
     def it_can_look_up_a_member_by_its_corresponding_XML_attribute_value(self):
         assert MSO_LINE_DASH_STYLE.from_xml("dash") == MSO_LINE_DASH_STYLE.DASH

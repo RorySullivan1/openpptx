@@ -4,10 +4,10 @@ Adds a text box with multiple paragraphs demonstrating bold, italic,
 color, font size, underline, and text alignment. Saves to add_textbox.pptx.
 """
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.enum.text import PP_ALIGN
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank layout

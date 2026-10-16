@@ -1,26 +1,26 @@
-"""Unit-test suite for `pptx.action` module."""
+"""Unit-test suite for `openpptx.action` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.action import ActionSetting, Hyperlink
-from pptx.enum.action import PP_ACTION
-from pptx.exc import SlideError
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.opc.package import XmlPart
-from pptx.parts.slide import SlidePart
-from pptx.slide import Slide
+from openpptx.action import ActionSetting, Hyperlink
+from openpptx.enum.action import PP_ACTION
+from openpptx.exc import SlideError
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.opc.package import XmlPart
+from openpptx.parts.slide import SlidePart
+from openpptx.slide import Slide
 
 from .unitutil.cxml import element, xml
 from .unitutil.mock import call, class_mock, instance_mock, method_mock, property_mock
 
 
 class DescribeActionSetting:
-    """Unit-test suite for `pptx.action.ActionSetting` objects."""
+    """Unit-test suite for `openpptx.action.ActionSetting` objects."""
 
     def it_finds_the_next_slide_after_the_slides_are_reordered(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         slides = [prs.slides.add_slide(prs.slide_layouts[6]) for _ in range(3)]
@@ -244,7 +244,7 @@ class DescribeActionSetting:
 
     @pytest.fixture
     def Hyperlink_(self, request, hyperlink_):
-        return class_mock(request, "pptx.action.Hyperlink", return_value=hyperlink_)
+        return class_mock(request, "openpptx.action.Hyperlink", return_value=hyperlink_)
 
     @pytest.fixture
     def hyperlink_(self, request):
@@ -268,7 +268,7 @@ class DescribeActionSetting:
 
 
 class DescribeHyperlink:
-    """Unit-test suite for `pptx.action.Hyperlink` objects."""
+    """Unit-test suite for `openpptx.action.Hyperlink` objects."""
 
     def it_knows_the_target_url_of_the_hyperlink(self, address_fixture):
         hyperlink, rId, expected_address = address_fixture

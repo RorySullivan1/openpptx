@@ -2,7 +2,7 @@
 
 Timing on shared CI runners is too noisy to gate on, so this counts work instead. It opens every
 deck in the real-world corpus, reads it through the public API (`tests.unitutil.deckwalk.walk`)
-and saves it, under cProfile, and counts the function calls made into `pptx` code, recursive calls
+and saves it, under cProfile, and counts the function calls made into `openpptx` code, recursive calls
 included.
 
 The count moves with the regressions that matter: an extra lookup per shape, a list rebuilt in a
@@ -34,7 +34,7 @@ BUDGET_PATH = HERE / "workcount_budget.json"
 #: The count may rise this far above the budget before the gate fails.
 TOLERANCE = 0.02
 
-_PPTX_DIR = os.sep + "pptx" + os.sep
+_PKG_DIR = os.sep + "openpptx" + os.sep
 
 
 def corpus_files() -> list[Path]:
@@ -42,7 +42,7 @@ def corpus_files() -> list[Path]:
 
 
 def _workload(files: list[Path]) -> None:
-    from pptx import Presentation
+    from openpptx import Presentation
 
     from tests.unitutil.deckwalk import walk
 
@@ -53,7 +53,7 @@ def _workload(files: list[Path]) -> None:
 
 
 def measure() -> dict[str, int]:
-    """Count the calls into `pptx` code made by one pass of the workload over the corpus."""
+    """Count the calls into `openpptx` code made by one pass of the workload over the corpus."""
     files = corpus_files()
     # -- one pass first, so the counted pass sees warm caches (`qn()`, compiled XPath, the
     # -- per-class element maps) as a long-running batch job does --
@@ -66,12 +66,12 @@ def measure() -> dict[str, int]:
     # -- every call, recursive ones included. Counting only cProfile's "primitive" calls skips a
     # -- `lazyproperty.__get__` made inside another one, so the count would move with how caches
     # -- nest rather than with the work done --
-    pptx_calls = sum(
+    openpptx_calls = sum(
         total_calls
         for (filename, _, _), (_, total_calls, *_) in stats.items()
-        if _PPTX_DIR in filename and "tests" + os.sep not in filename
+        if _PKG_DIR in filename and "tests" + os.sep not in filename
     )
-    return {"decks": len(files), "pptx_calls": pptx_calls}
+    return {"decks": len(files), "openpptx_calls": openpptx_calls}
 
 
 def python_version() -> str:
@@ -96,7 +96,7 @@ def write_budget(counts: dict[str, int]) -> None:
 
 def main(argv: list[str]) -> int:
     counts = measure()
-    print("python %s: %d decks, %d calls into pptx" % (python_version(), *counts.values()))
+    print("python %s: %d decks, %d calls into openpptx" % (python_version(), *counts.values()))
     if "--update" in argv:
         write_budget(counts)
         print("[write] %s" % BUDGET_PATH.relative_to(HERE.parent.parent))

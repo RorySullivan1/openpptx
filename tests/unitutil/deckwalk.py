@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Callable, Iterable, List, Tuple
 
-from pptx.presentation import Presentation
+from openpptx.presentation import Presentation
 
 Failure = Tuple[str, str]  # (where, "ExceptionType: message")
 

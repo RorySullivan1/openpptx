@@ -1,25 +1,25 @@
-"""Unit-test suite for `pptx.exc`: the exception hierarchy callers rely on."""
+"""Unit-test suite for `openpptx.exc`: the exception hierarchy callers rely on."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.exc import (
+from openpptx.exc import (
     ChartError,
     InvalidPackageError,
     InvalidTypeError,
     InvalidValueError,
+    OpenPptxError,
     PackageError,
-    PyPptxError,
     ShapeError,
     SlideError,
     TableError,
 )
-from pptx.util import Inches
+from openpptx.util import Inches
 
 
 class DescribeExceptionHierarchy:
-    """Each pypptx exception keeps the builtin base the API raised before it existed."""
+    """Each openpptx exception keeps the builtin base the API raised before it existed."""
 
     @pytest.mark.parametrize(
         ("exc_cls", "builtin"),
@@ -32,8 +32,8 @@ class DescribeExceptionHierarchy:
             (TableError, ValueError),
         ],
     )
-    def it_is_both_a_PyPptxError_and_the_builtin_it_replaced(self, exc_cls, builtin):
-        assert issubclass(exc_cls, PyPptxError)
+    def it_is_both_an_OpenPptxError_and_the_builtin_it_replaced(self, exc_cls, builtin):
+        assert issubclass(exc_cls, OpenPptxError)
         assert issubclass(exc_cls, builtin)
 
     def it_reports_an_unreadable_package_as_a_PackageError(self):
@@ -45,7 +45,7 @@ class DescribeValidationErrors:
     """Property setters reject bad values with the new classes, still catchable as builtins."""
 
     def it_raises_InvalidValueError_for_an_out_of_range_value(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         textbox = prs.slides.add_slide(prs.slide_layouts[6]).shapes.add_textbox(
@@ -59,7 +59,7 @@ class DescribeValidationErrors:
             font.size = -1
 
     def it_raises_InvalidTypeError_for_a_value_of_the_wrong_type(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         textbox = prs.slides.add_slide(prs.slide_layouts[6]).shapes.add_textbox(

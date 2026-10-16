@@ -4,10 +4,10 @@ Creates a clustered bar chart and a line chart on separate slides.
 Saves to add_chart.pptx.
 """
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 

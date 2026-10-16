@@ -1,9 +1,9 @@
-pypptx real-world test corpus (tests/test_files/real_world/)
+openpptx real-world test corpus (tests/test_files/real_world/)
 
 The .pptx files in this directory and in malformed/ are unmodified copies of test data
 from Apache POI (https://poi.apache.org/), SVN revision 1938723, licensed under the Apache
 License, Version 2.0 (see LICENSE in this directory). They are used for testing only and
-are not distributed with the pypptx package.
+are not distributed with the openpptx package.
 
 Apache POI's NOTICE file follows.
 

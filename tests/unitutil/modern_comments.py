@@ -1,6 +1,6 @@
 """Builds a `.pptx` package holding modern (threaded) comments, the way PowerPoint 365 saves them.
 
-The package starts as a one-slide pypptx presentation; the authors part, the slide's modern
+The package starts as a one-slide openpptx presentation; the authors part, the slide's modern
 comments part, their relationships, content-type overrides and the slide's `p188:commentRel`
 extension are then written in at the ZIP level, so loading it exercises the same path a file
 from PowerPoint does.
@@ -113,7 +113,7 @@ def modern_comments_pptx() -> BytesIO:
     Thread 1 (Alice, slide-anchored, active) has replies from Bob then Alice. Thread 2 (Bob,
     anchored to a shape) is resolved and has no replies.
     """
-    from pptx import Presentation
+    from openpptx import Presentation
 
     prs = Presentation()
     prs.slides.add_slide(prs.slide_layouts[6])

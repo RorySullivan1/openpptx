@@ -3,11 +3,11 @@
 Demonstrates visual effects applied to autoshapes. Saves to shape_effects.pptx.
 """
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.dml import MSO_BEVEL_PRESET
-from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.enum.dml import MSO_BEVEL_PRESET
+from openpptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank layout

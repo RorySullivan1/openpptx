@@ -12,11 +12,11 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from pptx import Presentation
-from pptx.opc.constants import CONTENT_TYPE as CT
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.opc.package import Part
-from pptx.opc.packuri import PackURI
+from openpptx import Presentation
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.opc.package import Part
+from openpptx.opc.packuri import PackURI
 
 test_files_dir = Path(__file__).parent / "test_files"
 calibriz_ttf_path = test_files_dir / "calibriz.ttf"

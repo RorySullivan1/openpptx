@@ -13,8 +13,8 @@ Demonstrates: feature-manifest.md "Slide Masters & Layouts" and "Placeholders".
 Saves to custom_slide_master_walk.pptx.
 """
 
-from pptx import Presentation
-from pptx.util import Emu, Inches
+from openpptx import Presentation
+from openpptx.util import Emu, Inches
 
 FILENAME = "custom_slide_master_walk.pptx"
 

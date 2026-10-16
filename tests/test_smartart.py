@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.smartart` module."""
+"""Unit-test suite for `openpptx.smartart` module."""
 
 from __future__ import annotations
 
@@ -8,9 +8,9 @@ import re
 
 import pytest
 
-from pptx.parts.diagram import DiagramDataPart
-from pptx.parts.slide import SlidePart
-from pptx.smartart import SmartArt, SmartArtNode
+from openpptx.parts.diagram import DiagramDataPart
+from openpptx.parts.slide import SlidePart
+from openpptx.smartart import SmartArt, SmartArtNode
 
 from .unitutil.cxml import element, xml
 from .unitutil.mock import instance_mock
@@ -40,7 +40,7 @@ def _without_nsdecls(xml_str: str) -> str:
 
 
 class DescribeSmartArt:
-    """Unit-test suite for `pptx.smartart.SmartArt` objects."""
+    """Unit-test suite for `openpptx.smartart.SmartArt` objects."""
 
     def it_provides_access_to_its_top_level_nodes(self, smartart: SmartArt):
         nodes = smartart.nodes
@@ -94,7 +94,7 @@ class DescribeSmartArt:
 
 
 class DescribeSmartArtNode:
-    """Unit-test suite for `pptx.smartart.SmartArtNode` objects."""
+    """Unit-test suite for `openpptx.smartart.SmartArtNode` objects."""
 
     def it_provides_access_to_its_children(self, smartart: SmartArt):
         plan, build = smartart.nodes

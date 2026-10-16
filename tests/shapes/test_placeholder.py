@@ -1,16 +1,16 @@
-"""Unit-test suite for `pptx.shapes.placeholder` module."""
+"""Unit-test suite for `openpptx.shapes.placeholder` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.data import ChartData
-from pptx.enum.chart import XL_CHART_TYPE as XCT
-from pptx.enum.shapes import MSO_SHAPE_TYPE, PP_PLACEHOLDER
-from pptx.oxml.shapes.shared import ST_Direction, ST_PlaceholderSize
-from pptx.parts.image import ImagePart
-from pptx.parts.slide import NotesSlidePart, SlidePart
-from pptx.shapes.placeholder import (
+from openpptx.chart.data import ChartData
+from openpptx.enum.chart import XL_CHART_TYPE as XCT
+from openpptx.enum.shapes import MSO_SHAPE_TYPE, PP_PLACEHOLDER
+from openpptx.oxml.shapes.shared import ST_Direction, ST_PlaceholderSize
+from openpptx.parts.image import ImagePart
+from openpptx.parts.slide import NotesSlidePart, SlidePart
+from openpptx.shapes.placeholder import (
     BasePlaceholder,
     ChartPlaceholder,
     LayoutPlaceholder,
@@ -23,8 +23,8 @@ from pptx.shapes.placeholder import (
     _BaseSlidePlaceholder,
     _InheritsDimensions,
 )
-from pptx.shapes.shapetree import NotesSlidePlaceholders
-from pptx.slide import NotesMaster, SlideLayout, SlideMaster
+from openpptx.shapes.shapetree import NotesSlidePlaceholders
+from openpptx.slide import NotesMaster, SlideLayout, SlideMaster
 
 from ..oxml.unitdata.shape import (
     a_graphicFrame,
@@ -41,7 +41,7 @@ from ..unitutil.mock import class_mock, instance_mock, method_mock, property_moc
 
 
 class Describe_BaseSlidePlaceholder:
-    """Unit-test suite for `pptx.shapes.placeholder._BaseSlidePlaceholder` object."""
+    """Unit-test suite for `openpptx.shapes.placeholder._BaseSlidePlaceholder` object."""
 
     def it_knows_its_shape_type(self):
         placeholder = _BaseSlidePlaceholder(None, None)
@@ -163,7 +163,7 @@ class Describe_BaseSlidePlaceholder:
 
 
 class DescribeBasePlaceholder:
-    """Unit-test suite for `pptx.shapes.placeholder.BasePlaceholder` object."""
+    """Unit-test suite for `openpptx.shapes.placeholder.BasePlaceholder` object."""
 
     def it_knows_its_idx_value(self, idx_fixture):
         placeholder, idx = idx_fixture
@@ -279,7 +279,7 @@ class DescribeBasePlaceholder:
 
 
 class DescribeChartPlaceholder:
-    """Unit-test suite for `pptx.shapes.placeholder.ChartPlaceholder` object."""
+    """Unit-test suite for `openpptx.shapes.placeholder.ChartPlaceholder` object."""
 
     def it_can_insert_a_chart_into_itself(self, request, part_prop_):
         slide_part_ = instance_mock(request, SlidePart)
@@ -298,7 +298,7 @@ class DescribeChartPlaceholder:
         placeholder_graphic_frame_ = instance_mock(request, PlaceholderGraphicFrame)
         PlaceholderGraphicFrame_ = class_mock(
             request,
-            "pptx.shapes.placeholder.PlaceholderGraphicFrame",
+            "openpptx.shapes.placeholder.PlaceholderGraphicFrame",
             return_value=placeholder_graphic_frame_,
         )
         chart_data_ = instance_mock(request, ChartData)
@@ -341,7 +341,7 @@ class DescribeChartPlaceholder:
 
 
 class DescribeLayoutPlaceholder:
-    """Unit-test suite for `pptx.shapes.placeholder.LayoutPlaceholder` object."""
+    """Unit-test suite for `openpptx.shapes.placeholder.LayoutPlaceholder` object."""
 
     def it_uses_InheritsDimensions_mixin(self):
         layout_placeholder = LayoutPlaceholder(None, None)
@@ -386,7 +386,7 @@ class DescribeLayoutPlaceholder:
 
 
 class DescribeNotesSlidePlaceholder:
-    """Unit-test suite for `pptx.shapes.placeholder.NotesSlidePlaceholder` object."""
+    """Unit-test suite for `openpptx.shapes.placeholder.NotesSlidePlaceholder` object."""
 
     def it_finds_its_base_placeholder_to_help(self, base_ph_fixture):
         placeholder, notes_master_, ph_type, master_placeholder_ = base_ph_fixture
@@ -437,7 +437,7 @@ class DescribeNotesSlidePlaceholder:
 
 
 class DescribePicturePlaceholder:
-    """Unit-test suite for `pptx.shapes.placeholder.PicturePlaceholder` object."""
+    """Unit-test suite for `openpptx.shapes.placeholder.PicturePlaceholder` object."""
 
     def it_can_insert_a_picture_into_itself(self, request):
         pic = element("p:pic")
@@ -450,7 +450,7 @@ class DescribePicturePlaceholder:
         placeholder_picture_ = instance_mock(request, PlaceholderPicture)
         PlaceholderPicture_ = class_mock(
             request,
-            "pptx.shapes.placeholder.PlaceholderPicture",
+            "openpptx.shapes.placeholder.PlaceholderPicture",
             return_value=placeholder_picture_,
         )
         picture_ph = PicturePlaceholder(None, "parent")
@@ -523,7 +523,7 @@ class DescribePicturePlaceholder:
 
 
 class DescribeTablePlaceholder:
-    """Unit-test suite for `pptx.shapes.placeholder.TablePlaceholder` object."""
+    """Unit-test suite for `openpptx.shapes.placeholder.TablePlaceholder` object."""
 
     def it_can_insert_a_table_into_itself(self, request):
         graphicFrame = element("p:graphicFrame")
@@ -539,7 +539,7 @@ class DescribeTablePlaceholder:
         placeholder_graphic_frame_ = instance_mock(request, PlaceholderGraphicFrame)
         PlaceholderGraphicFrame_ = class_mock(
             request,
-            "pptx.shapes.placeholder.PlaceholderGraphicFrame",
+            "openpptx.shapes.placeholder.PlaceholderGraphicFrame",
             return_value=placeholder_graphic_frame_,
         )
         table_ph = TablePlaceholder(None, "parent")
@@ -568,7 +568,7 @@ class Describe_InheritsDimensions_base_placeholder:
     """A placeholder looks its base placeholder up once and reuses it (issue #51)."""
 
     def it_sees_a_deleted_layout_placeholder_it_had_already_found(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         slide = prs.slides.add_slide(prs.slide_layouts[1])
@@ -581,7 +581,7 @@ class Describe_InheritsDimensions_base_placeholder:
         assert placeholder.left is None
 
     def it_sees_a_layout_placeholder_it_had_found_given_another_idx(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         slide = prs.slides.add_slide(prs.slide_layouts[1])
@@ -594,8 +594,8 @@ class Describe_InheritsDimensions_base_placeholder:
         assert placeholder.left is None
 
     def it_sees_a_deleted_master_placeholder_a_layout_placeholder_had_found(self):
-        from pptx import Presentation
-        from pptx.enum.shapes import PP_PLACEHOLDER
+        from openpptx import Presentation
+        from openpptx.enum.shapes import PP_PLACEHOLDER
 
         prs = Presentation()
         layout_ph = prs.slide_layouts[1].placeholders.get(idx=1)
@@ -608,8 +608,8 @@ class Describe_InheritsDimensions_base_placeholder:
 
 
     def it_searches_the_layout_once_for_all_four_inherited_dimensions(self, request):
-        from pptx import Presentation
-        from pptx.shapes.shapetree import LayoutPlaceholders
+        from openpptx import Presentation
+        from openpptx.shapes.shapetree import LayoutPlaceholders
 
         prs = Presentation()
         placeholder = prs.slides.add_slide(prs.slide_layouts[1]).placeholders[1]
@@ -622,7 +622,7 @@ class Describe_InheritsDimensions_base_placeholder:
         assert get_.call_count == 1
 
     def it_reads_the_same_dimensions_as_a_placeholder_with_no_cached_base(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         slide = prs.slides.add_slide(prs.slide_layouts[1])
@@ -638,7 +638,7 @@ class Describe_InheritsDimensions_base_placeholder:
             )
 
     def but_it_sees_a_deleted_layout_placeholder_when_obtained_afterwards(self):
-        from pptx import Presentation
+        from openpptx import Presentation
 
         prs = Presentation()
         slide = prs.slides.add_slide(prs.slide_layouts[1])

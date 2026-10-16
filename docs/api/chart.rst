@@ -1,90 +1,90 @@
 Charts
 ======
 
-``pptx.chart.chart``
---------------------
+``openpptx.chart.chart``
+------------------------
 
-.. automodule:: pptx.chart.chart
+.. automodule:: openpptx.chart.chart
 
-``pptx.chart.data``
--------------------
-
-.. automodule:: pptx.chart.data
-
-``pptx.chart.plot``
--------------------
-
-.. automodule:: pptx.chart.plot
-
-``pptx.chart.series``
----------------------
-
-.. automodule:: pptx.chart.series
-
-``pptx.chart.point``
---------------------
-
-.. automodule:: pptx.chart.point
-
-``pptx.chart.category``
+``openpptx.chart.data``
 -----------------------
 
-.. automodule:: pptx.chart.category
+.. automodule:: openpptx.chart.data
 
-``pptx.chart.axis``
--------------------
+``openpptx.chart.plot``
+-----------------------
 
-.. automodule:: pptx.chart.axis
+.. automodule:: openpptx.chart.plot
 
-``pptx.chart.legend``
----------------------
-
-.. automodule:: pptx.chart.legend
-
-``pptx.chart.datalabel``
-------------------------
-
-.. automodule:: pptx.chart.datalabel
-
-``pptx.chart.datatable``
-------------------------
-
-.. automodule:: pptx.chart.datatable
-
-``pptx.chart.marker``
----------------------
-
-.. automodule:: pptx.chart.marker
-
-``pptx.chart.chartlines``
+``openpptx.chart.series``
 -------------------------
 
-.. automodule:: pptx.chart.chartlines
+.. automodule:: openpptx.chart.series
 
-``pptx.chart.errbar``
----------------------
-
-.. automodule:: pptx.chart.errbar
-
-``pptx.chart.trendline``
+``openpptx.chart.point``
 ------------------------
 
-.. automodule:: pptx.chart.trendline
+.. automodule:: openpptx.chart.point
 
-``pptx.chart.plotarea``
+``openpptx.chart.category``
+---------------------------
+
+.. automodule:: openpptx.chart.category
+
+``openpptx.chart.axis``
 -----------------------
 
-.. automodule:: pptx.chart.plotarea
+.. automodule:: openpptx.chart.axis
 
-``pptx.chart.view3d``
----------------------
+``openpptx.chart.legend``
+-------------------------
 
-.. automodule:: pptx.chart.view3d
+.. automodule:: openpptx.chart.legend
 
-``pptx.chart.chartex``
-----------------------
+``openpptx.chart.datalabel``
+----------------------------
 
-.. automodule:: pptx.chart.chartex
+.. automodule:: openpptx.chart.datalabel
+
+``openpptx.chart.datatable``
+----------------------------
+
+.. automodule:: openpptx.chart.datatable
+
+``openpptx.chart.marker``
+-------------------------
+
+.. automodule:: openpptx.chart.marker
+
+``openpptx.chart.chartlines``
+-----------------------------
+
+.. automodule:: openpptx.chart.chartlines
+
+``openpptx.chart.errbar``
+-------------------------
+
+.. automodule:: openpptx.chart.errbar
+
+``openpptx.chart.trendline``
+----------------------------
+
+.. automodule:: openpptx.chart.trendline
+
+``openpptx.chart.plotarea``
+---------------------------
+
+.. automodule:: openpptx.chart.plotarea
+
+``openpptx.chart.view3d``
+-------------------------
+
+.. automodule:: openpptx.chart.view3d
+
+``openpptx.chart.chartex``
+--------------------------
+
+.. automodule:: openpptx.chart.chartex
 
 Objects the API returns from private classes
 --------------------------------------------
@@ -92,5 +92,5 @@ Objects the API returns from private classes
 These classes have private names but are handed to callers, e.g. by
 ``text_frame.paragraphs`` or ``table.cell()``.
 
-.. autoclass:: pptx.chart.chart._Plots
+.. autoclass:: openpptx.chart.chart._Plots
 

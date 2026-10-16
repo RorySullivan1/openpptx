@@ -1,4 +1,4 @@
-"""Property-based tests (Hypothesis) for the converters in `pptx.oxml.simpletypes`.
+"""Property-based tests (Hypothesis) for the converters in `openpptx.oxml.simpletypes`.
 
 Every concrete simple type is checked against three properties:
 
@@ -21,8 +21,8 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-import pptx.oxml.simpletypes as simpletypes
-from pptx.exc import InvalidTypeError, InvalidValueError, InvalidXmlError
+import openpptx.oxml.simpletypes as simpletypes
+from openpptx.exc import InvalidTypeError, InvalidValueError, InvalidXmlError
 
 # -- abstract bases, used only through their subclasses --
 _ABSTRACT = {"XsdStringEnumeration", "XsdTokenEnumeration"}

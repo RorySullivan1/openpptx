@@ -1,13 +1,13 @@
-"""Test suite for pptx.oxml.__init__.py module, primarily XML parser-related."""
+"""Test suite for openpptx.oxml.__init__.py module, primarily XML parser-related."""
 
 from __future__ import annotations
 
 import pytest
 from lxml import etree
 
-from pptx.oxml import oxml_parser, parse_xml, register_element_cls
-from pptx.oxml.ns import qn
-from pptx.oxml.xmlchemy import BaseOxmlElement
+from openpptx.oxml import oxml_parser, parse_xml, register_element_cls
+from openpptx.oxml.ns import qn
+from openpptx.oxml.xmlchemy import BaseOxmlElement
 
 from ..unitutil.mock import function_mock, loose_mock, var_mock
 
@@ -68,12 +68,12 @@ def foo(xml_bytes):
 
 @pytest.fixture
 def fromstring(request):
-    return function_mock(request, "pptx.oxml.etree.fromstring")
+    return function_mock(request, "openpptx.oxml.etree.fromstring")
 
 
 @pytest.fixture
 def mock_oxml_parser(request):
-    return var_mock(request, "pptx.oxml.oxml_parser")
+    return var_mock(request, "openpptx.oxml.oxml_parser")
 
 
 @pytest.fixture
@@ -106,7 +106,7 @@ def xml_text():
 
 
 class DescribeElementClassRegistry:
-    """Unit-test suite for the element-class registrations in `pptx.oxml`."""
+    """Unit-test suite for the element-class registrations in `openpptx.oxml`."""
 
     def it_registers_each_tag_only_once(self):
         # -- lookup is by tag alone, so a second registration silently replaces the first; two
@@ -115,9 +115,9 @@ class DescribeElementClassRegistry:
         import inspect
         import re
 
-        import pptx.oxml
+        import openpptx.oxml
 
-        source = inspect.getsource(pptx.oxml)
+        source = inspect.getsource(openpptx.oxml)
         tags = re.findall(r'register_element_cls\(\s*"([^"]+)"', source)
         duplicates = [t for t, n in collections.Counter(tags).items() if n > 1]
 

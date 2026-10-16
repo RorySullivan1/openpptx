@@ -1,4 +1,4 @@
-"""XML test data builders for `pptx.oxml.text` unit tests."""
+"""XML test data builders for `openpptx.oxml.text` unit tests."""
 
 from __future__ import annotations
 

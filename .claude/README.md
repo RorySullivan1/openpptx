@@ -57,7 +57,7 @@ workflows  ▸  commands  ▸  agents  ▸  skills
   `-deployment`, `coding-standards`), the GitHub family, `technical-documentation-drafter`,
   `development-mapping`, and the operational set (`session-memory`, `agent-finder`,
   `knowledge-router`, `token-optimizer`, `skill-distiller`, `claim-grounding`).
-- **agents/** — `python-developer` (the executor for `src/pptx/`), `software-architect`,
+- **agents/** — `python-developer` (the executor for `src/openpptx/`), `software-architect`,
   `goal-auditor`, `github-operator`, `token-manager`.
 - **commands/** — `/version-set`, `/version-ship`, `/roadmap-set`, `/roadmap-status`,
   `/epic`, `/issue`, `/reindex`.

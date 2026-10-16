@@ -1,0 +1,500 @@
+"""Shapes based on the `p:pic` element, including Picture and Movie."""
+
+from __future__ import annotations
+
+from datetime import timedelta
+from typing import TYPE_CHECKING, cast
+
+from openpptx.dml.color import RGBColor
+from openpptx.dml.line import LineFormat
+from openpptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_MEDIA_TYPE
+from openpptx.exc import ShapeError
+from openpptx.shapes.base import BaseShape
+from openpptx.shared import ParentedElementProxy
+from openpptx.util import lazyproperty
+
+if TYPE_CHECKING:
+    from openpptx.oxml.shapes.picture import CT_Picture
+    from openpptx.oxml.shapes.shared import CT_LineProperties
+    from openpptx.types import ProvidesPart
+    from openpptx.util import Length
+
+
+class _BasePicture(BaseShape):
+    """Base class for shapes based on a `p:pic` element."""
+
+    def __init__(self, pic: CT_Picture, parent: ProvidesPart):
+        super(_BasePicture, self).__init__(pic, parent)
+        self._pic = pic
+
+    @property
+    def crop_bottom(self) -> float:
+        """|float| representing relative portion cropped from shape bottom.
+
+        Read/write. 1.0 represents 100%. For example, 25% is represented by 0.25. Negative values
+        are valid as are values greater than 1.0.
+        """
+        return self._pic.srcRect_b
+
+    @crop_bottom.setter
+    def crop_bottom(self, value: float):
+        self._pic.srcRect_b = value
+
+    @property
+    def crop_left(self) -> float:
+        """|float| representing relative portion cropped from left of shape.
+
+        Read/write. 1.0 represents 100%. A negative value extends the side beyond the image
+        boundary.
+        """
+        return self._pic.srcRect_l
+
+    @crop_left.setter
+    def crop_left(self, value: float):
+        self._pic.srcRect_l = value
+
+    @property
+    def crop_right(self) -> float:
+        """|float| representing relative portion cropped from right of shape.
+
+        Read/write. 1.0 represents 100%.
+        """
+        return self._pic.srcRect_r
+
+    @crop_right.setter
+    def crop_right(self, value: float):
+        self._pic.srcRect_r = value
+
+    @property
+    def crop_top(self) -> float:
+        """|float| representing relative portion cropped from shape top.
+
+        Read/write. 1.0 represents 100%.
+        """
+        return self._pic.srcRect_t
+
+    @crop_top.setter
+    def crop_top(self, value: float):
+        self._pic.srcRect_t = value
+
+    def get_or_add_ln(self):
+        """Return the `a:ln` element for this `p:pic`-based image.
+
+        The `a:ln` element contains the line format properties XML.
+        """
+        return self._pic.get_or_add_ln()
+
+    @lazyproperty
+    def line(self) -> LineFormat:
+        """Provides access to properties of the picture outline, such as its color and width."""
+        return LineFormat(self)
+
+    @property
+    def ln(self) -> CT_LineProperties | None:
+        """The `a:ln` element for this `p:pic`.
+
+        Contains the line format properties such as line color and width. |None| if no `a:ln`
+        element is present.
+        """
+        return self._pic.ln
+
+
+class _BaseMediaShape(_BasePicture):
+    """Base class for movie and audio shapes, based on the `p:pic` element.
+
+    Provides access to the trim and fade playback settings carried in the PowerPoint-2010
+    `p14:media` extension.
+    """
+
+    @property
+    def trim_start(self) -> timedelta | None:
+        """Duration trimmed from the start of the media. Read/write.
+
+        |None| if no trim-start is set. Assigning |None| or a zero-length `timedelta`
+        removes it.
+        """
+        return self._get_trim_value("st")
+
+    @trim_start.setter
+    def trim_start(self, value: timedelta | None) -> None:
+        self._set_trim_value("st", value)
+
+    @property
+    def trim_end(self) -> timedelta | None:
+        """Duration trimmed from the end of the media. Read/write.
+
+        |None| if no trim-end is set. Assigning |None| or a zero-length `timedelta` removes
+        it.
+        """
+        return self._get_trim_value("end")
+
+    @trim_end.setter
+    def trim_end(self, value: timedelta | None) -> None:
+        self._set_trim_value("end", value)
+
+    @property
+    def fade_in(self) -> timedelta | None:
+        """Duration of the fade-in effect at the start of playback. Read/write.
+
+        |None| if no fade-in is set. Assigning |None| or a zero-length `timedelta` removes
+        it.
+        """
+        return self._get_fade_value("in_")
+
+    @fade_in.setter
+    def fade_in(self, value: timedelta | None) -> None:
+        self._set_fade_value("in_", value)
+
+    @property
+    def fade_out(self) -> timedelta | None:
+        """Duration of the fade-out effect at the end of playback. Read/write.
+
+        |None| if no fade-out is set. Assigning |None| or a zero-length `timedelta` removes
+        it.
+        """
+        return self._get_fade_value("out")
+
+    @fade_out.setter
+    def fade_out(self, value: timedelta | None) -> None:
+        self._set_fade_value("out", value)
+
+    def _get_trim_value(self, attr_name: str) -> timedelta | None:
+        media = self._pic.p14_media
+        if media is None or media.trim is None:
+            return None
+        ms = getattr(media.trim, attr_name)
+        return None if ms is None else timedelta(milliseconds=ms)
+
+    def _set_trim_value(self, attr_name: str, value: timedelta | None) -> None:
+        ms = _ms_or_none(value)
+        media = self._pic.p14_media
+        if ms is None:
+            if media is None or media.trim is None:
+                return
+            setattr(media.trim, attr_name, None)
+            if media.trim.st is None and media.trim.end is None:
+                media._remove_trim()  # pyright: ignore[reportAttributeAccessIssue]
+            return
+        media = self._pic.get_or_add_p14_media()
+        trim = media.get_or_add_trim()  # pyright: ignore[reportAttributeAccessIssue]
+        setattr(trim, attr_name, ms)
+
+    def _get_fade_value(self, attr_name: str) -> timedelta | None:
+        media = self._pic.p14_media
+        if media is None or media.fade is None:
+            return None
+        ms = getattr(media.fade, attr_name)
+        return None if ms is None else timedelta(milliseconds=ms)
+
+    def _set_fade_value(self, attr_name: str, value: timedelta | None) -> None:
+        ms = _ms_or_none(value)
+        media = self._pic.p14_media
+        if ms is None:
+            if media is None or media.fade is None:
+                return
+            setattr(media.fade, attr_name, None)
+            if media.fade.in_ is None and media.fade.out is None:
+                media._remove_fade()  # pyright: ignore[reportAttributeAccessIssue]
+            return
+        media = self._pic.get_or_add_p14_media()
+        fade = media.get_or_add_fade()  # pyright: ignore[reportAttributeAccessIssue]
+        setattr(fade, attr_name, ms)
+
+
+def _ms_or_none(value: timedelta | None) -> int | None:
+    """Return `value` as an integer count of milliseconds, or |None|.
+
+    |None| is also returned for a zero-length `timedelta`, causing the corresponding XML
+    attribute to be removed rather than written as `"0"`.
+    """
+    if value is None:
+        return None
+    ms = round(value.total_seconds() * 1000)
+    return None if ms == 0 else ms
+
+
+class Movie(_BaseMediaShape):
+    """A movie shape, one that places a video on a slide.
+
+    Like |Picture|, a movie shape is based on the `p:pic` element. A movie is composed of a video
+    and a *poster frame*, the placeholder image that represents the video before it is played.
+    """
+
+    @lazyproperty
+    def media_format(self) -> _MediaFormat:
+        """The |_MediaFormat| object for this movie.
+
+        The |_MediaFormat| object provides access to formatting properties for the movie.
+        """
+        return _MediaFormat(self._pic, self)
+
+    @property
+    def media_type(self) -> PP_MEDIA_TYPE:
+        """Member of :ref:`PpMediaType` describing this shape.
+
+        The return value is unconditionally `PP_MEDIA_TYPE.MOVIE` in this case.
+        """
+        return PP_MEDIA_TYPE.MOVIE
+
+    @property
+    def poster_frame(self):
+        """Return |Image| object containing poster frame for this movie.
+
+        Returns |None| if this movie has no poster frame (uncommon).
+        """
+        slide_part, rId = self.part, self._pic.blip_rId
+        if rId is None:
+            return None
+        return slide_part.get_image(rId)
+
+    @property
+    def shape_type(self) -> MSO_SHAPE_TYPE:
+        """Return member of :ref:`MsoShapeType` describing this shape.
+
+        The return value is unconditionally `MSO_SHAPE_TYPE.MEDIA` in this
+        case.
+        """
+        return MSO_SHAPE_TYPE.MEDIA
+
+
+class Audio(_BaseMediaShape):
+    """An audio shape, one that plays an audio clip on a slide.
+
+    Like |Picture|, an audio shape is based on the `p:pic` element, displayed as an icon
+    (the "speaker" icon by default) that is clicked to start playback.
+    """
+
+    @lazyproperty
+    def media_format(self) -> _MediaFormat:
+        """The |_MediaFormat| object for this audio clip.
+
+        The |_MediaFormat| object provides access to formatting properties for the audio
+        clip.
+        """
+        return _MediaFormat(self._pic, self)
+
+    @property
+    def media_type(self) -> PP_MEDIA_TYPE:
+        """Member of :ref:`PpMediaType` describing this shape.
+
+        The return value is unconditionally `PP_MEDIA_TYPE.SOUND` in this case.
+        """
+        return PP_MEDIA_TYPE.SOUND
+
+    @property
+    def shape_type(self) -> MSO_SHAPE_TYPE:
+        """Return member of :ref:`MsoShapeType` describing this shape.
+
+        The return value is unconditionally `MSO_SHAPE_TYPE.MEDIA` in this case.
+        """
+        return MSO_SHAPE_TYPE.MEDIA
+
+
+class Picture(_BasePicture):
+    """A picture shape, one that places an image on a slide.
+
+    Based on the `p:pic` element.
+    """
+
+    @property
+    def brightness(self) -> float:
+        """Brightness adjustment as a float (-1.0 to 1.0).
+
+        Read/write. 0.0 means no adjustment. Positive values brighten, negative darken.
+        """
+        blip = self._pic.blipFill.blip
+        if blip is None or blip.lum is None:
+            return 0.0
+        return blip.lum.bright or 0.0
+
+    @brightness.setter
+    def brightness(self, value: float):
+        blip = self._pic.blipFill.blip
+        if blip is None:
+            return
+        if value == 0.0:
+            lum = blip.lum
+            if lum is not None and (lum.contrast is None or lum.contrast == 0.0):
+                blip._remove_lum()
+            elif lum is not None:
+                lum.bright = None
+            return
+        lum = blip.get_or_add_lum()
+        lum.bright = value
+
+    @property
+    def contrast(self) -> float:
+        """Contrast adjustment as a float (-1.0 to 1.0).
+
+        Read/write. 0.0 means no adjustment. Positive values increase contrast,
+        negative decrease.
+        """
+        blip = self._pic.blipFill.blip
+        if blip is None or blip.lum is None:
+            return 0.0
+        return blip.lum.contrast or 0.0
+
+    @contrast.setter
+    def contrast(self, value: float):
+        blip = self._pic.blipFill.blip
+        if blip is None:
+            return
+        if value == 0.0:
+            lum = blip.lum
+            if lum is not None and (lum.bright is None or lum.bright == 0.0):
+                blip._remove_lum()
+            elif lum is not None:
+                lum.contrast = None
+            return
+        lum = blip.get_or_add_lum()
+        lum.contrast = value
+
+    @property
+    def is_grayscale(self) -> bool:
+        """Whether the picture is rendered in grayscale.
+
+        Read/write. Setting to |True| adds the grayscale effect; |False| removes it.
+        """
+        blip = self._pic.blipFill.blip
+        if blip is None:
+            return False
+        return blip.grayscl is not None
+
+    @is_grayscale.setter
+    def is_grayscale(self, value: bool):
+        blip = self._pic.blipFill.blip
+        if blip is None:
+            return
+        if value:
+            blip.get_or_add_grayscl()
+        else:
+            blip._remove_grayscl()
+
+    @property
+    def transparency_color(self) -> RGBColor | None:
+        """The color set as transparent on this picture, or |None|.
+
+        Read/write. When set, the specified color in the image is rendered as fully
+        transparent (chroma key). Implemented via the ``a:clrChange`` element on the blip.
+        Setting to |None| removes the transparency color effect.
+        """
+        blip = self._pic.blipFill.blip
+        if blip is None:
+            return None
+        clrChange = blip.clrChange
+        if clrChange is None:
+            return None
+        clrFrom = clrChange.clrFrom
+        if clrFrom is None:
+            return None
+        srgbClr = clrFrom.find(
+            "{http://schemas.openxmlformats.org/drawingml/2006/main}srgbClr"
+        )
+        if srgbClr is None:
+            return None
+        return RGBColor.from_string(srgbClr.get("val"))
+
+    @transparency_color.setter
+    def transparency_color(self, value: RGBColor | None) -> None:
+        blip = self._pic.blipFill.blip
+        if blip is None:
+            return
+        if value is None:
+            blip._remove_clrChange()
+            return
+        blip._remove_clrChange()
+        clrChange = blip.get_or_add_clrChange()
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
+
+        clr_from_xml = '<a:clrFrom %s><a:srgbClr val="%s"/></a:clrFrom>' % (
+            nsdecls("a"),
+            str(value),
+        )
+        clr_to_xml = (
+            '<a:clrTo %s><a:srgbClr val="%s"><a:alpha val="0"/></a:srgbClr></a:clrTo>'
+            % (nsdecls("a"), str(value))
+        )
+        clrChange.append(parse_xml(clr_from_xml))
+        clrChange.append(parse_xml(clr_to_xml))
+
+    @property
+    def image_width(self) -> Length:
+        """Native width of the embedded image in EMU.
+
+        Read-only. This is the original image width based on its pixel dimensions and DPI.
+        Useful for resetting the picture to its natural size.
+        """
+        from openpptx.parts.image import ImagePart
+
+        image_part = cast("ImagePart", self.part.related_part(self._pic.blip_rId))
+        return image_part._native_size[0]  # pyright: ignore[reportPrivateUsage]
+
+    @property
+    def image_height(self) -> Length:
+        """Native height of the embedded image in EMU.
+
+        Read-only. This is the original image height based on its pixel dimensions and DPI.
+        Useful for resetting the picture to its natural size.
+        """
+        from openpptx.parts.image import ImagePart
+
+        image_part = cast("ImagePart", self.part.related_part(self._pic.blip_rId))
+        return image_part._native_size[1]  # pyright: ignore[reportPrivateUsage]
+
+    @property
+    def auto_shape_type(self) -> MSO_SHAPE | None:
+        """Member of MSO_SHAPE indicating masking shape.
+
+        A picture can be masked by any of the so-called "auto-shapes" available in PowerPoint,
+        such as an ellipse or triangle. When a picture is masked by a shape, the shape assumes the
+        same dimensions as the picture and the portion of the picture outside the shape boundaries
+        does not appear. Note the default value for a newly-inserted picture is
+        `MSO_AUTO_SHAPE_TYPE.RECTANGLE`, which performs no cropping because the extents of the
+        rectangle exactly correspond to the extents of the picture.
+
+        The available shapes correspond to the members of :ref:`MsoAutoShapeType`.
+
+        The return value can also be |None|, indicating the picture either has no geometry (not
+        expected) or has custom geometry, like a freeform shape. A picture with no geometry will
+        have no visible representation on the slide, although it can be selected. This is because
+        without geometry, there is no "inside-the-shape" for it to appear in.
+        """
+        prstGeom = self._pic.spPr.prstGeom
+        if prstGeom is None:  # ---generally means cropped with freeform---
+            return None
+        return prstGeom.prst
+
+    @auto_shape_type.setter
+    def auto_shape_type(self, member: MSO_SHAPE):
+        MSO_SHAPE.validate(member)
+        spPr = self._pic.spPr
+        prstGeom = spPr.prstGeom
+        if prstGeom is None:
+            spPr._remove_custGeom()  # pyright: ignore[reportPrivateUsage]
+            prstGeom = spPr._add_prstGeom()  # pyright: ignore[reportPrivateUsage]
+        prstGeom.prst = member
+
+    @property
+    def image(self):
+        """The |Image| object for this picture.
+
+        Provides access to the properties and bytes of the image in this picture shape.
+        """
+        slide_part, rId = self.part, self._pic.blip_rId
+        if rId is None:
+            raise ShapeError("no embedded image")
+        return slide_part.get_image(rId)
+
+    @property
+    def shape_type(self) -> MSO_SHAPE_TYPE:
+        """Unconditionally `MSO_SHAPE_TYPE.PICTURE` in this case."""
+        return MSO_SHAPE_TYPE.PICTURE
+
+
+class _MediaFormat(ParentedElementProxy):
+    """Provides access to formatting properties for a Media object.
+
+    Media format properties are things like start point, volume, and
+    compression type.
+    """

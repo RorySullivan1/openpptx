@@ -1,6 +1,6 @@
 # Real-world test corpus — sources
 
-**Test use only.** These files exercise pypptx against decks saved by PowerPoint. They are
+**Test use only.** These files exercise openpptx against decks saved by PowerPoint. They are
 not part of the library: packages are found under `src/` only, so nothing here reaches the
 wheel. Do not use them in `examples/` or the docs.
 
@@ -51,7 +51,7 @@ Authoring application is read from each file's `docProps/app.xml`. `2411-Perform
 ## `malformed/`
 
 Fuzzer-minimized files from OSS-Fuzz (ClusterFuzz), from the same POI directory and revision.
-None is a valid zip package; each must fail with a clear pypptx exception.
+None is a valid zip package; each must fail with a clear openpptx exception.
 
 | File | KB | SHA-256 |
 |---|---|---|

@@ -1,12 +1,12 @@
-"""Unit-test suite for `pptx.chart.legend` module."""
+"""Unit-test suite for `openpptx.chart.legend` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.legend import Legend
-from pptx.enum.chart import XL_LEGEND_POSITION
-from pptx.text.text import Font
+from openpptx.chart.legend import Legend
+from openpptx.enum.chart import XL_LEGEND_POSITION
+from openpptx.text.text import Font
 
 from ..unitutil.cxml import element, xml
 

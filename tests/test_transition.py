@@ -1,4 +1,4 @@
-"""Unit-test suite for the `pptx.transition` module."""
+"""Unit-test suite for the `openpptx.transition` module."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ import datetime as dt
 
 import pytest
 
-from pptx.enum.animation import PP_TRANSITION_SPEED, PP_TRANSITION_TYPE
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.slide import Slide, SlideLayout, SlideMaster
-from pptx.transition import SlideTransition
+from openpptx.enum.animation import PP_TRANSITION_SPEED, PP_TRANSITION_TYPE
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.slide import Slide, SlideLayout, SlideMaster
+from openpptx.transition import SlideTransition
 
 from .unitutil.cxml import element
 
@@ -24,7 +24,7 @@ def _slide_with(content: str) -> Slide:
 
 
 class DescribeSlideTransition:
-    """Unit-test suite for `pptx.transition.SlideTransition` objects."""
+    """Unit-test suite for `openpptx.transition.SlideTransition` objects."""
 
     def it_is_provided_by_a_slide_a_layout_and_a_master(self):
         sld = element("p:sld/(p:cSld/p:spTree,p:transition/p:fade)")

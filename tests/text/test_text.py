@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.text.text` module."""
+"""Unit-test suite for `openpptx.text.text` module."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING, cast
 
 import pytest
 
-from pptx.dml.color import ColorFormat
-from pptx.dml.fill import FillFormat
-from pptx.enum.lang import MSO_LANGUAGE_ID
-from pptx.enum.text import (
+from openpptx.dml.color import ColorFormat
+from openpptx.dml.fill import FillFormat
+from openpptx.enum.lang import MSO_LANGUAGE_ID
+from openpptx.enum.text import (
     MSO_ANCHOR,
     MSO_AUTO_SIZE,
     MSO_TEXT_CAPS,
@@ -21,11 +21,11 @@ from pptx.enum.text import (
     MSO_UNDERLINE,
     PP_ALIGN,
 )
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.opc.package import XmlPart
-from pptx.shapes.autoshape import Shape
-from pptx.text.text import Font, TextFrame, _Hyperlink, _Paragraph, _Run
-from pptx.util import Emu, Inches, Pt
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.opc.package import XmlPart
+from openpptx.shapes.autoshape import Shape
+from openpptx.text.text import Font, TextFrame, _Hyperlink, _Paragraph, _Run
+from openpptx.util import Emu, Inches, Pt
 
 from ..oxml.unitdata.text import a_p, a_t, an_hlinkClick, an_r, an_rPr
 from ..unitutil.cxml import element, xml
@@ -38,11 +38,11 @@ from ..unitutil.mock import (
 )
 
 if TYPE_CHECKING:
-    from pptx.oxml.text import CT_TextBody, CT_TextParagraph
+    from openpptx.oxml.text import CT_TextBody, CT_TextParagraph
 
 
 class DescribeTextFrame:
-    """Unit-test suite for `pptx.text.text.TextFrame` object."""
+    """Unit-test suite for `openpptx.text.text.TextFrame` object."""
 
     def it_can_add_a_paragraph_to_itself(self, add_paragraph_fixture):
         text_frame, expected_xml = add_paragraph_fixture
@@ -577,7 +577,7 @@ class DescribeTextFrame:
 
     @pytest.fixture
     def FontFiles_(self, request):
-        return class_mock(request, "pptx.text.text.FontFiles")
+        return class_mock(request, "openpptx.text.text.FontFiles")
 
     @pytest.fixture
     def paragraphs_prop_(self, request):
@@ -585,7 +585,7 @@ class DescribeTextFrame:
 
     @pytest.fixture
     def TextFitter_(self, request):
-        return class_mock(request, "pptx.text.text.TextFitter")
+        return class_mock(request, "openpptx.text.text.TextFitter")
 
     @pytest.fixture
     def text_frame_with_parent_(self, request):
@@ -599,11 +599,11 @@ class DescribeTextFrame:
 
 
 class DescribeFont:
-    """Unit-test suite for `pptx.text.text.Font` object."""
+    """Unit-test suite for `openpptx.text.text.Font` object."""
 
     def it_makes_the_font_solid_again_when_its_color_is_set_after_a_fill_change(self):
-        from pptx.dml.color import RGBColor
-        from pptx.enum.dml import MSO_FILL
+        from openpptx.dml.color import RGBColor
+        from openpptx.enum.dml import MSO_FILL
 
         font = Font(element("a:rPr"))
         font.color.rgb = RGBColor(0xFF, 0x00, 0x00)
@@ -843,8 +843,8 @@ class DescribeFont:
         assert font._element.xml == xml(expected_cxml)
 
     def it_knows_its_shadow_setting(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # No effectLst — no shadow
         rPr = parse_xml("<a:rPr %s/>" % nsdecls("a"))
@@ -861,8 +861,8 @@ class DescribeFont:
         assert Font(rPr).has_shadow is False
 
     def it_can_change_its_shadow_setting(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Enable shadow
         rPr = parse_xml("<a:rPr %s/>" % nsdecls("a"))
@@ -1021,7 +1021,7 @@ class DescribeFont:
 
 
 class Describe_Hyperlink:
-    """Unit-test suite for `pptx.text.text._Hyperlink` object."""
+    """Unit-test suite for `openpptx.text.text._Hyperlink` object."""
 
     def it_knows_the_target_url_of_the_hyperlink(self, hlink_with_url_):
         hlink, rId, url = hlink_with_url_
@@ -1127,15 +1127,15 @@ class Describe_Hyperlink:
 
     @pytest.fixture
     def url(self):
-        return "https://example.com/pypptx"
+        return "https://example.com/openpptx"
 
     @pytest.fixture
     def url_2(self):
-        return "https://example.com/pypptx-alt"
+        return "https://example.com/openpptx-alt"
 
 
 class Describe_Paragraph:
-    """Unit test suite for pptx.text.text._Paragraph object."""
+    """Unit test suite for openpptx.text.text._Paragraph object."""
 
     def it_can_add_a_line_break(self, line_break_fixture):
         paragraph, expected_xml = line_break_fixture
@@ -1658,7 +1658,7 @@ class Describe_Paragraph:
 
     @pytest.fixture
     def Font_(self, request):
-        return class_mock(request, "pptx.text.text.Font")
+        return class_mock(request, "openpptx.text.text.Font")
 
     @pytest.fixture
     def p_bldr(self):
@@ -1675,7 +1675,7 @@ class Describe_Paragraph:
 
 
 class Describe_Run:
-    """Unit-test suite for `pptx.text.text._Run` object."""
+    """Unit-test suite for `openpptx.text.text._Run` object."""
 
     def it_provides_access_to_its_font(self, font_fixture):
         run, rPr, Font_, font_ = font_fixture
@@ -1734,7 +1734,7 @@ class Describe_Run:
 
     @pytest.fixture
     def Font_(self, request, font_):
-        return class_mock(request, "pptx.text.text.Font", return_value=font_)
+        return class_mock(request, "openpptx.text.text.Font", return_value=font_)
 
     @pytest.fixture
     def font_(self, request):
@@ -1742,7 +1742,7 @@ class Describe_Run:
 
     @pytest.fixture
     def _Hyperlink_(self, request, hlink_):
-        return class_mock(request, "pptx.text.text._Hyperlink", return_value=hlink_)
+        return class_mock(request, "openpptx.text.text._Hyperlink", return_value=hlink_)
 
     @pytest.fixture
     def hlink_(self, request):

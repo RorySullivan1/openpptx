@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.text.fonts` module."""
+"""Unit-test suite for `openpptx.text.fonts` module."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from struct import calcsize
 
 import pytest
 
-from pptx.text.fonts import (
+from openpptx.text.fonts import (
     FontFiles,
     _BaseTable,
     _Font,
@@ -34,7 +34,7 @@ from ..unitutil.mock import (
 
 
 class DescribeFontFiles:
-    """Unit-test suite for `pptx.text.fonts.FontFiles` object."""
+    """Unit-test suite for `openpptx.text.fonts.FontFiles` object."""
 
     def it_can_find_a_system_font_file(self, find_fixture):
         family_name, is_bold, is_italic, expected_path = find_fixture
@@ -90,7 +90,7 @@ class DescribeFontFiles:
             "darwin": _os_x_font_directories_,
             "win32": _windows_font_directories_,
         }[platform]
-        sys_ = var_mock(request, "pptx.text.fonts.sys")
+        sys_ = var_mock(request, "openpptx.text.fonts.sys")
         sys_.platform = platform
         dirs_meth_mock.return_value = expected_dirs
         return expected_dirs
@@ -120,7 +120,7 @@ class DescribeFontFiles:
     def osx_dirs_fixture(self, request):
         import posixpath
 
-        os_ = var_mock(request, "pptx.text.fonts.os")
+        os_ = var_mock(request, "openpptx.text.fonts.os")
         # posixpath, not the host's os.path -- `_os_x_font_directories()` only ever runs on
         # macOS, so the expected values below are POSIX paths. Handing the mock `os.path`
         # made this test assert the *host* separator, which fails on Windows (ntpath).
@@ -142,7 +142,7 @@ class DescribeFontFiles:
 
     @pytest.fixture
     def _Font_(self, request):
-        return class_mock(request, "pptx.text.fonts._Font")
+        return class_mock(request, "openpptx.text.fonts._Font")
 
     @pytest.fixture
     def _font_directories_(self, request):
@@ -176,7 +176,7 @@ class DescribeFontFiles:
 
 
 class Describe_Font:
-    """Unit-test suite for `pptx.text.fonts._Font` object."""
+    """Unit-test suite for `openpptx.text.fonts._Font` object."""
 
     def it_can_construct_from_a_font_file_path(self, open_fixture):
         path, _Stream_, stream_ = open_fixture
@@ -312,7 +312,7 @@ class Describe_Font:
 
     @pytest.fixture
     def _Stream_(self, request):
-        return class_mock(request, "pptx.text.fonts._Stream")
+        return class_mock(request, "openpptx.text.fonts._Stream")
 
     @pytest.fixture
     def stream_(self, request):
@@ -324,7 +324,7 @@ class Describe_Font:
 
     @pytest.fixture
     def _TableFactory_(self, request):
-        return function_mock(request, "pptx.text.fonts._TableFactory")
+        return function_mock(request, "openpptx.text.fonts._TableFactory")
 
     @pytest.fixture
     def _table_count_(self, request):
@@ -336,10 +336,10 @@ class Describe_Font:
 
 
 class Describe_Stream:
-    """Unit-test suite for `pptx.text.fonts._Stream` object."""
+    """Unit-test suite for `openpptx.text.fonts._Stream` object."""
 
     def it_can_construct_from_a_path(self, request):
-        open_ = open_mock(request, "pptx.text.fonts")
+        open_ = open_mock(request, "openpptx.text.fonts")
         _init_ = initializer_mock(request, _Stream)
         file_ = open_.return_value
 
@@ -399,7 +399,7 @@ class Describe_Stream:
 
 
 class Describe_TableFactory:
-    """Unit-test suite for `pptx.text.fonts._TableFactory` object."""
+    """Unit-test suite for `openpptx.text.fonts._TableFactory` object."""
 
     def it_constructs_the_appropriate_table_object(self, fixture):
         tag, stream_, offset, length, TableClass_, TableClass = fixture
@@ -414,9 +414,9 @@ class Describe_TableFactory:
         tag = request.param
         offset, length = 42, 21
         TableClass, target = {
-            "name": (_NameTable, "pptx.text.fonts._NameTable"),
-            "head": (_HeadTable, "pptx.text.fonts._HeadTable"),
-            "foob": (_BaseTable, "pptx.text.fonts._BaseTable"),
+            "name": (_NameTable, "openpptx.text.fonts._NameTable"),
+            "head": (_HeadTable, "openpptx.text.fonts._HeadTable"),
+            "foob": (_BaseTable, "openpptx.text.fonts._BaseTable"),
         }[tag]
         TableClass_ = class_mock(request, target)
         return tag, stream_, offset, length, TableClass_, TableClass
@@ -429,7 +429,7 @@ class Describe_TableFactory:
 
 
 class Describe_HeadTable:
-    """Unit-test suite for `pptx.text.fonts._HeadTable` object."""
+    """Unit-test suite for `openpptx.text.fonts._HeadTable` object."""
 
     def it_knows_whether_the_font_is_bold(self, bold_fixture):
         head_table, expected_value = bold_fixture
@@ -476,7 +476,7 @@ class Describe_HeadTable:
 
 
 class Describe_NameTable:
-    """Unit-test suite for `pptx.text.fonts._NameTable` object."""
+    """Unit-test suite for `openpptx.text.fonts._NameTable` object."""
 
     def it_knows_the_font_family_name(self, family_fixture):
         name_table, expected_value = family_fixture

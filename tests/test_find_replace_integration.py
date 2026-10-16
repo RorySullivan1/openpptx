@@ -10,16 +10,16 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
-from pptx.enum.shapes import MSO_SHAPE
-from pptx.exc import InvalidValueError
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.presentation import Presentation as PresentationCls
-from pptx.shapes.graphfrm import GraphicFrame
-from pptx.slide import Slide
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.enum.shapes import MSO_SHAPE
+from openpptx.exc import InvalidValueError
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.presentation import Presentation as PresentationCls
+from openpptx.shapes.graphfrm import GraphicFrame
+from openpptx.slide import Slide
+from openpptx.util import Inches
 
 CORPUS_DIR = Path(__file__).parent / "test_files" / "real_world"
 URL = "https://example.com/widgets"

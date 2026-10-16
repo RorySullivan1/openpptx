@@ -1,6 +1,6 @@
 """Builds a `.pptx` holding a 3-D clustered column chart, written the way PowerPoint saves one.
 
-The chart part carries what PowerPoint 2016 writes and pypptx's own writer does not: a
+The chart part carries what PowerPoint 2016 writes and openpptx's own writer does not: a
 `c:lang`, an `mc:AlternateContent` chart style, formatted floor and walls (`c:spPr` with
 `a:sp3d`), series `c:spPr`/`c:invertIfNegative`/`c:extLst`, a `c:dLbls` block, the third
 `c:axId val="0"` PowerPoint adds to a clustered 3D bar plot, and a `c:externalData` link to
@@ -99,10 +99,10 @@ CHART_XML = (
 
 def chart_3d_pptx() -> BytesIO:
     """Return a stream holding a one-slide `.pptx` whose one chart is `CHART_XML` above."""
-    from pptx import Presentation
-    from pptx.chart.data import CategoryChartData
-    from pptx.enum.chart import XL_CHART_TYPE
-    from pptx.util import Inches
+    from openpptx import Presentation
+    from openpptx.chart.data import CategoryChartData
+    from openpptx.enum.chart import XL_CHART_TYPE
+    from openpptx.util import Inches
 
     chart_data = CategoryChartData()
     chart_data.categories = CATEGORIES

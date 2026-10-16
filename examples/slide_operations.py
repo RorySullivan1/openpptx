@@ -4,8 +4,8 @@ Creates a presentation with several slides, then demonstrates slide
 duplication, reordering, and deletion. Saves to slide_operations.pptx.
 """
 
-from pptx import Presentation
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 

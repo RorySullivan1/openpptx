@@ -16,11 +16,11 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
-from pptx.exc import PackageError
-from pptx.opc.package import Part, XmlPart
-from pptx.opc.serialized import ZipArchive
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.exc import PackageError
+from openpptx.opc.package import Part, XmlPart
+from openpptx.opc.serialized import ZipArchive
+from openpptx.util import Inches
 
 from ..unitutil.file import absjoin, test_file_dir
 

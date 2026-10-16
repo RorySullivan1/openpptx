@@ -1,7 +1,7 @@
 """Verify the shape-name / shape-id indexes are O(1) amortized.
 
 The indexes are `_BaseShapes._get_name_index` / `_get_id_index` in
-`src/pptx/shapes/shapetree.py`. They are built lazily on first lookup and
+`src/openpptx/shapes/shapetree.py`. They are built lazily on first lookup and
 cleared on any mutation (`_invalidate_shape_cache`); this measures, it does
 not implement.
 
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
+from openpptx import Presentation
 from tests.perf import corpus
 
 WARM_ITERATIONS = 500

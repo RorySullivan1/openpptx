@@ -19,8 +19,8 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
-from pptx.text.search import iter_slide_text_frames
+from openpptx import Presentation
+from openpptx.text.search import iter_slide_text_frames
 
 
 def _timed(fn) -> tuple[float, object]:

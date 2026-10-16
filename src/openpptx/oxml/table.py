@@ -1,0 +1,906 @@
+"""Custom element classes for table-related XML elements"""
+
+from __future__ import annotations
+
+from copy import deepcopy
+from typing import TYPE_CHECKING, Callable, Iterator, cast
+
+from openpptx.enum.text import MSO_TEXT_VERTICAL_TYPE, MSO_VERTICAL_ANCHOR
+from openpptx.exc import InvalidValueError
+from openpptx.oxml import parse_xml
+from openpptx.oxml.dml.fill import CT_GradientFillProperties
+from openpptx.oxml.ns import nsdecls
+from openpptx.oxml.simpletypes import ST_Coordinate, ST_Coordinate32, XsdBoolean, XsdInt
+from openpptx.oxml.text import CT_TextBody
+from openpptx.oxml.xmlchemy import (
+    BaseOxmlElement,
+    Choice,
+    OneAndOnlyOne,
+    OptionalAttribute,
+    RequiredAttribute,
+    ZeroOrMore,
+    ZeroOrOne,
+    ZeroOrOneChoice,
+)
+from openpptx.util import Emu, lazyproperty
+
+if TYPE_CHECKING:
+    from openpptx.oxml.shapes.shared import CT_LineProperties
+    from openpptx.util import Length
+
+
+class CT_Table(BaseOxmlElement):
+    """`a:tbl` custom element class"""
+
+    get_or_add_tblPr: Callable[[], CT_TableProperties]
+    tr_lst: list[CT_TableRow]
+    _add_tr: Callable[..., CT_TableRow]
+    _insert_tr: Callable[[CT_TableRow], CT_TableRow]
+
+    _tag_seq = ("a:tblPr", "a:tblGrid", "a:tr")
+    tblPr: CT_TableProperties | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:tblPr", successors=_tag_seq[1:]
+    )
+    tblGrid: CT_TableGrid = OneAndOnlyOne("a:tblGrid")  # pyright: ignore[reportAssignmentType]
+    tr = ZeroOrMore("a:tr", successors=_tag_seq[3:])
+    del _tag_seq
+
+    def add_tr(self, height: Length) -> CT_TableRow:
+        """Return a newly created `a:tr` child element having its `h` attribute set to `height`."""
+        return self._add_tr(h=height)
+
+    def insert_tr(self, idx: int) -> CT_TableRow:
+        """Insert a new `a:tr` element at zero-based row index `idx` and return it.
+
+        `idx` may equal the current row count to append a row at the end. The new row's height
+        and each of its cells' formatting are copied from an adjacent existing row -- the row
+        above the insertion point, or the first row when inserting at index 0. When the
+        insertion point falls inside a vertical (`rowSpan`/`vMerge`) merge, that merge is
+        extended to include the new row rather than being split.
+        """
+        tr_lst = self.tr_lst
+        n_rows = len(tr_lst)
+
+        if n_rows == 0:
+            # -- degenerate case; a table should always have at least one row, but build a
+            # -- bare row matching the grid width if it somehow doesn't.
+            new_tr = self.add_tr(height=Emu(370840))
+            for _ in range(len(self.tblGrid.gridCol_lst)):
+                new_tr.add_tc()
+            return new_tr
+
+        template_idx = idx - 1 if idx > 0 else 0
+        new_tr = tr_lst[template_idx].new_copy_for_insert()
+
+        if idx >= n_rows:
+            self._insert_tr(new_tr)
+        else:
+            tr_lst[idx].addprevious(new_tr)
+
+        # -- extend any vertical merge whose range crosses the insertion point --
+        if 0 < idx < n_rows:
+            for col_idx, tc_below in enumerate(tr_lst[idx].tc_lst):
+                if not tc_below.vMerge:
+                    continue
+                origin_row_idx = idx - 1
+                while tr_lst[origin_row_idx].tc_lst[col_idx].vMerge:
+                    origin_row_idx -= 1
+                origin_tc = tr_lst[origin_row_idx].tc_lst[col_idx]
+                origin_tc.rowSpan += 1
+                new_tc = new_tr.tc_lst[col_idx]
+                new_tc.vMerge = True
+                new_tc.hMerge = tc_below.hMerge
+                new_tc.gridSpan = tc_below.gridSpan
+
+        return new_tr
+
+    def remove_tr(self, idx: int) -> None:
+        """Remove the `a:tr` element at zero-based row index `idx`.
+
+        Any vertical merge that includes the removed row is kept consistent: when the removed
+        row is the top row of the merge, the merge's origin (its remaining span and any text)
+        moves down to the next row; otherwise the span of the owning merge is simply reduced by
+        one. The caller is responsible for ensuring `idx` does not refer to the table's last
+        remaining row.
+        """
+        tr_lst = self.tr_lst
+        tr = tr_lst[idx]
+
+        for col_idx, tc in enumerate(tr.tc_lst):
+            below = tr_lst[idx + 1].tc_lst[col_idx] if idx + 1 < len(tr_lst) else None
+            if not tc.vMerge and below is not None and below.vMerge:
+                # -- removed row is the top row of a vertical merge; move its origin down --
+                new_span = max(tc.rowSpan - 1, 1)
+                target_tc = below
+                target_tc.append_ps_from(tc)
+                target_tc.rowSpan = new_span
+                target_tc.gridSpan = tc.gridSpan
+                target_tc.vMerge = False
+            elif tc.vMerge:
+                # -- removed row is a mid/bottom row of a vertical merge; shrink its span --
+                origin_row_idx = idx - 1
+                while tr_lst[origin_row_idx].tc_lst[col_idx].vMerge:
+                    origin_row_idx -= 1
+                origin_tc = tr_lst[origin_row_idx].tc_lst[col_idx]
+                origin_tc.rowSpan = max(origin_tc.rowSpan - 1, 1)
+
+        self.remove(tr)
+
+    def insert_gridCol(self, idx: int) -> CT_TableCol:
+        """Insert a new `a:gridCol` at zero-based column index `idx` and return it.
+
+        A matching `a:tc` is also inserted at column `idx` in every row. `idx` may equal the
+        current column count to append a column at the end. The new column's width and each
+        row's new cell formatting are copied from an adjacent existing column -- the column to
+        the left of the insertion point, or the first column when inserting at index 0. When
+        the insertion point falls inside a horizontal (`gridSpan`/`hMerge`) merge, that merge is
+        extended to include the new column rather than being split.
+        """
+        gridCol_lst = self.tblGrid.gridCol_lst
+        n_cols = len(gridCol_lst)
+        tr_lst = self.tr_lst
+
+        if n_cols == 0:
+            new_gridCol = self.tblGrid.add_gridCol(width=Emu(914400))
+            for tr in tr_lst:
+                tr.add_tc()
+            return new_gridCol
+
+        template_idx = idx - 1 if idx > 0 else 0
+        new_gridCol = gridCol_lst[template_idx].new_copy_for_insert()
+
+        if idx >= n_cols:
+            self.tblGrid._insert_gridCol(new_gridCol)
+        else:
+            gridCol_lst[idx].addprevious(new_gridCol)
+
+        for tr in tr_lst:
+            tc_lst = tr.tc_lst
+            new_tc = tc_lst[template_idx].new_copy_for_insert()
+
+            if idx >= n_cols:
+                tr._insert_tc(new_tc)
+            else:
+                tc_lst[idx].addprevious(new_tc)
+
+            # -- extend any horizontal merge whose range crosses the insertion point --
+            if 0 < idx < n_cols:
+                tc_after = tc_lst[idx]
+                if tc_after.hMerge:
+                    origin_col_idx = idx - 1
+                    while tc_lst[origin_col_idx].hMerge:
+                        origin_col_idx -= 1
+                    origin_tc = tc_lst[origin_col_idx]
+                    origin_tc.gridSpan += 1
+                    new_tc.hMerge = True
+                    new_tc.vMerge = tc_after.vMerge
+                    new_tc.rowSpan = tc_after.rowSpan
+
+        return new_gridCol
+
+    def remove_gridCol(self, idx: int) -> None:
+        """Remove the `a:gridCol` element at zero-based column index `idx`.
+
+        The matching `a:tc` is also removed from every row. Any horizontal merge that includes
+        the removed column is kept consistent: when the removed column is the left column of the
+        merge, the merge's origin (its remaining span and any text) moves right to the next
+        column; otherwise the span of the owning merge is simply reduced by one. The caller is
+        responsible for ensuring `idx` does not refer to the table's last remaining column.
+        """
+        for tr in self.tr_lst:
+            tc_lst = tr.tc_lst
+            tc = tc_lst[idx]
+
+            right = tc_lst[idx + 1] if idx + 1 < len(tc_lst) else None
+            if not tc.hMerge and right is not None and right.hMerge:
+                # -- removed column is the left column of a horizontal merge; move origin right --
+                new_span = max(tc.gridSpan - 1, 1)
+                target_tc = right
+                target_tc.append_ps_from(tc)
+                target_tc.gridSpan = new_span
+                target_tc.rowSpan = tc.rowSpan
+                target_tc.hMerge = False
+            elif tc.hMerge:
+                # -- removed column is a mid/right column of a horizontal merge; shrink span --
+                origin_col_idx = idx - 1
+                while tc_lst[origin_col_idx].hMerge:
+                    origin_col_idx -= 1
+                origin_tc = tc_lst[origin_col_idx]
+                origin_tc.gridSpan = max(origin_tc.gridSpan - 1, 1)
+
+            tr.remove(tc)
+
+        gridCol = self.tblGrid.gridCol_lst[idx]
+        self.tblGrid.remove(gridCol)
+
+    @property
+    def bandCol(self) -> bool:
+        return self._get_boolean_property("bandCol")
+
+    @bandCol.setter
+    def bandCol(self, value: bool):
+        self._set_boolean_property("bandCol", value)
+
+    @property
+    def bandRow(self) -> bool:
+        return self._get_boolean_property("bandRow")
+
+    @bandRow.setter
+    def bandRow(self, value: bool):
+        self._set_boolean_property("bandRow", value)
+
+    @property
+    def firstCol(self) -> bool:
+        return self._get_boolean_property("firstCol")
+
+    @firstCol.setter
+    def firstCol(self, value: bool):
+        self._set_boolean_property("firstCol", value)
+
+    @property
+    def firstRow(self) -> bool:
+        return self._get_boolean_property("firstRow")
+
+    @firstRow.setter
+    def firstRow(self, value: bool):
+        self._set_boolean_property("firstRow", value)
+
+    def iter_tcs(self) -> Iterator[CT_TableCell]:
+        """Generate each `a:tc` element in this tbl.
+
+        `a:tc` elements are generated left-to-right, top-to-bottom.
+        """
+        return (tc for tr in self.tr_lst for tc in tr.tc_lst)
+
+    @property
+    def lastCol(self) -> bool:
+        return self._get_boolean_property("lastCol")
+
+    @lastCol.setter
+    def lastCol(self, value: bool):
+        self._set_boolean_property("lastCol", value)
+
+    @property
+    def lastRow(self) -> bool:
+        return self._get_boolean_property("lastRow")
+
+    @lastRow.setter
+    def lastRow(self, value: bool):
+        self._set_boolean_property("lastRow", value)
+
+    @classmethod
+    def new_tbl(
+        cls, rows: int, cols: int, width: int, height: int, tableStyleId: str | None = None
+    ) -> CT_Table:
+        """Return a new `p:tbl` element tree."""
+        # working hypothesis is this is the default table style GUID
+        if tableStyleId is None:
+            tableStyleId = "{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}"
+
+        xml = cls._tbl_tmpl() % (tableStyleId)
+        tbl = cast(CT_Table, parse_xml(xml))
+
+        # add specified number of rows and columns
+        rowheight = height // rows
+        colwidth = width // cols
+
+        for col in range(cols):
+            # adjust width of last col to absorb any div error
+            if col == cols - 1:
+                colwidth = width - ((cols - 1) * colwidth)
+            tbl.tblGrid.add_gridCol(width=Emu(colwidth))
+
+        for row in range(rows):
+            # adjust height of last row to absorb any div error
+            if row == rows - 1:
+                rowheight = height - ((rows - 1) * rowheight)
+            tr = tbl.add_tr(height=Emu(rowheight))
+            for col in range(cols):
+                tr.add_tc()
+
+        return tbl
+
+    def tc(self, row_idx: int, col_idx: int) -> CT_TableCell:
+        """Return `a:tc` element at `row_idx`, `col_idx`."""
+        return self.tr_lst[row_idx].tc_lst[col_idx]
+
+    def _get_boolean_property(self, propname: str) -> bool:
+        """Generalized getter for the boolean properties on the `a:tblPr` child element.
+
+        Defaults to False if `propname` attribute is missing or `a:tblPr` element itself is not
+        present.
+        """
+        tblPr = self.tblPr
+        if tblPr is None:
+            return False
+        propval = getattr(tblPr, propname)
+        return {True: True, False: False, None: False}[propval]
+
+    def _set_boolean_property(self, propname: str, value: bool) -> None:
+        """Generalized setter for boolean properties on the `a:tblPr` child element.
+
+        Sets `propname` attribute appropriately based on `value`. If `value` is True, the
+        attribute is set to "1"; a tblPr child element is added if necessary. If `value` is False,
+        the `propname` attribute is removed if present, allowing its default value of False to be
+        its effective value.
+        """
+        if value not in (True, False):
+            raise InvalidValueError("assigned value must be either True or False, got %s" % value)
+        tblPr = self.get_or_add_tblPr()
+        setattr(tblPr, propname, value)
+
+    @classmethod
+    def _tbl_tmpl(cls):
+        return (
+            "<a:tbl %s>\n"
+            '  <a:tblPr firstRow="1" bandRow="1">\n'
+            "    <a:tableStyleId>%s</a:tableStyleId>\n"
+            "  </a:tblPr>\n"
+            "  <a:tblGrid/>\n"
+            "</a:tbl>" % (nsdecls("a"), "%s")
+        )
+
+
+class CT_TableCell(BaseOxmlElement):
+    """`a:tc` custom element class"""
+
+    get_or_add_tcPr: Callable[[], CT_TableCellProperties]
+    get_or_add_txBody: Callable[[], CT_TextBody]
+
+    _tag_seq = ("a:txBody", "a:tcPr", "a:extLst")
+    txBody: CT_TextBody | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:txBody", successors=_tag_seq[1:]
+    )
+    tcPr: CT_TableCellProperties | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:tcPr", successors=_tag_seq[2:]
+    )
+    del _tag_seq
+
+    gridSpan: int = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "gridSpan", XsdInt, default=1
+    )
+    rowSpan: int = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "rowSpan", XsdInt, default=1
+    )
+    hMerge: bool = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "hMerge", XsdBoolean, default=False
+    )
+    vMerge: bool = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "vMerge", XsdBoolean, default=False
+    )
+
+    @property
+    def anchor(self) -> MSO_VERTICAL_ANCHOR | None:
+        """String held in `anchor` attribute of `a:tcPr` child element of this `a:tc` element."""
+        if self.tcPr is None:
+            return None
+        return self.tcPr.anchor
+
+    @anchor.setter
+    def anchor(self, anchor_enum_idx: MSO_VERTICAL_ANCHOR | None):
+        """Set value of anchor attribute on `a:tcPr` child element."""
+        if anchor_enum_idx is None and self.tcPr is None:
+            return
+        tcPr = self.get_or_add_tcPr()
+        tcPr.anchor = anchor_enum_idx
+
+    @property
+    def vert(self) -> MSO_TEXT_VERTICAL_TYPE | None:
+        """String held in `vert` attribute of `a:tcPr` child element of this `a:tc` element."""
+        if self.tcPr is None:
+            return None
+        return self.tcPr.vert
+
+    @vert.setter
+    def vert(self, value: MSO_TEXT_VERTICAL_TYPE | None):
+        """Set value of `vert` attribute on `a:tcPr` child element."""
+        if value is None and self.tcPr is None:
+            return
+        tcPr = self.get_or_add_tcPr()
+        tcPr.vert = value
+
+    def append_ps_from(self, spanned_tc: CT_TableCell):
+        """Append `a:p` elements taken from `spanned_tc`.
+
+        Any non-empty paragraph elements in `spanned_tc` are removed and appended to the
+        text-frame of this cell. If `spanned_tc` is left with no content after this process, a
+        single empty `a:p` element is added to ensure the cell is compliant with the spec.
+        """
+        source_txBody = spanned_tc.get_or_add_txBody()
+        target_txBody = self.get_or_add_txBody()
+
+        # ---if source is empty, there's nothing to do---
+        if source_txBody.is_empty:
+            return
+
+        # ---a single empty paragraph in target is overwritten---
+        if target_txBody.is_empty:
+            target_txBody.clear_content()
+
+        for p in source_txBody.p_lst:
+            target_txBody.append(p)
+
+        # ---neither source nor target can be left without ps---
+        source_txBody.unclear_content()
+        target_txBody.unclear_content()
+
+    @property
+    def col_idx(self) -> int:
+        """Offset of this cell's column in its table."""
+        # ---tc elements come before any others in `a:tr` element---
+        return cast(CT_TableRow, self.getparent()).index(self)
+
+    @property
+    def is_merge_origin(self) -> bool:
+        """True if cell is top-left in merged cell range."""
+        if self.gridSpan > 1 and not self.vMerge:
+            return True
+        return self.rowSpan > 1 and not self.hMerge
+
+    @property
+    def is_spanned(self) -> bool:
+        """True if cell is in merged cell range but not merge origin cell."""
+        return self.hMerge or self.vMerge
+
+    @property
+    def marT(self) -> Length:
+        """Top margin for this cell.
+
+        This value is stored in the `marT` attribute of the `a:tcPr` child element of this `a:tc`.
+
+        Read/write. If the attribute is not present, the default value `45720` (0.05 inches) is
+        returned for top and bottom; `91440` (0.10 inches) is the default for left and right.
+        Assigning |None| to any `marX` property clears that attribute from the element,
+        effectively setting it to the default value.
+        """
+        return self._get_marX("marT", Emu(45720))
+
+    @marT.setter
+    def marT(self, value: Length | None):
+        self._set_marX("marT", value)
+
+    @property
+    def marR(self) -> Length:
+        """Right margin value represented in `marR` attribute."""
+        return self._get_marX("marR", Emu(91440))
+
+    @marR.setter
+    def marR(self, value: Length | None):
+        self._set_marX("marR", value)
+
+    @property
+    def marB(self) -> Length:
+        """Bottom margin value represented in `marB` attribute."""
+        return self._get_marX("marB", Emu(45720))
+
+    @marB.setter
+    def marB(self, value: Length | None):
+        self._set_marX("marB", value)
+
+    @property
+    def marL(self) -> Length:
+        """Left margin value represented in `marL` attribute."""
+        return self._get_marX("marL", Emu(91440))
+
+    @marL.setter
+    def marL(self, value: Length | None):
+        self._set_marX("marL", value)
+
+    @classmethod
+    def new(cls) -> CT_TableCell:
+        """Return a new `a:tc` element subtree."""
+        return cast(
+            CT_TableCell,
+            parse_xml(
+                f"<a:tc {nsdecls('a')}>\n"
+                f"  <a:txBody>\n"
+                f"    <a:bodyPr/>\n"
+                f"    <a:lstStyle/>\n"
+                f"    <a:p/>\n"
+                f"  </a:txBody>\n"
+                f"  <a:tcPr/>\n"
+                f"</a:tc>"
+            ),
+        )
+
+    def new_copy_for_insert(self) -> CT_TableCell:
+        """Return a deep copy of this `a:tc` suitable for use as a newly inserted cell.
+
+        The copy retains this cell's `tcPr` formatting and the paragraph/run properties of its
+        first paragraph (via a preserved `a:endParaRPr`), but its text content is cleared and
+        its merge attributes (`gridSpan`, `rowSpan`, `hMerge`, `vMerge`) and any `a:extLst`
+        child (which can carry PowerPoint's unique `a16:colId`/`a16:rowId` ids) are reset so the
+        copy does not duplicate them. The caller is responsible for positioning the returned
+        element in the tree and for re-applying any merge attributes that should carry over.
+        """
+        new_tc = cast("CT_TableCell", deepcopy(self))
+        new_tc._reset_for_insert()
+        return new_tc
+
+    @property
+    def row_idx(self) -> int:
+        """Offset of this cell's row in its table."""
+        return cast(CT_TableRow, self.getparent()).row_idx
+
+    @property
+    def tbl(self) -> CT_Table:
+        """Table element this cell belongs to."""
+        return cast(CT_Table, self.xpath("ancestor::a:tbl")[0])
+
+    @property
+    def text(self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """str text contained in cell"""
+        # ---note this shadows lxml _Element.text---
+        txBody = self.txBody
+        if txBody is None:
+            return ""
+        return "\n".join([p.text for p in txBody.p_lst])
+
+    def _clear_text_content(self) -> None:
+        """Replace this cell's text content with a single empty paragraph.
+
+        The `a:bodyPr` and `a:lstStyle` elements of `a:txBody` are preserved unchanged, along
+        with the `a:endParaRPr` of the first paragraph, if present, so run formatting typed into
+        the now-empty cell matches what was there before.
+        """
+        txBody = self.txBody
+        if txBody is None:
+            return
+        p_lst = txBody.p_lst
+        endParaRPr = p_lst[0].endParaRPr if p_lst else None
+        endParaRPr_copy = deepcopy(endParaRPr) if endParaRPr is not None else None
+        txBody.clear_content()
+        new_p = txBody.add_p()
+        if endParaRPr_copy is not None:
+            new_p.append(endParaRPr_copy)
+
+    def _get_marX(self, attr_name: str, default: Length) -> Length:
+        """Generalized method to get margin values."""
+        if self.tcPr is None:
+            return Emu(default)
+        return Emu(int(self.tcPr.get(attr_name, default)))
+
+    def _new_txBody(self) -> CT_TextBody:
+        return CT_TextBody.new_a_txBody()
+
+    def _reset_for_insert(self) -> None:
+        """Reset this cell in-place so it is suitable for use as a newly inserted cell.
+
+        Drops any `a:extLst` child, resets merge attributes to their unmerged defaults, and
+        clears text content (see `._clear_text_content()`).
+        """
+        for extLst in self.xpath("./a:extLst"):
+            self.remove(extLst)
+        self.gridSpan = 1
+        self.rowSpan = 1
+        self.hMerge = False
+        self.vMerge = False
+        self._clear_text_content()
+
+    def _set_marX(self, marX: str, value: Length | None) -> None:
+        """Set value of marX attribute on `a:tcPr` child element.
+
+        If `marX` is |None|, the marX attribute is removed. `marX` is a string, one of `('marL',
+        'marR', 'marT', 'marB')`.
+        """
+        if value is None and self.tcPr is None:
+            return
+        tcPr = self.get_or_add_tcPr()
+        setattr(tcPr, marX, value)
+
+
+class CT_TableCellProperties(BaseOxmlElement):
+    """`a:tcPr` custom element class"""
+
+    get_or_add_lnL: Callable[[], CT_LineProperties]
+    get_or_add_lnR: Callable[[], CT_LineProperties]
+    get_or_add_lnT: Callable[[], CT_LineProperties]
+    get_or_add_lnB: Callable[[], CT_LineProperties]
+
+    _tag_seq = (
+        "a:lnL",
+        "a:lnR",
+        "a:lnT",
+        "a:lnB",
+        "a:lnTlToBr",
+        "a:lnBlToTr",
+        "a:cell3D",
+        "a:noFill",
+        "a:solidFill",
+        "a:gradFill",
+        "a:blipFill",
+        "a:pattFill",
+        "a:grpFill",
+        "a:headers",
+        "a:extLst",
+    )
+    lnL = ZeroOrOne("a:lnL", successors=_tag_seq[1:])
+    lnR = ZeroOrOne("a:lnR", successors=_tag_seq[2:])
+    lnT = ZeroOrOne("a:lnT", successors=_tag_seq[3:])
+    lnB = ZeroOrOne("a:lnB", successors=_tag_seq[4:])
+    lnTlToBr = ZeroOrOne("a:lnTlToBr", successors=_tag_seq[5:])
+    lnBlToTr = ZeroOrOne("a:lnBlToTr", successors=_tag_seq[6:])
+    eg_fillProperties = ZeroOrOneChoice(
+        (
+            Choice("a:noFill"),
+            Choice("a:solidFill"),
+            Choice("a:gradFill"),
+            Choice("a:blipFill"),
+            Choice("a:pattFill"),
+            Choice("a:grpFill"),
+        ),
+        successors=_tag_seq[13:],
+    )
+    del _tag_seq
+    anchor: MSO_VERTICAL_ANCHOR | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "anchor", MSO_VERTICAL_ANCHOR
+    )
+    marL: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "marL", ST_Coordinate32
+    )
+    marR: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "marR", ST_Coordinate32
+    )
+    marT: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "marT", ST_Coordinate32
+    )
+    marB: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "marB", ST_Coordinate32
+    )
+    vert: MSO_TEXT_VERTICAL_TYPE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "vert", MSO_TEXT_VERTICAL_TYPE
+    )
+
+    def _new_gradFill(self):
+        return CT_GradientFillProperties.new_gradFill()
+
+
+class CT_TableCol(BaseOxmlElement):
+    """`a:gridCol` custom element class."""
+
+    w: Length = RequiredAttribute("w", ST_Coordinate)  # pyright: ignore[reportAssignmentType]
+
+    def new_copy_for_insert(self) -> CT_TableCol:
+        """Return a deep copy of this `a:gridCol` suitable for use as a newly inserted column.
+
+        The copy retains this column's width. Any `a:extLst` child (which can carry
+        PowerPoint's unique `a16:colId` id) is dropped so the copy does not duplicate it.
+        """
+        new_gridCol = cast("CT_TableCol", deepcopy(self))
+        for extLst in new_gridCol.xpath("./a:extLst"):
+            new_gridCol.remove(extLst)
+        return new_gridCol
+
+
+class CT_TableGrid(BaseOxmlElement):
+    """`a:tblGrid` custom element class."""
+
+    gridCol_lst: list[CT_TableCol]
+    _add_gridCol: Callable[..., CT_TableCol]
+    _insert_gridCol: Callable[[CT_TableCol], CT_TableCol]
+
+    gridCol = ZeroOrMore("a:gridCol")
+
+    def add_gridCol(self, width: Length) -> CT_TableCol:
+        """A newly appended `a:gridCol` child element having its `w` attribute set to `width`."""
+        return self._add_gridCol(w=width)
+
+
+class CT_TableProperties(BaseOxmlElement):
+    """`a:tblPr` custom element class."""
+
+    bandRow = OptionalAttribute("bandRow", XsdBoolean, default=False)
+    bandCol = OptionalAttribute("bandCol", XsdBoolean, default=False)
+    firstRow = OptionalAttribute("firstRow", XsdBoolean, default=False)
+    firstCol = OptionalAttribute("firstCol", XsdBoolean, default=False)
+    lastRow = OptionalAttribute("lastRow", XsdBoolean, default=False)
+    lastCol = OptionalAttribute("lastCol", XsdBoolean, default=False)
+    get_or_add_tableStyleId: Callable[[], BaseOxmlElement]
+    _remove_tableStyleId: Callable[[], None]
+
+    # -- EG_EffectProperties (`a:effectLst` | `a:effectDag`) follows the fill and precedes the
+    # -- table style; only `a:effectLst` is modelled, as for shape properties --
+    effectLst: BaseOxmlElement | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:effectLst", successors=("a:tableStyle", "a:tableStyleId", "a:extLst")
+    )
+
+    # `a:tableStyleId` shares a choice with `a:tblStyle`; either is followed only by `a:extLst`.
+    tableStyleId: BaseOxmlElement | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:tableStyleId", successors=("a:extLst",)
+    )
+
+    @property
+    def style_id(self) -> str | None:
+        """Text of the `a:tableStyleId` child, or |None| when it is absent."""
+        tableStyleId = self.tableStyleId
+        if tableStyleId is None:
+            return None
+        return tableStyleId.text
+
+    @style_id.setter
+    def style_id(self, value: str | None) -> None:
+        if value is None:
+            self._remove_tableStyleId()
+            return
+        self.get_or_add_tableStyleId().text = value
+
+
+class CT_TableRow(BaseOxmlElement):
+    """`a:tr` custom element class."""
+
+    tc_lst: list[CT_TableCell]
+    _add_tc: Callable[[], CT_TableCell]
+    _insert_tc: Callable[[CT_TableCell], CT_TableCell]
+
+    tc = ZeroOrMore("a:tc", successors=("a:extLst",))
+    h: Length = RequiredAttribute("h", ST_Coordinate)  # pyright: ignore[reportAssignmentType]
+
+    def add_tc(self) -> CT_TableCell:
+        """A newly added minimal valid `a:tc` child element."""
+        return self._add_tc()
+
+    def new_copy_for_insert(self) -> CT_TableRow:
+        """Return a deep copy of this `a:tr` suitable for use as a newly inserted row.
+
+        The copy retains this row's height and each of its cells' formatting (see
+        `CT_TableCell.new_copy_for_insert()`), but with each cell's text content cleared and
+        merge attributes reset. Any `a:extLst` child (which can carry PowerPoint's unique
+        `a16:rowId` id) is dropped from the row and from each cell so the copy does not
+        duplicate it.
+        """
+        new_tr = cast("CT_TableRow", deepcopy(self))
+        for extLst in new_tr.xpath("./a:extLst"):
+            new_tr.remove(extLst)
+        for tc in new_tr.tc_lst:
+            tc._reset_for_insert()
+        return new_tr
+
+    @property
+    def row_idx(self) -> int:
+        """Offset of this row in its table."""
+        return cast(CT_Table, self.getparent()).tr_lst.index(self)
+
+    def _new_tc(self):
+        return CT_TableCell.new()
+
+
+class TcRange:
+    """A 2D block of `a:tc` cell elements in a table.
+
+    This object assumes the structure of the underlying table does not change during its lifetime.
+    Structural changes in this context would be insertion or removal of rows or columns.
+
+    The client is expected to create, use, and then abandon an instance in the context of a single
+    user operation that is known to have no structural side-effects of this type.
+    """
+
+    def __init__(self, tc: CT_TableCell, other_tc: CT_TableCell):
+        self._tc = tc
+        self._other_tc = other_tc
+
+    @classmethod
+    def from_merge_origin(cls, tc: CT_TableCell):
+        """Return instance created from merge-origin tc element."""
+        other_tc = tc.tbl.tc(
+            tc.row_idx + tc.rowSpan - 1,  # ---other_row_idx
+            tc.col_idx + tc.gridSpan - 1,  # ---other_col_idx
+        )
+        return cls(tc, other_tc)
+
+    @lazyproperty
+    def contains_merged_cell(self) -> bool:
+        """True if one or more cells in range are part of a merged cell."""
+        for tc in self.iter_tcs():
+            if tc.gridSpan > 1:
+                return True
+            if tc.rowSpan > 1:
+                return True
+            if tc.hMerge:
+                return True
+            if tc.vMerge:
+                return True
+        return False
+
+    @lazyproperty
+    def dimensions(self) -> tuple[int, int]:
+        """(row_count, col_count) pair describing size of range."""
+        _, _, width, height = self._extents
+        return height, width
+
+    @lazyproperty
+    def in_same_table(self):
+        """True if both cells provided to constructor are in same table."""
+        if self._tc.tbl is self._other_tc.tbl:
+            return True
+        return False
+
+    def iter_except_left_col_tcs(self):
+        """Generate each `a:tc` element not in leftmost column of range."""
+        for tr in self._tbl.tr_lst[self._top : self._bottom]:
+            for tc in tr.tc_lst[self._left + 1 : self._right]:
+                yield tc
+
+    def iter_except_top_row_tcs(self):
+        """Generate each `a:tc` element in non-first rows of range."""
+        for tr in self._tbl.tr_lst[self._top + 1 : self._bottom]:
+            for tc in tr.tc_lst[self._left : self._right]:
+                yield tc
+
+    def iter_left_col_tcs(self):
+        """Generate each `a:tc` element in leftmost column of range."""
+        col_idx = self._left
+        for tr in self._tbl.tr_lst[self._top : self._bottom]:
+            yield tr.tc_lst[col_idx]
+
+    def iter_tcs(self):
+        """Generate each `a:tc` element in this range.
+
+        Cell elements are generated left-to-right, top-to-bottom.
+        """
+        return (
+            tc
+            for tr in self._tbl.tr_lst[self._top : self._bottom]
+            for tc in tr.tc_lst[self._left : self._right]
+        )
+
+    def iter_top_row_tcs(self):
+        """Generate each `a:tc` element in topmost row of range."""
+        tr = self._tbl.tr_lst[self._top]
+        for tc in tr.tc_lst[self._left : self._right]:
+            yield tc
+
+    def move_content_to_origin(self):
+        """Move all paragraphs in range to origin cell."""
+        tcs = list(self.iter_tcs())
+        origin_tc = tcs[0]
+        for spanned_tc in tcs[1:]:
+            origin_tc.append_ps_from(spanned_tc)
+
+    @lazyproperty
+    def _bottom(self):
+        """Index of row following last row of range"""
+        _, top, _, height = self._extents
+        return top + height
+
+    @lazyproperty
+    def _extents(self) -> tuple[int, int, int, int]:
+        """A (left, top, width, height) tuple describing range extents.
+
+        Note this is normalized to accommodate the various orderings of the corner cells provided
+        on construction, which may be in any of four configurations such as (top-left,
+        bottom-right), (bottom-left, top-right), etc.
+        """
+
+        def start_and_size(idx: int, other_idx: int) -> tuple[int, int]:
+            """Return beginning and length of range based on two indexes."""
+            return min(idx, other_idx), abs(idx - other_idx) + 1
+
+        tc, other_tc = self._tc, self._other_tc
+
+        left, width = start_and_size(tc.col_idx, other_tc.col_idx)
+        top, height = start_and_size(tc.row_idx, other_tc.row_idx)
+
+        return left, top, width, height
+
+    @lazyproperty
+    def _left(self):
+        """Index of leftmost column in range."""
+        left, _, _, _ = self._extents
+        return left
+
+    @lazyproperty
+    def _right(self):
+        """Index of column following the last column in range."""
+        left, _, width, _ = self._extents
+        return left + width
+
+    @lazyproperty
+    def _tbl(self):
+        """`a:tbl` element containing this cell range."""
+        return self._tc.tbl
+
+    @lazyproperty
+    def _top(self):
+        """Index of topmost row in range."""
+        _, top, _, _ = self._extents
+        return top

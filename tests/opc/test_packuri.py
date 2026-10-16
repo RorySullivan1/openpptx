@@ -1,14 +1,14 @@
-"""Unit-test suite for the `pptx.opc.packuri` module."""
+"""Unit-test suite for the `openpptx.opc.packuri` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.opc.packuri import PackURI
+from openpptx.opc.packuri import PackURI
 
 
 class DescribePackURI:
-    """Unit-test suite for the `pptx.opc.packuri.PackURI` objects."""
+    """Unit-test suite for the `openpptx.opc.packuri.PackURI` objects."""
 
     def it_can_construct_from_relative_ref(self):
         pack_uri = PackURI.from_rel_ref("/ppt/slides", "../slideLayouts/slideLayout1.xml")

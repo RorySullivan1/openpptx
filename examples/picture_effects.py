@@ -2,7 +2,7 @@
 
 Places the same generated image five times and applies one effect to each copy, so the
 differences are visible side by side. The image is built in-process with Pillow (already a
-hard dependency of pypptx) so the script needs no asset file on disk.
+hard dependency of openpptx) so the script needs no asset file on disk.
 
 Every adjustment is read back out of the saved file and asserted.
 
@@ -14,10 +14,10 @@ import io
 
 from PIL import Image
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.util import Inches, Pt
 
 FILENAME = "picture_effects.pptx"
 TRANSPARENT = RGBColor(0xFF, 0x00, 0x00)

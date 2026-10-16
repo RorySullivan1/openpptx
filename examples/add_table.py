@@ -4,9 +4,9 @@ Creates a data table with a merged header row, alternating row colors,
 and border formatting. Saves to add_table.pptx.
 """
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank layout

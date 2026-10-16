@@ -1,21 +1,21 @@
-"""Unit-test suite for pptx.shapes.graphfrm module."""
+"""Unit-test suite for openpptx.shapes.graphfrm module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.chart import Chart
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.exc import UnsupportedEffectError
-from pptx.parts.chart import ChartPart
-from pptx.parts.chartex import ChartExPart
-from pptx.parts.diagram import DiagramDataPart
-from pptx.parts.embeddedpackage import EmbeddedPackagePart
-from pptx.parts.slide import SlidePart
-from pptx.shapes.graphfrm import GraphicFrame, _OleFormat
-from pptx.shapes.shapetree import SlideShapes
-from pptx.smartart import SmartArt
-from pptx.spec import (
+from openpptx.chart.chart import Chart
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.exc import UnsupportedEffectError
+from openpptx.parts.chart import ChartPart
+from openpptx.parts.chartex import ChartExPart
+from openpptx.parts.diagram import DiagramDataPart
+from openpptx.parts.embeddedpackage import EmbeddedPackagePart
+from openpptx.parts.slide import SlidePart
+from openpptx.shapes.graphfrm import GraphicFrame, _OleFormat
+from openpptx.shapes.shapetree import SlideShapes
+from openpptx.smartart import SmartArt
+from openpptx.spec import (
     GRAPHIC_DATA_URI_CHART,
     GRAPHIC_DATA_URI_CHARTEX,
     GRAPHIC_DATA_URI_DIAGRAM,
@@ -28,7 +28,7 @@ from ..unitutil.mock import class_mock, instance_mock, property_mock
 
 
 class DescribeGraphicFrame:
-    """Unit-test suite for `pptx.shapes.graphfrm.GraphicFrame` object."""
+    """Unit-test suite for `openpptx.shapes.graphfrm.GraphicFrame` object."""
 
     def it_provides_access_to_the_chart_it_contains(
         self, request, has_chart_prop_, chart_part_, chart_
@@ -142,7 +142,7 @@ class DescribeGraphicFrame:
     def it_provides_access_to_the_smartart_it_contains(self, request):
         data_part_ = instance_mock(request, DiagramDataPart)
         smartart_ = instance_mock(request, SmartArt)
-        SmartArt_ = class_mock(request, "pptx.shapes.graphfrm.SmartArt", return_value=smartart_)
+        SmartArt_ = class_mock(request, "openpptx.shapes.graphfrm.SmartArt", return_value=smartart_)
         slide_part_ = instance_mock(request, SlidePart)
         slide_part_.related_part.return_value = data_part_
         property_mock(request, GraphicFrame, "part", return_value=slide_part_)
@@ -172,7 +172,7 @@ class DescribeGraphicFrame:
     def it_provides_access_to_the_OleFormat_object(self, request):
         ole_format_ = instance_mock(request, _OleFormat)
         _OleFormat_ = class_mock(
-            request, "pptx.shapes.graphfrm._OleFormat", return_value=ole_format_
+            request, "openpptx.shapes.graphfrm._OleFormat", return_value=ole_format_
         )
         graphicFrame = element(
             "p:graphicFrame/a:graphic/a:graphicData{uri=http://schemas.openxmlformats"
@@ -258,9 +258,9 @@ class DescribeGraphicFrame:
     def it_round_trips_a_visible_table_shadow_and_chart_shadow(self):
         import io
 
-        from pptx import Presentation
-        from pptx.dml.color import RGBColor
-        from pptx.util import Pt
+        from openpptx import Presentation
+        from openpptx.dml.color import RGBColor
+        from openpptx.util import Pt
 
         slide = _slide_with_table_and_chart()
         for frame in slide.shapes:
@@ -320,7 +320,7 @@ class DescribeGraphicFrame:
 
 
 class Describe_OleFormat:
-    """Unit-test suite for `pptx.shapes.graphfrm._OleFormat` object."""
+    """Unit-test suite for `openpptx.shapes.graphfrm._OleFormat` object."""
 
     def it_provides_access_to_the_OLE_object_blob(self, request):
         ole_obj_part_ = instance_mock(request, EmbeddedPackagePart, blob=b"0123456789")
@@ -345,10 +345,10 @@ class Describe_OleFormat:
 
 def _slide_with_table_and_chart():
     """A slide holding a table frame then a chart frame, built through the public API."""
-    from pptx import Presentation
-    from pptx.chart.data import CategoryChartData
-    from pptx.enum.chart import XL_CHART_TYPE
-    from pptx.util import Inches
+    from openpptx import Presentation
+    from openpptx.chart.data import CategoryChartData
+    from openpptx.enum.chart import XL_CHART_TYPE
+    from openpptx.util import Inches
 
     prs = Presentation()
     slide = prs.slides.add_slide(prs.slide_layouts[6])

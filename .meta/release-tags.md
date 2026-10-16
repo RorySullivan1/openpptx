@@ -18,6 +18,11 @@ only, the merge of its PR. Found by walking `main`'s first-parent history
 | `v0.5.1` | `51a8cd1d242256cb5032761188ab909aedc528ef` | 2026-10-15 | PR #133 | 0.5.1 | Patch: decks PowerPoint refused. Carries #131/#132 and the ship bookkeeping; #126 merged in PR #129, #127/#128 in PR #130 |
 | `v0.6.0` | `100a9c84a2586a634057facec1ae76f07b6a4481` | 2026-10-16 | PR #134 | 0.6.0 | Lazy binary blobs and the caching audit (11 stale caches fixed, plus L1/L2). Its shipped status is recorded on the v0.7.0 branch |
 | `v0.7.0` | `0db7ef1718a49c97e41fbabbf3ba096854135ba8` | 2026-10-16 | PR #135 | 0.7.0 | Cross-run text find/replace on frames, paragraphs, slides and the deck. Its shipped status is recorded on the v1.0.0 branch |
+| `v0.7.1` | `2627dddae28fdfa2daee0abef05b39b993e8046a` | 2026-10-16 | PR #136 | 0.7.1 | Patch: find/replace review fixes. **Already tagged on the remote** (lightweight). Its shipped status is recorded on the v1.0.0 branch |
+
+**On the remote as of 2026-10-16** (`git ls-remote --tags origin`), all lightweight: `v0.7.1` → `2627ddd` (matches
+the row above); `0.7.0` → `0db7ef1`, the v0.7.0 commit but without the `v`; `alpha` → `100a9c8`, the v0.6.0 merge.
+A local-only `v0.1.0` points at `8faa9a5` (PR #48), not the `723ef5a` row above. Tidying these is the owner's call.
 
 ## Commands
 
@@ -36,6 +41,7 @@ git tag -a v0.5.1 51a8cd1d242256cb5032761188ab909aedc528ef -m "v0.5.1"
 git tag -a v0.6.0 100a9c84a2586a634057facec1ae76f07b6a4481 -m "v0.6.0"
 git tag -a v0.7.0 0db7ef1718a49c97e41fbabbf3ba096854135ba8 -m "v0.7.0"
 git push origin v0.1.0 v0.2.0 v0.3.0 v0.3.1 v0.3.2 v0.4.0 v0.5.0 v0.5.1 v0.6.0 v0.7.0
+# v0.7.1 is already on the remote (lightweight, at 2627ddd)
 ```
 
 A GitHub Release can then be drafted from each tag; the version cards under

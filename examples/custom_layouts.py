@@ -6,17 +6,17 @@ inherits the master's body position and a picture placeholder placed explicitly,
 an existing layout under a new name. Then adds a slide on each new layout and saves.
 
 Open the result in PowerPoint and look at View > Slide Master: the new layouts appear among the
-originals, and the slides show the layouts' placeholders. "1_Quote" is the name pypptx gives an
+originals, and the slides show the layouts' placeholders. "1_Quote" is the name openpptx gives an
 unnamed duplicate; compare it with what PowerPoint's own Duplicate Layout produces.
 
 Demonstrates: feature-manifest.md "Slide Masters & Layouts" (custom layouts).
 Saves to custom_layouts.pptx.
 """
 
-from pptx import Presentation
-from pptx.enum.shapes import PP_PLACEHOLDER
-from pptx.shapes.placeholder import SlidePlaceholder
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.enum.shapes import PP_PLACEHOLDER
+from openpptx.shapes.placeholder import SlidePlaceholder
+from openpptx.util import Inches
 
 FILENAME = "custom_layouts.pptx"
 

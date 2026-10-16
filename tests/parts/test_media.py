@@ -1,18 +1,18 @@
-"""Unit test suite for `pptx.parts.media` module."""
+"""Unit test suite for `openpptx.parts.media` module."""
 
 from __future__ import annotations
 
 import hashlib
 
-from pptx.media import Video
-from pptx.package import Package
-from pptx.parts.media import MediaPart
+from openpptx.media import Video
+from openpptx.package import Package
+from openpptx.parts.media import MediaPart
 
 from ..unitutil.mock import initializer_mock, instance_mock
 
 
 class DescribeMediaPart:
-    """Unit-test suite for `pptx.parts.media.MediaPart` objects."""
+    """Unit-test suite for `openpptx.parts.media.MediaPart` objects."""
 
     def it_can_construct_from_a_media_object(self, request):
         media_ = instance_mock(request, Video)
