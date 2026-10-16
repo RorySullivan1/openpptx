@@ -2,9 +2,8 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.1 SHIPPED (PR #136, merge `2627ddd`); ship recorded on branch `v1.0.0`. **Cursor: v1.0.0**, card still a sketch:
-  expand it (`/version-set`) before building. Stale in it: perf CI gate already exists; `make html` → `sphinx-build -W`;
-  acceptance lacks the PowerPoint COM opens-without-repair check.
+- 0.7.1 SHIPPED (PR #136, merge `2627ddd`). **In flight: v1.0.0 on branch `v1.0.0`**, card filled in 2026-10-16, no code
+  yet. Step 1 = packaging: dist rename to `openpptx`, root LICENSE, metadata. Owner actions are listed in the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - Sessions can't push tags; owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
@@ -41,6 +40,9 @@
   work-count gate counts total calls, re-budgeted from main — sessions/2026-10-15-1347-v060-card-expanded.md
 - [2026-10-15] Owner: v0.7.0 find/replace is DECK-WIDE too (slide shapes, groups, tables, existing notes; not layouts/
   masters/charts/SmartArt); property test uses hypothesis (already a dev dep) — .meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md
+- [2026-10-16] Owner, v1.0.0: PyPI `pypptx` is an unrelated 2015 project, so the dist becomes **`openpptx`** (import stays
+  `pptx`, repo stays `pypptx`). The contract is the DOCUMENTED surface (oxml/opc/parts internal, not renamed;
+  snapshot test). Docs on GitHub Pages. LICENSE adds python-pptx's MIT notice — sessions/2026-10-16-1305-v100-card-expanded.md
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
@@ -70,3 +72,4 @@
 - 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
 - 2026-10-16 | v0.7.1 built: 9 review findings → template/count errors up front, TextMatch eq, `\v` → a:br, regex context, rel drops | sessions/2026-10-16-1300-v071-review-fixes.md
 - 2026-10-16 | v0.7.1 merged (PR #136, `2627ddd`, 7/7 CI); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
+- 2026-10-16 1305 | v1.0.0 card filled in: `openpptx` dist, documented-surface contract, Pages, LICENSE | sessions/2026-10-16-1305-v100-card-expanded.md
