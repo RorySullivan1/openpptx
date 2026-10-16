@@ -30,6 +30,7 @@ detail and the two confirmed audit leads (L1 stale shape-name index, L2 stale `s
   the work-count gate passes without raising its budget. Owner exceptions (2026-10-15): save
   +0.4 ms per path-opened deck with binary parts (zip reopen; +5–9%), and the gate now counts total
   calls, re-budgeted from main (1,073,411; branch 1,085,069, +1.09%).
-- [ ] Full suite green; `tests/perf` under 60 s on CI. Local: 4,431 passed; `tests/perf` 3.8 s on 3.11.
+- [x] Full suite green; `tests/perf` under 60 s on CI. CI run 38837847376: 7/7 green, the 3.11 gate ran
+  and passed; whole suite 52.9 s on 3.12; `tests/perf` 3.8 s on 3.11 locally.
 - [x] Card `.meta/roadmap/stages/03-hardening-and-gaps/v0.6.0.md` expanded with implementation detail
   before code lands (2026-10-15).
