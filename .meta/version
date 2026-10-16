@@ -23,4 +23,5 @@ existing notes slides; not layouts, masters, charts, SmartArt or comments). The 
 - [x] Corpus round trip, and PowerPoint 16 opens the edited decks without repair (2026-10-16, COM).
 - [x] No regression versus v0.6.0: the work-count gate passes without raising its budget (1,085,069
   calls, unchanged); iteration within noise.
-- [ ] Docs, `batch_process.py`, feature manifest and README updated; full suite green on CI; package 0.7.0.
+- [x] Docs, `batch_process.py`, feature manifest and README updated; full suite green on CI; package 0.7.0
+  (run 38847024896, 7/7 green).

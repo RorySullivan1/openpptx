@@ -3,7 +3,7 @@
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
 - 0.6.0 SHIPPED (PR #134, merge `100a9c8`; lazy blobs + caching audit, `.claude/context/caching-audit.md`).
-  **In flight: v0.7.0 on branch `v0.7.0`** — cross-run find/replace, deck-wide; card expanded, no code yet.
+  **In flight: v0.7.0 on branch `v0.7.0`** — cross-run find/replace, deck-wide; BUILT (package 0.7.0), PR #135 awaiting CI/merge.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
@@ -72,3 +72,4 @@
 - 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
 - 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md
 - 2026-10-15 1347 | v0.6.0 built end to end: card, L1/L2, lazy blobs, caching audit (11 fixes), gate metric, 0.6.0; PR #134 ready | sessions/2026-10-15-1347-v060-card-expanded.md
+- 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
