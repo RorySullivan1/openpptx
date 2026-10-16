@@ -2,7 +2,7 @@
 status: in-progress
 started: 2026-10-15
 branch: v0.6.0
-pr: #134 (draft; grows until v0.6.0 ships)
+pr: #134 (https://github.com/RorySullivan1/pypptx/pull/134; ready for review 2026-10-15)
 
 Scope (owner decision 2026-10-15): the performance remainder only. Four of the card's seven goals landed
 early (#107/#109/#123, `ShapeRange`). Streaming save is dropped unless the lazy-blob measurement shows that
@@ -16,16 +16,20 @@ detail and the two confirmed audit leads (L1 stale shape-name index, L2 stale `s
 - Lazy binary blobs: image and media parts (and other binary parts) keep a reference into the
   package zip and read their bytes only when `.blob` is first accessed. Today every part's bytes are
   read when the deck loads.
-- Caching audit: review all 204 `@lazyproperty` uses (45 files; recounted 2026-10-15) for soundness, meaning no stale
+- Caching audit: review all 203 `@lazyproperty` uses (44 files; "204 in 45" also counted the decorator's docstring) for soundness, meaning no stale
   value after a mutation the API allows. Add a cache only where a hot path recomputes a derived
   collection, and only with a measured win (#51 showed `paragraphs`/`runs` caching is a loss).
 
 ## Objectives / acceptance
-- Memory: `tracemalloc` peak for opening a 100-image deck, before and after, recorded in
+- [x] Memory: `tracemalloc` peak for opening a 100-image deck, before and after, recorded in
   `.claude/context/performance.md`; open-then-save stays byte-identical for untouched binary parts.
-- Every caching-audit finding is fixed with a failing-first test, or recorded as sound with a reason.
-- `tests/perf` baseline re-run at branch close: no tracked operation slower than its baseline;
-  the work-count gate passes without raising its budget.
-- Full suite green; `tests/perf` under 60 s on CI.
+  `images_100` held after open 5,169 → 356 KiB.
+- [x] Every caching-audit finding is fixed with a failing-first test, or recorded as sound with a reason
+  (`.claude/context/caching-audit.md`: 10 fixed plus L1/L2, 190 sound).
+- [x] `tests/perf` baseline re-run at branch close: no tracked operation slower than its baseline;
+  the work-count gate passes without raising its budget. Owner exceptions (2026-10-15): save
+  +0.4 ms per path-opened deck with binary parts (zip reopen; +5–9%), and the gate now counts total
+  calls, re-budgeted from main (1,073,411; branch 1,085,069, +1.09%).
+- [ ] Full suite green; `tests/perf` under 60 s on CI. Local: 4,431 passed; `tests/perf` 3.8 s on 3.11.
 - [x] Card `.meta/roadmap/stages/03-hardening-and-gaps/v0.6.0.md` expanded with implementation detail
   before code lands (2026-10-15).

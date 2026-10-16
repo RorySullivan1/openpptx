@@ -22,21 +22,23 @@ The v0.6.0 card sets the boundaries this work honors:
 - **Process fan-out recipe** (PR #108): `examples/batch_process.py`. 16 such decks: 10.6 s in a
   plain loop, 3.2 s with 4 worker processes, 2.0 s with 4 processes after the caches.
 - **Generated child getters use `iterchildren()`** (2026-10-01). The `xmlchemy` accessors
-  (`ZeroOrOne`, `OneAndOnlyOne`, `ZeroOrMore`/`OneOrMore`, choice groups through
-  `first_child_found_in()`, and `remove_all()`) call `next(iterchildren(tag), None)` /
+  (`ZeroOrOne`, `OneAndOnlyOne`, `ZeroOrMore`/`OneOrMore`, choice groups, and `remove_all()`)
+  call `next(iterchildren(tag), None)` /
   `list(iterchildren(tag))` with the Clark tag computed once, instead of `find(qn(...))` /
   `findall(...)`. lxml's `find()` interprets an ElementPath expression on every call. Per lookup
   this is about 40% faster: a present child 2.06 → 1.27 µs, a missing one 1.57 → 0.88 µs. Text
   iteration on the synthetic decks is 19–34% faster, and a read of the real-world corpus about
-  20% faster. Save is unchanged.
+  20% faster. Save is unchanged. Since v0.6.0 a choice-group getter passes all its member tags to
+  one `iterchildren()` call instead of trying each in turn through `first_child_found_in()`.
 - **Placeholder inheritance** (2026-10-01). A placeholder caches its `_base_placeholder` (a
   `@lazyproperty`), so reading `left`/`top`/`width`/`height` searches the layout once rather
   than four times. `LayoutPlaceholders.get` / `MasterPlaceholders.get` find every `p:ph` with
   one XPath and compare `idx`/`type` on the elements, building a proxy only for the match. A
   tree holding `mc:AlternateContent` keeps the general scan. On top of the `iterchildren()`
   getters: four inherited reads 449 → 157 µs (−65%), a read of the real-world corpus 787 →
-  534 ms (−32%). A placeholder object keeps the base it found; one obtained after the layout
-  placeholder is deleted sees the change.
+  534 ms (−32%). Since v0.6.0 the base is reused only while it is still in its tree and both
+  `p:ph` elements keep the `idx`/`type` they matched by, so a held placeholder also sees its base
+  deleted or re-indexed (`caching-audit.md`).
 - **Enum `from_xml` through a dict** (2026-10-01). `BaseXmlEnum.from_xml()` looks the value up
   in a per-class map built on first use, instead of scanning the members: 1.22 → 0.23 µs for
   `MSO_LINE_DASH_STYLE`, 2.96 → 0.24 µs deep in `MSO_AUTO_SHAPE_TYPE`. Where two members share
@@ -44,7 +46,7 @@ The v0.6.0 card sets the boundaries this work honors:
 - **Work-count regression gate (Phase 5)** (2026-10-01). `tests/perf/test_workcount.py` runs in
   the normal suite. It opens, reads (`tests/unitutil/deckwalk.walk`) and saves every corpus deck
   once to warm the caches, then again under cProfile, and counts the calls made into `pptx/`
-  code. It fails if the count exceeds `tests/perf/workcount_budget.json` by more than 2%. Runs
+  code, recursive calls included. It fails if the count exceeds `tests/perf/workcount_budget.json` by more than 2%. Runs
   agree to within a call, so it does not flake as a timing gate would. The budget is pinned to
   the Python it was measured on (3.11; the ubuntu 3.11 CI cell) and skips elsewhere, and skips
   when the corpus is absent (sdist). When the count drops, or a rise is intended, rerun
@@ -52,7 +54,11 @@ The v0.6.0 card sets the boundaries this work honors:
   changes (`find()` vs `iterchildren()`), so the wall-clock baseline stays as a report.
   Budget history: 669,982 calls over 24 decks (gate added); 664,557 (enum `from_xml` dict);
   972,035 over 28 decks (v0.5.0 added four animation-heavy decks, 2026-10-09); 1,009,255 once
-  the walk also read transitions, animations and handout masters.
+  the walk also read transitions, animations and handout masters. v0.6.0 (2026-10-15) switched
+  from cProfile's primitive calls to total calls. Primitive calls skip a `lazyproperty.__get__`
+  made inside another one, so that count moved with how caches nest, not with the work done. The
+  budget is main (`51a8cd1`) re-measured that way: 1,073,411 (CPython 3.11.17, lxml 6.1.3; the
+  same setup gives 1,009,553 by the old count).
 
 ## What already exists (verify, do not reimplement)
 
@@ -152,6 +158,35 @@ These numbers come from the same box as the branch-open reference.
   until garbage collection closed the zip, so on Windows the file could not be moved or deleted.
   The loader now closes it as soon as loading ends.
 
+## v0.6.0 branch close (2026-10-15)
+
+Same Windows box as the branch-open reference. The caching audit is in
+[`caching-audit.md`](caching-audit.md): 10 stale caches fixed, the rest recorded as sound.
+
+**Wall-clock**, branch open (`c0a8a60`) against branch close, on the same deck files. Three
+interleaved rounds in separate processes, each a median of 15 runs; the table shows the median of
+the three medians.
+
+| deck | open | iter1x | iter10x | save |
+| --- | --- | --- | --- | --- |
+| `small` | 2.88 → 2.80 | 0.36 → 0.36 | 1.33 → 1.35 | 3.76 → 4.11 (+9%) |
+| `medium` | 8.54 → 7.34 | 7.13 → 8.54 | 43.73 → 44.34 | 9.73 → 10.55 (+8%) |
+| `large` | 31.90 → 30.98 | 45.58 → 45.31 | 296.92 → 297.71 | 33.84 → 33.59 |
+| `images_100` | 20.47 → 15.21 (−26%) | 2.29 → 2.28 | 3.78 → 3.85 | 100.64 → 107.93 (+7%) |
+
+- **Save is slower on every deck opened from a path that has a binary part, by about 0.4 ms**
+  (accepted by the owner, 2026-10-15). The save reopens the source zip to read those parts:
+  opening the file plus parsing its central directory, `_RealGetContents`. Bisected to the
+  lazy-blob commit `a84e0d9`. On `images_100` the decompression that moved from open to save
+  adds to it (+5–7%, also accepted). Every default-template deck has three binary parts (a
+  thumbnail, printer settings and an image), so the cost is fixed rather than proportional.
+- `medium` iter1x read +20% in this run, but alone and bisected it is flat (6.97–7.21 ms at every
+  commit). In the combined run it follows `large` in the same process.
+- **Work count** (total calls, CPython 3.11.17): main 1,073,411 → branch close 1,085,069 (+1.09%),
+  inside the 2% gate. Over the corpus walk the audit's fixes cost about 0.4% in calls and
+  1–3% in wall time.
+- **Memory**: unchanged from "v0.6.0 lazy blobs, after" above.
+
 ## Harness
 
 - `tests/perf/corpus.py` — synthetic deck generator (slides, shapes/slide, paragraphs/shape,
@@ -175,7 +210,7 @@ python -m tests.perf.run_baseline    # refresh baseline.json and the section bel
 
 ## Baseline
 
-Captured: `2026-10-15T21:02:29.089872+00:00`
+Captured: `2026-10-16T01:51:14.463389+00:00`
 Platform: `CPython 3.13.13` on `Windows / AMD64`
 
 ### Corpus
@@ -198,10 +233,10 @@ Open is median of 5 cold opens.
 
 | fixture | open | iter1x | iter10x | save |
 | --- | --- | --- | --- | --- |
-| small | 3.17 | 0.41 | 1.31 | 3.76 |
-| medium | 9.96 | 7.03 | 41.36 | 9.40 |
-| large | 29.27 | 44.89 | 291.60 | 30.65 |
-| images_100 | 13.61 | 2.09 | 3.72 | 104.97 |
+| small | 2.83 | 0.41 | 1.31 | 3.78 |
+| medium | 10.40 | 6.90 | 41.40 | 9.82 |
+| large | 33.32 | 44.86 | 290.57 | 32.17 |
+| images_100 | 14.82 | 2.39 | 3.72 | 109.73 |
 
 ### Memory on open (KiB, tracemalloc)
 
@@ -219,40 +254,40 @@ open deck holds. `save peak` is the peak from the start of the save to its end, 
 
 | fixture | current after open | peak on open | save peak |
 | --- | --- | --- | --- |
-| small | 93.9 | 150.9 | 487.5 |
-| medium | 186.4 | 217.9 | 668.7 |
-| large | 236.5 | 427.5 | 936.3 |
-| images_100 | 355.9 | 616.0 | 1319.5 |
+| small | 93.9 | 150.9 | 484.7 |
+| medium | 186.4 | 217.9 | 662.4 |
+| large | 236.5 | 427.5 | 920.7 |
+| images_100 | 355.9 | 616.0 | 1298.4 |
 
 ### cProfile top 20 (medium fixture, open + iterate + save)
 
 ```
-338043 function calls (336762 primitive calls) in 0.128 seconds
+337455 function calls (336370 primitive calls) in 0.134 seconds
 
    Ordered by: cumulative time
    List reduced from 362 to 20 due to restriction <20>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    0.009    0.009    0.097    0.097 run_baseline.py:71(_bench_iterate_text)
-    18000    0.010    0.000    0.040    0.000 text.py:910(runs)
-    22610    0.022    0.000    0.023    0.000 xmlchemy.py:404(get_child_element_list)
-    18000    0.003    0.000    0.021    0.000 text.py:1024(text)
-    18000    0.004    0.000    0.019    0.000 text.py:71(text)
-     4500    0.004    0.000    0.018    0.000 text.py:222(paragraphs)
-        1    0.000    0.000    0.016    0.016 presentation.py:103(save)
-        1    0.000    0.000    0.016    0.016 presentation.py:473(save)
-        1    0.000    0.000    0.016    0.016 package.py:160(save)
-2833/1819    0.001    0.000    0.015    0.000 util.py:166(__get__)
-    18060    0.014    0.000    0.015    0.000 xmlchemy.py:500(get_child_element)
+        1    0.010    0.010    0.102    0.102 run_baseline.py:71(_bench_iterate_text)
+    18000    0.010    0.000    0.042    0.000 text.py:914(runs)
+    22610    0.023    0.000    0.024    0.000 xmlchemy.py:404(get_child_element_list)
+    18000    0.003    0.000    0.022    0.000 text.py:1028(text)
+    18000    0.004    0.000    0.020    0.000 text.py:71(text)
+     4500    0.005    0.000    0.019    0.000 text.py:222(paragraphs)
+        1    0.000    0.000    0.017    0.017 presentation.py:103(save)
+        1    0.000    0.000    0.017    0.017 presentation.py:473(save)
+        1    0.000    0.000    0.017    0.017 package.py:160(save)
+    18060    0.015    0.000    0.016    0.000 xmlchemy.py:500(get_child_element)
+        1    0.000    0.000    0.015    0.015 serialized.py:84(write)
+        1    0.000    0.000    0.015    0.015 serialized.py:95(_write)
         1    0.000    0.000    0.015    0.015 api.py:22(Presentation)
-        1    0.000    0.000    0.014    0.014 package.py:82(open)
-        1    0.000    0.000    0.014    0.014 package.py:185(_load)
-        1    0.000    0.000    0.014    0.014 serialized.py:84(write)
-        1    0.000    0.000    0.014    0.014 serialized.py:95(_write)
-        1    0.000    0.000    0.014    0.014 package.py:212(load)
-        1    0.000    0.000    0.014    0.014 package.py:227(_load)
-    36000    0.006    0.000    0.014    0.000 text.py:913(<genexpr>)
-        1    0.000    0.000    0.013    0.013 serialized.py:113(_write_parts)
+        1    0.000    0.000    0.015    0.015 package.py:82(open)
+        1    0.000    0.000    0.015    0.015 package.py:185(_load)
+        1    0.000    0.000    0.015    0.015 package.py:212(load)
+        1    0.000    0.000    0.015    0.015 package.py:227(_load)
+    36000    0.006    0.000    0.015    0.000 text.py:917(<genexpr>)
+2637/1819    0.001    0.000    0.014    0.000 util.py:166(__get__)
+        1    0.000    0.000    0.014    0.014 serialized.py:113(_write_parts)
 ```
 
 ### Reproducing

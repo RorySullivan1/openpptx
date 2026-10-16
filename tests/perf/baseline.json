@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "captured_at": "2026-10-15T21:02:29.089872+00:00",
+  "captured_at": "2026-10-16T01:51:14.463389+00:00",
   "platform": {
     "python": "3.13.13",
     "implementation": "CPython",
@@ -39,28 +39,28 @@
   },
   "timings_seconds": {
     "small": {
-      "open_median_s": 0.0031710999901406467,
-      "iter_text_single_s": 0.0004105999832972884,
-      "iter_text_repeated_s": 0.0013144999975338578,
-      "save_s": 0.0037607999984174967
+      "open_median_s": 0.002833900012774393,
+      "iter_text_single_s": 0.00040520000038668513,
+      "iter_text_repeated_s": 0.0013073000009171665,
+      "save_s": 0.0037822999875061214
     },
     "medium": {
-      "open_median_s": 0.009958300011930987,
-      "iter_text_single_s": 0.007025200000498444,
-      "iter_text_repeated_s": 0.041357999987667426,
-      "save_s": 0.009400899987667799
+      "open_median_s": 0.010398300015367568,
+      "iter_text_single_s": 0.006903000001329929,
+      "iter_text_repeated_s": 0.04140089999418706,
+      "save_s": 0.009822899999562651
     },
     "large": {
-      "open_median_s": 0.0292704000021331,
-      "iter_text_single_s": 0.04488950001541525,
-      "iter_text_repeated_s": 0.2915997999953106,
-      "save_s": 0.03065119998063892
+      "open_median_s": 0.03332109999610111,
+      "iter_text_single_s": 0.04485860001295805,
+      "iter_text_repeated_s": 0.29057089998968877,
+      "save_s": 0.0321747999987565
     },
     "images_100": {
-      "open_median_s": 0.01361150000593625,
-      "iter_text_single_s": 0.0020898999937344342,
-      "iter_text_repeated_s": 0.0037233000039123,
-      "save_s": 0.10497039998881519
+      "open_median_s": 0.014816200011409819,
+      "iter_text_single_s": 0.0023899000079836696,
+      "iter_text_repeated_s": 0.003716300008818507,
+      "save_s": 0.1097312000056263
     }
   },
   "memory_bytes_on_open": {
@@ -85,22 +85,22 @@
     "small": {
       "open_current_bytes": 96184,
       "open_peak_bytes": 154473,
-      "save_peak_bytes": 499214
+      "save_peak_bytes": 496283
     },
     "medium": {
       "open_current_bytes": 190834,
       "open_peak_bytes": 223087,
-      "save_peak_bytes": 684755
+      "save_peak_bytes": 678301
     },
     "large": {
       "open_current_bytes": 242130,
       "open_peak_bytes": 437804,
-      "save_peak_bytes": 958817
+      "save_peak_bytes": 942822
     },
     "images_100": {
       "open_current_bytes": 364395,
       "open_peak_bytes": 630747,
-      "save_peak_bytes": 1351119
+      "save_peak_bytes": 1329559
     }
   },
   "iter_repeat_access_count": 10,

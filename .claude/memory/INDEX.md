@@ -2,15 +2,13 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- Package 0.5.1 SHIPPED (PR #133 merged `51a8cd1`); v0.5.1 tag row recorded; owner tags v0.5.0 + v0.5.1 by hand.
-  **In flight: v0.6.0 on branch `v0.6.0`** — perf remainder only: lazy binary blobs + caching audit (`.meta/version`).
-  Card expanded + branch-open baseline recorded (performance.md § v0.6.0 branch-open reference; `images_100` holds
-  5,169 KiB after open). L2 + L1 FIXED (`Part._blob_caches`; shape index validate-on-hit); draft PR #134 onto main. Lazy blobs A1–A6 DONE
-  (images_100 held after open 5,169 → 356 KiB; save +5%, flagged). Next: rest of the caching audit, then branch close.
+- Package 0.6.0 on branch `v0.6.0`, PR #134 READY (lazy binary blobs + caching audit, `.claude/context/caching-audit.md`).
+  `.meta/version` stays in-progress until it merges. 0.5.1 shipped (PR #133, `51a8cd1`).
+- Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md` (v0.1.0–v0.4.0 ready; v0.5.0's row is recorded but HELD).
+- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
 - Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
-- Actions RUNS again (2026-10-14 01:48Z, #125 ran 7/7 green); LF pinned; `tests.yml` covers 3.9–3.13/Win/macOS.
+- CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 - API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra).
 
 ## Decisions        (append-only; supersede, never delete)
@@ -37,6 +35,8 @@
   cross-run text stays v0.7.0 — .meta/version
 - [2026-10-15] Owner: lazy blobs for PATH sources only (zip reopened per read, CRC/size checked → `PackageError`; no
   held handle); stream + directory sources stay eager — sessions/2026-10-15-1347-v060-card-expanded.md
+- [2026-10-15] Owner: accept save cost of lazy blobs (+5–7% images_100; fixed ~0.4 ms/save zip reopen on small decks);
+  work-count gate counts total calls, re-budgeted from main — sessions/2026-10-15-1347-v060-card-expanded.md
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
@@ -69,4 +69,4 @@
 - 2026-10-15 | Memory reconciled: PR #130 merged 2026-10-14 (`1c132d7`); version bump + tags are all that's left of v0.5.1 | gh pr view 130
 - 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
 - 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md
-- 2026-10-15 1347 | v0.6.0 card expanded, baseline recorded, L1 + L2 fixed; draft PR #134 | sessions/2026-10-15-1347-v060-card-expanded.md
+- 2026-10-15 1347 | v0.6.0 built end to end: card, L1/L2, lazy blobs, caching audit (10 fixes), gate metric, 0.6.0; PR #134 ready | sessions/2026-10-15-1347-v060-card-expanded.md
