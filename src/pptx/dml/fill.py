@@ -43,8 +43,25 @@ class FillFormat:
     ):
         super(FillFormat, self).__init__()
         self._xPr = eg_fill_properties_parent
-        self._fill = fill_obj
+        self._fill_obj = fill_obj
         self._part_provider = part_provider
+
+    @property
+    def _fill(self) -> _Fill:
+        """The fill object for the fill element `self._xPr` holds now.
+
+        The one in hand is reused while the element it wraps is still a child of `self._xPr` (or,
+        for no fill, while there still is none). Otherwise the fill was changed through another
+        proxy for the same element, e.g. a second shape object for the same shape, and the fill
+        object is rebuilt from the XML.
+        """
+        fill = self._fill_obj
+        xFill = fill._xFill
+        if xFill is None or xFill.getparent() is not self._xPr:
+            current = self._xPr.eg_fillProperties
+            if current is not xFill:
+                fill = self._fill_obj = _Fill(current)
+        return fill
 
     @classmethod
     def from_fill_parent(
@@ -81,7 +98,7 @@ class FillFormat:
         Sets the fill type to noFill, i.e. transparent.
         """
         noFill = self._xPr.get_or_change_to_noFill()
-        self._fill = _NoFill(noFill)
+        self._fill_obj = _NoFill(noFill)
 
     @property
     def fore_color(self) -> ColorFormat:
@@ -102,7 +119,7 @@ class FillFormat:
         with tint 50%, shade 100%, and satMod 350%.
         """
         gradFill = self._xPr.get_or_change_to_gradFill()
-        self._fill = _GradFill(gradFill)
+        self._fill_obj = _GradFill(gradFill)
 
     @property
     def gradient_angle(self) -> float | None:
@@ -209,7 +226,7 @@ class FillFormat:
         colors.
         """
         pattFill = self._xPr.get_or_change_to_pattFill()
-        self._fill = _PattFill(pattFill)
+        self._fill_obj = _PattFill(pattFill)
 
     def picture(self, image_file: str | IO[bytes]) -> None:
         """Sets the fill type to picture, i.e. an image.
@@ -239,7 +256,7 @@ class FillFormat:
         blipFill = self._xPr.get_or_change_to_blipFill()
         blipFill.get_or_add_blip().rEmbed = rId
         blipFill.get_or_change_to_stretch().get_or_add_fillRect()
-        self._fill = _BlipFill(blipFill)
+        self._fill_obj = _BlipFill(blipFill)
 
     def tile(
         self,
@@ -277,7 +294,7 @@ class FillFormat:
         assignments to properties like fore_color to set the color.
         """
         solidFill = self._xPr.get_or_change_to_solidFill()
-        self._fill = _SolidFill(solidFill)
+        self._fill_obj = _SolidFill(solidFill)
 
     @property
     def type(self) -> MSO_FILL_TYPE:
@@ -309,7 +326,12 @@ class _Fill:
             fill_cls = _SolidFill
         else:
             fill_cls = _Fill
-        return super(_Fill, cls).__new__(fill_cls)
+        fill = super(_Fill, cls).__new__(fill_cls)
+        # -- recorded for every fill type, so |FillFormat| can tell when the element is replaced --
+        fill._xFill = xFill
+        return fill
+
+    _xFill: BaseOxmlElement | None = None
 
     @property
     def back_color(self) -> ColorFormat:

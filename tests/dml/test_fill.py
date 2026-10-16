@@ -29,7 +29,55 @@ from ..unitutil.cxml import element, xml
 from ..unitutil.mock import Mock, class_mock, instance_mock, method_mock, property_mock
 
 
+def _constructs(fill_):
+    """Side effect for a mocked fill class: return `fill_`, wrapping the element it was given."""
+
+    def construct(xFill):
+        fill_._xFill = xFill
+        return fill_
+
+    return construct
+
+
 class DescribeFillFormat:
+
+    def it_sees_a_fill_type_changed_through_another_fill_format(self):
+        spPr = element("p:spPr/a:solidFill")
+        fill, other = FillFormat.from_fill_parent(spPr), FillFormat.from_fill_parent(spPr)
+        assert fill.type == MSO_FILL.SOLID
+
+        other.background()
+
+        assert fill.type == MSO_FILL.BACKGROUND
+
+    def it_sees_a_fill_added_through_another_fill_format(self):
+        spPr = element("p:spPr")
+        fill, other = FillFormat.from_fill_parent(spPr), FillFormat.from_fill_parent(spPr)
+        assert fill.type is None
+
+        other.solid()
+
+        assert fill.type == MSO_FILL.SOLID
+
+    def it_writes_to_the_fill_the_xml_holds_after_another_fill_format_changed_it(self):
+        from pptx.dml.color import RGBColor
+
+        spPr = element("p:spPr/a:noFill")
+        fill, other = FillFormat.from_fill_parent(spPr), FillFormat.from_fill_parent(spPr)
+        assert fill.type == MSO_FILL.BACKGROUND
+        other.solid()
+
+        fill.fore_color.rgb = RGBColor(0xFF, 0x00, 0x00)
+
+        assert spPr.xpath("a:solidFill/a:srgbClr/@val") == ["FF0000"]
+
+    def but_it_keeps_its_own_fill_when_its_parent_holds_several(self):
+        fillStyleLst = element("a:fillStyleLst/(a:solidFill,a:gradFill)")
+
+        fill = FillFormat(fillStyleLst, _Fill(fillStyleLst[1]))
+
+        assert fill.type == MSO_FILL.GRADIENT
+
     def it_can_set_the_fill_type_to_no_fill(self, background_fixture):
         fill, _NoFill_, expected_xml, no_fill_ = background_fixture
 
@@ -84,7 +132,7 @@ class DescribeFillFormat:
     def it_knows_the_angle_of_a_linear_gradient(self, grad_fill_, type_prop_):
         grad_fill_.gradient_angle = 42.0
         type_prop_.return_value = MSO_FILL.GRADIENT
-        fill = FillFormat(None, grad_fill_)
+        fill = FillFormat(element("p:spPr"), grad_fill_)
 
         angle = fill.gradient_angle
 
@@ -92,7 +140,7 @@ class DescribeFillFormat:
 
     def it_can_change_the_angle_of_a_linear_gradient(self, grad_fill_, type_prop_):
         type_prop_.return_value = MSO_FILL.GRADIENT
-        fill = FillFormat(None, grad_fill_)
+        fill = FillFormat(element("p:spPr"), grad_fill_)
 
         fill.gradient_angle = 42.24
 
@@ -101,7 +149,7 @@ class DescribeFillFormat:
     def it_provides_access_to_the_gradient_stops(self, type_prop_, grad_fill_, gradient_stops_):
         type_prop_.return_value = MSO_FILL.GRADIENT
         grad_fill_.gradient_stops = gradient_stops_
-        fill = FillFormat(None, grad_fill_)
+        fill = FillFormat(element("p:spPr"), grad_fill_)
 
         gradient_stops = fill.gradient_stops
 
@@ -109,7 +157,7 @@ class DescribeFillFormat:
 
     def it_raises_on_non_gradient_fill(self, grad_fill_, type_prop_):
         type_prop_.return_value = None
-        fill = FillFormat(None, grad_fill_)
+        fill = FillFormat(element("p:spPr"), grad_fill_)
         with pytest.raises(ShapeError):
             fill.gradient_angle
         with pytest.raises(ShapeError):
@@ -166,7 +214,7 @@ class DescribeFillFormat:
 
     def it_raises_on_gradient_type_for_non_gradient_fill(self, fill_, type_prop_):
         type_prop_.return_value = None
-        fill = FillFormat(None, fill_)
+        fill = FillFormat(element("p:spPr"), fill_)
         with pytest.raises(ShapeError):
             fill.gradient_type
         with pytest.raises(ShapeError):
@@ -266,7 +314,7 @@ class DescribeFillFormat:
     @pytest.fixture
     def back_color_fixture(self, fill_, color_):
         fill_.back_color = color_
-        fill_format = FillFormat(None, fill_)
+        fill_format = FillFormat(element("p:spPr"), fill_)
         return fill_format, color_
 
     @pytest.fixture(
@@ -286,7 +334,7 @@ class DescribeFillFormat:
         fill = FillFormat.from_fill_parent(element(cxml))
         # --mock must be after FillFormat call to avoid poss. contructor call
         _NoFill_ = class_mock(
-            request, "pptx.dml.fill._NoFill", return_value=no_fill_, autospec=True
+            request, "pptx.dml.fill._NoFill", side_effect=_constructs(no_fill_), autospec=True
         )
         expected_xml = xml(expected_cxml)
         return fill, _NoFill_, expected_xml, no_fill_
@@ -294,13 +342,13 @@ class DescribeFillFormat:
     @pytest.fixture
     def fill_type_fixture(self, fill_):
         expected_value = fill_.type = 42
-        fill = FillFormat(None, fill_)
+        fill = FillFormat(element("p:spPr"), fill_)
         return fill, expected_value
 
     @pytest.fixture
     def fore_color_fixture(self, fill_, color_):
         fill_.fore_color = color_
-        fill_format = FillFormat(None, fill_)
+        fill_format = FillFormat(element("p:spPr"), fill_)
         return fill_format, color_
 
     @pytest.fixture(
@@ -320,7 +368,7 @@ class DescribeFillFormat:
         fill = FillFormat.from_fill_parent(element(cxml))
         # --mock must be after FillFormat call to avoid poss. contructor call
         _GradFill_ = class_mock(
-            request, "pptx.dml.fill._GradFill", return_value=grad_fill_, autospec=True
+            request, "pptx.dml.fill._GradFill", side_effect=_constructs(grad_fill_), autospec=True
         )
         expected_xml = xml(
             expected_cxml + "{rotWithShape=1}/(a:gsLst/(a:gs{pos=0}/a:scheme"
@@ -334,13 +382,13 @@ class DescribeFillFormat:
     @pytest.fixture
     def pattern_get_fixture(self, fill_):
         expected_value = fill_.pattern = MSO_PATTERN.WAVE
-        fill = FillFormat(None, fill_)
+        fill = FillFormat(element("p:spPr"), fill_)
         return fill, expected_value
 
     @pytest.fixture
     def pattern_set_fixture(self, fill_):
         pattern = MSO_PATTERN.DIVOT
-        fill = FillFormat(None, fill_)
+        fill = FillFormat(element("p:spPr"), fill_)
         return fill, pattern
 
     @pytest.fixture(
@@ -360,7 +408,7 @@ class DescribeFillFormat:
         fill = FillFormat.from_fill_parent(element(cxml))
         # --mock must be after FillFormat call to avoid poss. contructor call
         _PattFill_ = class_mock(
-            request, "pptx.dml.fill._PattFill", return_value=patt_fill_, autospec=True
+            request, "pptx.dml.fill._PattFill", side_effect=_constructs(patt_fill_), autospec=True
         )
         expected_xml = xml(expected_cxml)
         return fill, _PattFill_, expected_xml, patt_fill_
@@ -382,7 +430,7 @@ class DescribeFillFormat:
         fill = FillFormat.from_fill_parent(element(cxml))
         # --mock must be after FillFormat call to avoid poss. contructor call
         _SolidFill_ = class_mock(
-            request, "pptx.dml.fill._SolidFill", return_value=solid_fill_, autospec=True
+            request, "pptx.dml.fill._SolidFill", side_effect=_constructs(solid_fill_), autospec=True
         )
         expected_xml = xml(expected_cxml)
         return fill, _SolidFill_, expected_xml, solid_fill_
@@ -395,11 +443,11 @@ class DescribeFillFormat:
 
     @pytest.fixture
     def fill_(self, request):
-        return instance_mock(request, _Fill)
+        return instance_mock(request, _Fill, _xFill=None)
 
     @pytest.fixture
     def grad_fill_(self, request):
-        return instance_mock(request, _GradFill)
+        return instance_mock(request, _GradFill, _xFill=None)
 
     @pytest.fixture
     def gradient_stops_(self, request):

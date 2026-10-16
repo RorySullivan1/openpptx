@@ -204,7 +204,7 @@ class DataLabel:
         self._ser = self._element = ser
         self._idx = idx
 
-    @lazyproperty
+    @property
     def font(self):
         """The |Font| object providing text formatting for this data label.
 
@@ -212,7 +212,8 @@ class DataLabel:
         inserted text, such as the data point value. The font applies to the
         entire data label. More granular control of the appearance of custom
         data label text is controlled by a font object on runs in the text
-        frame.
+        frame. Not cached, because adding a text frame removes the `c:txPr`
+        element the font is part of.
         """
         txPr = self._get_or_add_txPr()
         text_frame = TextFrame(txPr, self)

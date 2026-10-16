@@ -19,6 +19,22 @@ from .unitutil.mock import call, class_mock, instance_mock, method_mock, propert
 class DescribeActionSetting:
     """Unit-test suite for `pptx.action.ActionSetting` objects."""
 
+    def it_finds_the_next_slide_after_the_slides_are_reordered(self):
+        from pptx import Presentation
+
+        prs = Presentation()
+        slides = [prs.slides.add_slide(prs.slide_layouts[6]) for _ in range(3)]
+        shape = slides[0].shapes.add_textbox(0, 0, 1, 1)
+        hlinkClick = shape._element.nvSpPr.cNvPr.get_or_add_hlinkClick()
+        hlinkClick.action = "ppaction://hlinkshowjump?jump=nextslide"
+        click_action = shape.click_action
+        assert click_action.target_slide is slides[1]
+
+        prs.slides.move(0, 1)
+
+        assert click_action.target_slide is slides[2]
+
+
     def it_knows_its_action_type(self, action_fixture):
         action_setting, expected_action = action_fixture
         action = action_setting.action

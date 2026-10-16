@@ -23,7 +23,23 @@ class ColorFormat:
     def __init__(self, eg_colorChoice_parent, color):
         super(ColorFormat, self).__init__()
         self._xFill = eg_colorChoice_parent
-        self._color = color
+        self._color_obj = color
+
+    @property
+    def _color(self) -> _Color:
+        """The color object for the color element `self._xFill` holds now.
+
+        The one in hand is reused while the element it wraps is still a child of `self._xFill`
+        (or, for no color, while there still is none). Otherwise the color was changed through
+        another proxy for the same element and the color object is rebuilt from the XML.
+        """
+        color = self._color_obj
+        xClr = color._xClr
+        if xClr is None or xClr.getparent() is not self._xFill:
+            current = self._xFill.eg_colorChoice
+            if current is not xClr:
+                color = self._color_obj = _Color(current)
+        return color
 
     @property
     def brightness(self):
@@ -98,7 +114,7 @@ class ColorFormat:
         # change to rgb color format if not already
         if not isinstance(self._color, _SRgbColor):
             srgbClr = self._xFill.get_or_change_to_srgbClr()
-            self._color = _SRgbColor(srgbClr)
+            self._color_obj = _SRgbColor(srgbClr)
         # call _SRgbColor instance to do the setting
         self._color.rgb = rgb
 
@@ -119,7 +135,7 @@ class ColorFormat:
         # change to theme color format if not already
         if not isinstance(self._color, _SchemeColor):
             schemeClr = self._xFill.get_or_change_to_schemeClr()
-            self._color = _SchemeColor(schemeClr)
+            self._color_obj = _SchemeColor(schemeClr)
         self._color.theme_color = mso_theme_color_idx
 
     @property

@@ -13,6 +13,19 @@ from ..unitutil.mock import class_mock, instance_mock, method_mock
 
 
 class DescribeDataLabel:
+
+    def it_writes_its_font_after_a_text_frame_is_added(self):
+        from pptx.util import Pt
+
+        ser = element("c:ser")
+        data_label = DataLabel(ser, 0)
+        data_label.font.bold = True
+        data_label.has_text_frame = True
+
+        data_label.font.size = Pt(20)
+
+        assert ser.xpath("c:dLbls/c:dLbl/c:txPr/a:p/a:pPr/a:defRPr/@sz") == ["2000"]
+
     def it_has_a_font(self, font_fixture):
         data_label, expected_xml = font_fixture
         font = data_label.font

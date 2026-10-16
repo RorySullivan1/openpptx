@@ -813,6 +813,19 @@ class DescribeDateAxis:
 
 
 class DescribeMajorGridlines:
+
+    def it_adds_the_gridlines_back_when_formatted_after_they_are_removed(self):
+        from pptx.util import Pt
+
+        axis = ValueAxis(element("c:valAx"))
+        axis.major_gridlines.format.line.width = Pt(1)
+        axis.has_major_gridlines = False
+
+        axis.major_gridlines.format.line.width = Pt(2)
+
+        assert axis.has_major_gridlines is True
+        assert axis._element.xpath("c:majorGridlines/c:spPr/a:ln/@w") == ["25400"]
+
     def it_provides_access_to_its_format(self, format_fixture):
         gridlines, expected_xml, ChartFormat_, format_ = format_fixture
         format = gridlines.format

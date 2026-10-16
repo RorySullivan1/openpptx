@@ -421,9 +421,13 @@ class Font:
     def caps(self, value: MSO_TEXT_CAPS | None) -> None:
         self._rPr.cap = value
 
-    @lazyproperty
+    @property
     def color(self) -> ColorFormat:
-        """The |ColorFormat| instance that provides access to the color settings for this font."""
+        """The |ColorFormat| instance that provides access to the color settings for this font.
+
+        Accessing it makes the font's fill solid, afresh on each access, so the color set after a
+        change of fill type makes the fill solid again.
+        """
         if self.fill.type != MSO_FILL.SOLID:
             self.fill.solid()
         return self.fill.fore_color

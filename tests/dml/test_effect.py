@@ -17,6 +17,17 @@ from ..unitutil.cxml import element, xml
 
 
 class DescribeShadowFormat:
+
+    def it_adds_a_shadow_again_when_its_color_is_set_after_inheritance_is_restored(self):
+        spPr = element("p:spPr")
+        shadow = ShadowFormat(spPr)
+        shadow.color.rgb = RGBColor(0xFF, 0x00, 0x00)
+        shadow.inherit = True
+
+        shadow.color.rgb = RGBColor(0x00, 0x00, 0xFF)
+
+        assert spPr.xpath("a:effectLst/a:outerShdw/a:srgbClr/@val") == ["0000FF"]
+
     @pytest.mark.parametrize(
         ("spPr_cxml", "expected_value"),
         [

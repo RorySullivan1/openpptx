@@ -68,7 +68,7 @@ class Describe_BaseSlidePlaceholder:
 
     def it_finds_its_base_placeholder_to_help(self, base_ph_fixture):
         placeholder, layout_, idx, layout_placeholder_ = base_ph_fixture
-        base_placeholder = placeholder._base_placeholder
+        base_placeholder = placeholder._find_base_placeholder()
         layout_.placeholders.get.assert_called_once_with(idx=idx)
         assert base_placeholder is layout_placeholder_
 
@@ -349,7 +349,7 @@ class DescribeLayoutPlaceholder:
 
     def it_finds_its_base_placeholder_to_help(self, base_ph_fixture):
         layout_placeholder, master_, mstr_ph_type, master_placeholder_ = base_ph_fixture
-        master_placeholder = layout_placeholder._base_placeholder
+        master_placeholder = layout_placeholder._find_base_placeholder()
         master_.placeholders.get.assert_called_once_with(mstr_ph_type, None)
         assert master_placeholder is master_placeholder_
 
@@ -390,7 +390,7 @@ class DescribeNotesSlidePlaceholder:
 
     def it_finds_its_base_placeholder_to_help(self, base_ph_fixture):
         placeholder, notes_master_, ph_type, master_placeholder_ = base_ph_fixture
-        base_placeholder = placeholder._base_placeholder
+        base_placeholder = placeholder._find_base_placeholder()
         notes_master_.placeholders.get.assert_called_once_with(ph_type=ph_type)
         assert base_placeholder is master_placeholder_
 
@@ -566,6 +566,46 @@ class DescribeTablePlaceholder:
 
 class Describe_InheritsDimensions_base_placeholder:
     """A placeholder looks its base placeholder up once and reuses it (issue #51)."""
+
+    def it_sees_a_deleted_layout_placeholder_it_had_already_found(self):
+        from pptx import Presentation
+
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[1])
+        placeholder = slide.placeholders[1]
+        assert placeholder.left is not None
+        layout_ph = slide.slide_layout.placeholders.get(idx=1)
+
+        layout_ph.element.getparent().remove(layout_ph.element)
+
+        assert placeholder.left is None
+
+    def it_sees_a_layout_placeholder_it_had_found_given_another_idx(self):
+        from pptx import Presentation
+
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[1])
+        placeholder = slide.placeholders[1]
+        assert placeholder.left is not None
+        layout_ph = slide.slide_layout.placeholders.get(idx=1)
+
+        layout_ph.element.ph.idx = 99
+
+        assert placeholder.left is None
+
+    def it_sees_a_deleted_master_placeholder_a_layout_placeholder_had_found(self):
+        from pptx import Presentation
+        from pptx.enum.shapes import PP_PLACEHOLDER
+
+        prs = Presentation()
+        layout_ph = prs.slide_layouts[1].placeholders.get(idx=1)
+        assert layout_ph.left is not None
+        master_ph = prs.slide_masters[0].placeholders.get(PP_PLACEHOLDER.BODY)
+
+        master_ph.element.getparent().remove(master_ph.element)
+
+        assert layout_ph.left is None
+
 
     def it_searches_the_layout_once_for_all_four_inherited_dimensions(self, request):
         from pptx import Presentation

@@ -647,10 +647,11 @@ class ZeroOrOneChoice(_BaseChildElement):
         descriptor.
         """
 
+        member_tags = tuple(qn(tagname) for tagname in self._member_nsptagnames)
+
         def get_group_member_element(obj: BaseOxmlElement) -> BaseOxmlElement | None:
-            return cast(
-                "BaseOxmlElement | None", obj.first_child_found_in(*self._member_nsptagnames)
-            )
+            # -- one scan for any member, in document order; the schema allows at most one --
+            return cast("BaseOxmlElement | None", next(obj.iterchildren(*member_tags), None))
 
         get_group_member_element.__doc__ = (
             "Return the child element belonging to this element group, or "
