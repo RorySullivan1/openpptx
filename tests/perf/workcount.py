@@ -2,7 +2,8 @@
 
 Timing on shared CI runners is too noisy to gate on, so this counts work instead. It opens every
 deck in the real-world corpus, reads it through the public API (`tests.unitutil.deckwalk.walk`)
-and saves it, under cProfile, and counts the function calls made into `pptx` code.
+and saves it, under cProfile, and counts the function calls made into `pptx` code, recursive calls
+included.
 
 The count moves with the regressions that matter: an extra lookup per shape, a list rebuilt in a
 loop, a proxy built and thrown away. Repeated runs agree to within a call or two. It does not see
@@ -62,9 +63,12 @@ def measure() -> dict[str, int]:
     _workload(files)
     profile.disable()
     stats = pstats.Stats(profile).stats  # pyright: ignore[reportAttributeAccessIssue]
+    # -- every call, recursive ones included. Counting only cProfile's "primitive" calls skips a
+    # -- `lazyproperty.__get__` made inside another one, so the count would move with how caches
+    # -- nest rather than with the work done --
     pptx_calls = sum(
-        primitive_calls
-        for (filename, _, _), (primitive_calls, *_) in stats.items()
+        total_calls
+        for (filename, _, _), (_, total_calls, *_) in stats.items()
         if _PPTX_DIR in filename and "tests" + os.sep not in filename
     )
     return {"decks": len(files), "pptx_calls": pptx_calls}
