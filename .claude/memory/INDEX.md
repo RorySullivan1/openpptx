@@ -2,8 +2,8 @@
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.0 SHIPPED (PR #135, merge `0db7ef1`; cross-run find/replace, `pptx/text/search.py`). Cursor → v1.0.0,
-  card still a sketch: expand it before building. Ship bookkeeping is on branch `v1.0.0`.
+- 0.7.0 SHIPPED (PR #135, merge `0db7ef1`). **In flight: v0.7.1 on branch `v0.7.1`**: review-fix patch (owner, 2026-10-16),
+  built from `v1.0.0`'s ship-bookkeeping commit. v1.0.0 card is still a sketch: expand it before building.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
@@ -41,8 +41,6 @@
   masters/charts/SmartArt); property test uses hypothesis (already a dev dep) — .meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md
 
 ## Threads          (open items; remove when closed)
-- v0.7.0 follow-up (review, harmless): a removed run holding TWO refs to one rId (hlinkClick + hlinkMouseOver)
-  leaves that relationship orphaned — drop_rel's <2 rule counts the run's own refs (`search._remove_run`).
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
   Would NOT have caught #127 (the part was related, from the wrong source).
 - The `github` MCP server may fail to connect ("Authorization header is badly formatted"); `gh` CLI works — use it.
@@ -68,3 +66,4 @@
 - 2026-10-13..10-15 | 9 sessions (PowerPoint checks #119–#125, v0.5.0/v0.5.1 ship, #126–#132, v0.6.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
 - 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
+- 2026-10-16 | v0.7.1 built: 9 review findings → template/count errors up front, TextMatch eq, `\v` → a:br, regex context, rel drops | sessions/2026-10-16-1300-v071-review-fixes.md

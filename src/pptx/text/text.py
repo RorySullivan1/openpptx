@@ -117,8 +117,11 @@ class TextFrame(Subshape):
 
         `pattern` is a `str`, matched literally unless `regex` is True, or a compiled regular
         expression, which keeps its flags (e.g. `re.IGNORECASE`). A match can span several runs
-        but never a paragraph, a line break or a field. Zero-width regex matches are skipped, and
-        an empty literal pattern raises |InvalidValueError|. Does not change the text frame.
+        but never a paragraph, a line break or a field. A regex is matched in the paragraph's
+        text, so `^` matches only at the start of the paragraph, and `\\b` or a lookbehind sees
+        the text before a line break or field; a line break or field ends the text for `$` and
+        lookahead. Zero-width regex matches are skipped, and an empty literal pattern raises
+        |InvalidValueError|. Does not change the text frame.
         """
         from pptx.text.search import TextFinder
 
@@ -303,11 +306,15 @@ class TextFrame(Subshape):
         text takes the formatting of the first run the match touches: that run keeps the text
         before the match followed by `new`, any runs wholly inside the match are removed, and the
         last run keeps the text after the match with its own formatting. A run left empty is
-        removed, and so is any relationship (e.g. a hyperlink) only it referred to.
+        removed, and so is any relationship (e.g. a hyperlink) only it referred to. Each `"\\v"`
+        or `"\\n"` in `new` becomes a line break, as in the `_Paragraph.text` setter; the lines
+        after it take the first run's formatting too.
 
         When `regex` is True or `old` is compiled, `new` is a template, so `\\1` and `\\g<name>`
-        insert groups. `count` limits the number of replacements, in document order; |None|
-        replaces every match and a negative count raises |InvalidValueError|.
+        insert groups; a template that does not fit `old` raises |InvalidValueError| even when
+        nothing matches. `count` limits the number of replacements, in document order; |None|
+        replaces every match, a negative count raises |InvalidValueError| and one that is not an
+        `int` raises |InvalidTypeError|.
         """
         from pptx.text.search import TextReplacer
 

@@ -6,9 +6,9 @@ from typing import cast
 
 import pytest
 
-from pptx.oxml.text import CT_TextCharacterProperties, CT_TextParagraph
+from pptx.oxml.text import CT_RegularTextRun, CT_TextCharacterProperties, CT_TextParagraph
 
-from ..unitutil.cxml import element
+from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_TextParagraph:
@@ -101,3 +101,53 @@ class DescribeCT_TextCharacterProperties:
     def and_it_makes_the_key_hashable(self):
         rPr = cast(CT_TextCharacterProperties, element("a:rPr{b=1}/a:latin{typeface=Arial}"))
         assert hash(rPr.formatting_key()) == hash(rPr.formatting_key())
+
+
+class DescribeCT_RegularTextRun:
+    """Unit-test suite for `pptx.oxml.text.CT_RegularTextRun` objects."""
+
+    @pytest.mark.parametrize(
+        ("p_cxml", "lines", "expected_cxml"),
+        [
+            ('a:p/a:r/a:t"a"', [], 'a:p/a:r/a:t"a"'),
+            ('a:p/a:r/a:t"a"', ["b"], 'a:p/(a:r/a:t"a",a:br,a:r/a:t"b")'),
+            (
+                'a:p/(a:r/(a:rPr{b=1},a:t"a"),a:r/a:t"z")',
+                ["b", "", "c"],
+                'a:p/(a:r/(a:rPr{b=1},a:t"a"),a:br/a:rPr{b=1},a:r/(a:rPr{b=1},a:t"b"),'
+                'a:br/a:rPr{b=1},a:br/a:rPr{b=1},a:r/(a:rPr{b=1},a:t"c"),a:r/a:t"z")',
+            ),
+        ],
+    )
+    def it_can_insert_lines_after_itself(self, p_cxml: str, lines: list[str], expected_cxml: str):
+        p = cast(CT_TextParagraph, element(p_cxml))
+
+        p.r_lst[0].insert_lines_after(lines)
+
+        assert p.xml == xml(expected_cxml)
+
+    def and_it_gives_each_new_line_its_own_copy_of_the_formatting(self):
+        p = cast(CT_TextParagraph, element('a:p/a:r/(a:rPr{b=1},a:t"a")'))
+        r = p.r_lst[0]
+
+        r.insert_lines_after(["b"])
+
+        br, new_r = p.content_children[1:]
+        assert br.rPr is not r.rPr and new_r.rPr is not r.rPr
+        assert br.rPr is not None and new_r.rPr is not None
+
+    @pytest.mark.parametrize(
+        ("r_cxml", "expected_value"),
+        [
+            ('a:r/a:t"a"', []),
+            ('a:r/(a:rPr/a:hlinkClick{r:id=rId2},a:t"a")', ["rId2"]),
+            (
+                'a:r/(a:rPr/(a:hlinkClick{r:id=rId2},a:hlinkMouseOver{r:id=rId2}),a:t"a")',
+                ["rId2", "rId2"],
+            ),
+            ('a:r/(a:rPr/a:blipFill/a:blip{r:embed=rId4},a:t"a")', ["rId4"]),
+        ],
+    )
+    def it_knows_the_relationships_it_refers_to(self, r_cxml: str, expected_value: list[str]):
+        r = cast(CT_RegularTextRun, element(r_cxml))
+        assert r.rel_ids == expected_value
