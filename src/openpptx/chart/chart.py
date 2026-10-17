@@ -5,13 +5,14 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from openpptx._util import lazyproperty
 from openpptx.chart.axis import CategoryAxis, DateAxis, ValueAxis
 from openpptx.chart.datatable import DataTable
 from openpptx.chart.legend import Legend
 from openpptx.chart.plotarea import PlotArea
 from openpptx.chart.view3d import ChartSurface, View3D
 from openpptx.exc import ChartError
-from openpptx.chart.plot import PlotFactory, PlotTypeInspector
+from openpptx.chart.plot import _PlotFactory, _PlotTypeInspector
 from openpptx.chart.series import SeriesCollection
 from openpptx.chart.xmlwriter import SeriesXmlRewriterFactory
 from openpptx.dml.chtfmt import ChartFormat
@@ -19,7 +20,6 @@ from openpptx.enum.chart import XL_DISPLAY_BLANKS_AS
 from openpptx.oxml.ns import qn
 from openpptx.shared import ElementProxy, PartElementProxy
 from openpptx.text.text import Font, TextFrame
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.chart.data import _BaseChartData
@@ -86,7 +86,7 @@ class Chart(PartElementProxy):
         # Clear lazyproperty cache for plots so new plot appears
         if "plots" in self.__dict__:
             del self.__dict__["plots"]
-        return PlotFactory(xChart, self)
+        return _PlotFactory(xChart, self)
 
     @property
     def back_wall(self) -> ChartSurface:
@@ -169,7 +169,7 @@ class Chart(PartElementProxy):
         the type reported is for the first (back-most) plot. Read-only.
         """
         first_plot = self.plots[0]
-        return PlotTypeInspector.chart_type(first_plot)
+        return _PlotTypeInspector.chart_type(first_plot)
 
     @property
     def display_blanks_as(self) -> XL_DISPLAY_BLANKS_AS:
@@ -527,11 +527,11 @@ class _Plots(Sequence):
     def __getitem__(self, index: int | slice) -> _BasePlot | list[_BasePlot]:
         xCharts = self._plotArea.xCharts
         if isinstance(index, slice):
-            plots = [PlotFactory(xChart, self._chart) for xChart in xCharts]
+            plots = [_PlotFactory(xChart, self._chart) for xChart in xCharts]
             return plots[index]
         else:
             xChart = xCharts[index]
-            return PlotFactory(xChart, self._chart)
+            return _PlotFactory(xChart, self._chart)
 
     def __len__(self) -> int:
         return len(self._plotArea.xCharts)

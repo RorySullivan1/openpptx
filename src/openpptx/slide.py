@@ -6,6 +6,7 @@ import datetime as dt
 import os
 from typing import IO, TYPE_CHECKING, Iterator, cast
 
+from openpptx._util import lazyproperty
 from openpptx.dml.fill import FillFormat
 from openpptx.enum.shapes import PP_PLACEHOLDER
 from openpptx.exc import InvalidTypeError, InvalidXmlError, PackageError, SlideError
@@ -20,10 +21,9 @@ from openpptx.shapes.shapetree import (
     SlideShapes,
 )
 from openpptx.shared import ElementProxy, ParentedElementProxy, PartElementProxy
-from openpptx.text.search import TextFinder, TextReplacer
+from openpptx.text.search import _TextFinder, _TextReplacer
 from openpptx.theme import Theme
 from openpptx.transition import SlideTransition
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.animation import SlideAnimations
@@ -283,7 +283,7 @@ class Slide(_BaseSlide):
 
         `pattern` is interpreted as by `TextFrame.find_all()`. Does not change the slide.
         """
-        return TextFinder(pattern, regex=regex).find_in_slide(self)
+        return _TextFinder(pattern, regex=regex).find_in_slide(self)
 
     @property
     def has_notes_slide(self) -> bool:
@@ -339,7 +339,7 @@ class Slide(_BaseSlide):
         Covers the text `find_text()` searches, in the same order, and replaces as
         `TextFrame.replace()` does. `count` limits the replacements over the whole slide.
         """
-        return TextReplacer(old, new, count=count, regex=regex).replace_in_slide(self)
+        return _TextReplacer(old, new, count=count, regex=regex).replace_in_slide(self)
 
     @property
     def slide_id(self) -> int:

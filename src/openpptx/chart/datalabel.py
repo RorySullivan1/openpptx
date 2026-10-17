@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from openpptx._util import lazyproperty
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.exc import ChartError
 from openpptx.text.text import Font, TextFrame
-from openpptx.util import lazyproperty
 
 
 class DataLabels:

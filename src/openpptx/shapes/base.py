@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from openpptx._util import lazyproperty
 from openpptx.action import ActionSetting
 from openpptx.dml.effect import GlowFormat, ReflectionFormat, ShadowFormat, SoftEdgeFormat
 from openpptx.dml.threed import ThreeDFormat
 from openpptx.exc import ShapeError
 from openpptx.shared import ElementProxy
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.oxml.xmlchemy import BaseOxmlElement

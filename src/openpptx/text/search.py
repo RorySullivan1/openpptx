@@ -11,7 +11,7 @@ segment is searched in the paragraph's text, so `^`, `\\b` and a lookbehind at t
 segment see the text before it; the end of a segment acts as the end of the text.
 
 On a slide, the text searched is that of every shape with a text frame, group members and table
-cells included, and of the slide's notes slide when it has one (see `iter_slide_text_frames()`).
+cells included, and of the slide's notes slide when it has one (see `_iter_slide_text_frames()`).
 Layouts, masters, charts, SmartArt and comments are not searched.
 """
 
@@ -112,7 +112,7 @@ class TextChar(NamedTuple):
     """The run that holds the character; |None| for a line break or the text of a field."""
 
 
-def compile_pattern(pattern: Pattern, regex: bool) -> re.Pattern[str]:
+def _compile_pattern(pattern: Pattern, regex: bool) -> re.Pattern[str]:
     """Return `pattern` compiled, as the find and replace methods interpret it.
 
     A `str` is a literal unless `regex` is True; a compiled pattern implies `regex` and keeps its
@@ -172,11 +172,11 @@ def _iter_hits(p: CT_TextParagraph, compiled: re.Pattern[str]) -> Iterator[_Hit]
             )
 
 
-class TextFinder:
+class _TextFinder:
     """Finds the matches of one pattern, compiled once, in paragraphs, text frames or slides."""
 
     def __init__(self, pattern: Pattern, *, regex: bool = False):
-        self._compiled = compile_pattern(pattern, regex)
+        self._compiled = _compile_pattern(pattern, regex)
 
     def find_in(
         self, paragraphs: Iterable[_Paragraph], shape: BaseShape | None = None
@@ -199,15 +199,15 @@ class TextFinder:
         return matches
 
     def find_in_slide(self, slide: Slide) -> list[TextMatch]:
-        """Every match in the text of `slide`, as `iter_slide_text_frames()` walks it."""
+        """Every match in the text of `slide`, as `_iter_slide_text_frames()` walks it."""
         return [
             match
-            for shape, text_frame in iter_slide_text_frames(slide)
+            for shape, text_frame in _iter_slide_text_frames(slide)
             for match in self.find_in(text_frame.paragraphs, shape)
         ]
 
 
-class TextReplacer:
+class _TextReplacer:
     """Replaces `old` with `new` in paragraphs, with one `count` shared over every call.
 
     The text frame, slide and presentation `replace()` methods each use one replacer, so `count`
@@ -215,7 +215,7 @@ class TextReplacer:
     """
 
     def __init__(self, old: Pattern, new: str, *, count: int | None = None, regex: bool = False):
-        self._compiled = compile_pattern(old, regex)
+        self._compiled = _compile_pattern(old, regex)
         if not isinstance(new, str):
             raise InvalidTypeError(f"new must be a str, got {type(new).__name__}")
         if count is not None and (not isinstance(count, int) or isinstance(count, bool)):
@@ -257,9 +257,9 @@ class TextReplacer:
         return self.replaced - before
 
     def replace_in_slide(self, slide: Slide) -> int:
-        """Replace in the text of `slide`, as `iter_slide_text_frames()` walks it."""
+        """Replace in the text of `slide`, as `_iter_slide_text_frames()` walks it."""
         before = self.replaced
-        for _, text_frame in iter_slide_text_frames(slide):
+        for _, text_frame in _iter_slide_text_frames(slide):
             if self.done:
                 break
             self.replace_in(text_frame.paragraphs)
@@ -324,7 +324,7 @@ def _remove_run(r: CT_RegularTextRun) -> list[str]:
     return rIds
 
 
-def iter_paragraph_chars(paragraph: _Paragraph, paragraph_index: int) -> Iterator[TextChar]:
+def _iter_paragraph_chars(paragraph: _Paragraph, paragraph_index: int) -> Iterator[TextChar]:
     """Generate a |TextChar| for each character of `paragraph.text`."""
     offset = 0
     for elm in paragraph._p.content_children:  # pyright: ignore[reportPrivateUsage]
@@ -334,7 +334,7 @@ def iter_paragraph_chars(paragraph: _Paragraph, paragraph_index: int) -> Iterato
             offset += 1
 
 
-def iter_slide_text_frames(slide: Slide) -> Iterator[tuple[BaseShape, TextFrame]]:
+def _iter_slide_text_frames(slide: Slide) -> Iterator[tuple[BaseShape, TextFrame]]:
     """Generate `(shape, text_frame)` for each text frame on `slide`, then on its notes slide.
 
     Shapes go in shape-tree order, each group's members in place of the group, and each table's

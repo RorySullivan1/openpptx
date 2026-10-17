@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openpptx._util import lazyproperty
 from openpptx.chart.chart import Chart
 from openpptx.opc.constants import CONTENT_TYPE as CT
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from openpptx.opc.package import XmlPart
 from openpptx.parts.embeddedpackage import EmbeddedXlsxPart
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.chart.data import ChartData

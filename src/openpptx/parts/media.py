@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 
+from openpptx._util import lazyproperty
 from openpptx.opc.package import Part
-from openpptx.util import lazyproperty
 
 
 class MediaPart(Part):

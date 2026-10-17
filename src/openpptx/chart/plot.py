@@ -6,6 +6,7 @@ each other, such as a line plot layered over a bar plot.
 
 from __future__ import annotations
 
+from openpptx._util import lazyproperty
 from openpptx.chart.category import Categories
 from openpptx.chart.chartlines import DropLines, HiLowLines, SeriesLines, UpDownBars
 from openpptx.chart.datalabel import DataLabels
@@ -14,7 +15,6 @@ from openpptx.chart.series import SeriesCollection
 from openpptx.enum.chart import XL_BAR_DIRECTION, XL_CHART_TYPE as XL, XL_GROUPING
 from openpptx.oxml.ns import qn
 from openpptx.oxml.simpletypes import ST_BarDir, ST_Grouping
-from openpptx.util import lazyproperty
 
 
 class _BasePlot:
@@ -586,7 +586,7 @@ class XyPlot(_BasePlot):
     """
 
 
-def PlotFactory(xChart, chart):
+def _PlotFactory(xChart, chart):
     """
     Return an instance of the appropriate subclass of _BasePlot based on the
     tagname of *xChart*. *chart* is the |Chart| the plot belongs to.
@@ -616,7 +616,7 @@ def PlotFactory(xChart, chart):
     return PlotCls(xChart, chart)
 
 
-class PlotTypeInspector:
+class _PlotTypeInspector:
     """
     "One-shot" service object that knows how to identify the type of a plot
     as a member of the XL_CHART_TYPE enumeration.

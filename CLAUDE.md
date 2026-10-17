@@ -64,7 +64,7 @@ Most API objects subclass one of these. Keep them as value objects — no mutabl
 
 `openpptx/util.py` defines `Length` (int subclass storing EMUs) with subclasses `Emu`, `Inches`, `Cm`, `Mm`, `Pt`, `Centipoints`. All public APIs that accept measurements take `Length` — pass `Inches(1)`, not `914400`. PowerPoint stores font sizes in centipoints internally, which is why that subclass exists.
 
-`@lazyproperty` (in `openpptx/util.py`) is the standard cache decorator — used pervasively for derived collections (`slides`, `slide_layouts`, etc.). Prefer it over manual `_cache` attributes.
+`@lazyproperty` (in `openpptx/_util.py`, internal, so every layer can import it) is the standard cache decorator — used pervasively for derived collections (`slides`, `slide_layouts`, etc.). Prefer it over manual `_cache` attributes.
 
 ## Testing Conventions
 

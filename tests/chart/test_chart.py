@@ -628,7 +628,7 @@ class DescribeChart:
 
     @pytest.fixture
     def PlotTypeInspector_(self, request):
-        return class_mock(request, "openpptx.chart.chart.PlotTypeInspector")
+        return class_mock(request, "openpptx.chart.chart._PlotTypeInspector")
 
     @pytest.fixture
     def _Plots_(self, request, plots_):
@@ -828,7 +828,7 @@ class Describe_Plots:
 
     @pytest.fixture
     def PlotFactory_(self, request, plot_):
-        return function_mock(request, "openpptx.chart.chart.PlotFactory", return_value=plot_)
+        return function_mock(request, "openpptx.chart.chart._PlotFactory", return_value=plot_)
 
     @pytest.fixture
     def plot_(self, request):

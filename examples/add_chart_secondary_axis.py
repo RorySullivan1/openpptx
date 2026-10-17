@@ -34,7 +34,7 @@ def move_series_to_overlay_plot(chart, src_plot_idx, ser_idx, dst_plot_idx):
 
     After the move, the series is re-typed automatically: a `<c:ser>` moved
     into a `<c:lineChart>` reports as a `LineSeries` on `chart.series`,
-    because `PlotFactory` dispatches off the parent xChart tag.
+    because a series' class follows the xChart element that holds it.
     """
     plotArea = chart._chartSpace.chart.plotArea
     xCharts = list(plotArea.iter_xCharts())

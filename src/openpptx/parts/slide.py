@@ -6,6 +6,7 @@ from copy import deepcopy
 from io import BytesIO
 from typing import IO, TYPE_CHECKING, cast
 
+from openpptx._util import lazyproperty
 from openpptx.enum.shapes import PROG_ID
 from openpptx.opc.constants import CONTENT_TYPE as CT
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
@@ -18,7 +19,6 @@ from openpptx.parts.comments import CommentsPart, ModernCommentsPart
 from openpptx.parts.embeddedpackage import EmbeddedPackagePart
 from openpptx.parts.tags import TagsPart
 from openpptx.slide import HandoutMaster, NotesMaster, NotesSlide, Slide, SlideLayout, SlideMaster
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.chart.data import CategoryChartData, ChartData

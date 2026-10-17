@@ -7,8 +7,8 @@ import hashlib
 import os
 from typing import IO
 
+from openpptx._util import lazyproperty
 from openpptx.opc.constants import CONTENT_TYPE as CT
-from openpptx.util import lazyproperty
 
 
 class Video:

@@ -6,6 +6,8 @@ import enum
 import textwrap
 from typing import TYPE_CHECKING, Any, Type, TypeVar
 
+from openpptx.exc import InvalidValueError
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -54,7 +56,7 @@ class BaseXmlEnum(int, enum.Enum):
     def from_xml(cls, xml_value: str) -> Self:
         """Enumeration member corresponding to XML attribute value `xml_value`.
 
-        Raises `ValueError` if `xml_value` is the empty string ("") or is not an XML attribute
+        Raises |InvalidValueError| if `xml_value` is the empty string ("") or is not an XML attribute
         value registered on the enumeration. Note that enum members that do not correspond to one
         of the defined values for an XML attribute have `xml_value == ""`. These
         "return-value only" members cannot be automatically mapped from an XML attribute value and
@@ -70,26 +72,38 @@ class BaseXmlEnum(int, enum.Enum):
         member = _xml_value_map(cls).get(xml_value) if xml_value else None
 
         if member is None:
-            raise ValueError(f"{cls.__name__} has no XML mapping for {repr(xml_value)}")
+            raise InvalidValueError(f"{cls.__name__} has no XML mapping for {repr(xml_value)}")
 
         return member
 
     @classmethod
     def to_xml(cls: Type[_T], value: int | _T) -> str:
-        """XML value of this enum member, generally an XML attribute value."""
+        """XML value of this enum member, generally an XML attribute value.
+
+        Raises |InvalidValueError| if `value` is not a member's value, or names a member that has
+        no XML representation.
+        """
         # -- presence of multi-arg `__new__()` method fools type-checker, but getting a
         # -- member by its value using EnumCls(val) works as usual.
-        member = cls(value)
+        try:
+            member = cls(value)
+        except ValueError as e:
+            raise InvalidValueError(str(e)) from None
         xml_value = member.xml_value
         if not xml_value:
-            raise ValueError(f"{cls.__name__}.{member.name} has no XML representation")
+            raise InvalidValueError(f"{cls.__name__}.{member.name} has no XML representation")
         return xml_value
 
     @classmethod
     def validate(cls: Type[_T], value: _T):
-        """Raise |ValueError| if `value` is not an assignable value."""
-        if value not in cls:
-            raise ValueError(f"{value} not a member of {cls.__name__} enumeration")
+        """Raise |InvalidValueError| if `value` is not an assignable value."""
+        try:
+            is_member = value in cls
+        except TypeError:
+            # -- before Python 3.12 a containment check of a non-member raises --
+            is_member = False
+        if not is_member:
+            raise InvalidValueError(f"{value} not a member of {cls.__name__} enumeration")
 
 
 class DocsPageFormatter:

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from openpptx.types import ProvidesPart
 
 
-class Subshape:
+class _Subshape:
     """Provides access to the containing part for drawing elements that occur below a shape.
 
     Access to the part is required for example to add or drop a relationship. Provides
@@ -17,7 +17,7 @@ class Subshape:
     """
 
     def __init__(self, parent: ProvidesPart):
-        super(Subshape, self).__init__()
+        super(_Subshape, self).__init__()
         self._parent = parent
 
     @property

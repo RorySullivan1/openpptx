@@ -11,6 +11,7 @@ import contextlib
 import os
 from typing import IO, TYPE_CHECKING, DefaultDict, Iterable, Iterator, Mapping, Set, cast
 
+from openpptx._util import lazyproperty
 from openpptx.exc import InvalidPackageError, PackageError
 from openpptx.opc.constants import RELATIONSHIP_TARGET_MODE as RTM
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
@@ -19,7 +20,6 @@ from openpptx.opc.packuri import CONTENT_TYPES_URI, PACKAGE_URI, PackURI
 from openpptx.opc.serialized import PackageReader, PackageWriter, ZipArchive, ZipMember
 from openpptx.opc.shared import CaseInsensitiveDict
 from openpptx.oxml import parse_xml
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from typing_extensions import Self

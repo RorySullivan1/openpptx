@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from openpptx._util import lazyproperty
 from openpptx.enum.dml import MSO_BEVEL_PRESET
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 
 class ThreeDFormat:

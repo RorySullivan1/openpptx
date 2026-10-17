@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openpptx._util import lazyproperty
 from openpptx.dml.fill import FillFormat
 from openpptx.enum.dml import MSO_FILL, MSO_LINE_JOIN_STYLE
 from openpptx.exc import InvalidValueError
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from openpptx.dml.color import ColorFormat

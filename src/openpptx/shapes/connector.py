@@ -9,10 +9,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openpptx._util import lazyproperty
 from openpptx.dml.line import LineFormat
 from openpptx.enum.shapes import MSO_SHAPE_TYPE
 from openpptx.shapes.base import BaseShape
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from openpptx.oxml.shapes.shared import CT_LineProperties

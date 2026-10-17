@@ -11,6 +11,12 @@ ECMA-376). Install and import it as ``openpptx``::
 Runnable examples for each feature area live in the repository's ``examples/`` directory.
 
 .. toctree::
+   :maxdepth: 1
+   :caption: Using openpptx
+
+   stability
+
+.. toctree::
    :maxdepth: 2
    :caption: API reference
 

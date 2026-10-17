@@ -117,6 +117,14 @@ See the [`examples/`](https://github.com/RorySullivan1/openpptx/tree/main/exampl
 - **Not a runtime** — cannot play slideshows or execute VBA macros
 - **Not a print system** — cannot send presentations to a printer
 
+## Stability
+
+From 1.0.0, openpptx follows [Semantic Versioning](https://semver.org/). The public API is what the
+[API reference](https://rorysullivan1.github.io/openpptx/) documents; `openpptx.oxml`, `openpptx.opc`
+and `openpptx.parts` are internal. A deprecated name keeps working, with a `DeprecationWarning`,
+until the next major release. The details are on the
+[stability page](https://rorysullivan1.github.io/openpptx/stability.html).
+
 ## License
 
 MIT. See [LICENSE](https://github.com/RorySullivan1/openpptx/blob/main/LICENSE).

@@ -6,6 +6,7 @@ from numbers import Number
 from typing import TYPE_CHECKING, Iterable
 from xml.sax import saxutils
 
+from openpptx._util import lazyproperty
 from openpptx.dml.fill import FillFormat
 from openpptx.dml.line import LineFormat
 from openpptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_SHAPE_TYPE
@@ -13,7 +14,6 @@ from openpptx.exc import ShapeError
 from openpptx.shapes.base import BaseShape
 from openpptx.spec import autoshape_types
 from openpptx.text.text import TextFrame
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.oxml.shapes.autoshape import CT_GeomGuide, CT_PresetGeometry2D, CT_Shape

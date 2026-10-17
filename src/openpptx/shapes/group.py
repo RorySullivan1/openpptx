@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openpptx._util import lazyproperty
 from openpptx.enum.shapes import MSO_SHAPE_TYPE
 from openpptx.exc import ShapeError, UnsupportedEffectError
 from openpptx.shapes.base import BaseShape
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.action import ActionSetting

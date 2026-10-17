@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from openpptx._util import lazyproperty
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.exc import ChartError
 from openpptx.enum.chart import (
@@ -14,7 +15,6 @@ from openpptx.oxml.ns import qn
 from openpptx.oxml.simpletypes import ST_Orientation
 from openpptx.shared import ElementProxy
 from openpptx.text.text import Font, TextFrame
-from openpptx.util import lazyproperty
 
 
 class _BaseAxis:

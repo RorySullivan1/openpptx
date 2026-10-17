@@ -14,12 +14,12 @@ from openpptx.enum.shapes import PP_PLACEHOLDER
 from openpptx.exc import ShapeError
 from openpptx.oxml.shapes.shared import BaseShapeElement
 from openpptx.oxml.text import CT_TextBody
-from openpptx.shapes import Subshape
+from openpptx.shapes import _Subshape
 from openpptx.shapes.autoshape import Shape
 from openpptx.shapes.base import BaseShape, _PlaceholderFormat
 from openpptx.shapes.graphfrm import GraphicFrame
 from openpptx.shapes.picture import Picture
-from openpptx.shapes.shapetree import BaseShapeFactory, SlideShapes
+from openpptx.shapes.shapetree import _BaseShapeFactory, SlideShapes
 
 from ..oxml.unitdata.shape import (
     a_cNvPr,
@@ -616,7 +616,7 @@ class DescribeBaseShape:
     )
     def rotation_get_fixture(self, request):
         xSp_cxml, expected_value = request.param
-        shape = BaseShapeFactory(element(xSp_cxml), None)
+        shape = _BaseShapeFactory(element(xSp_cxml), None)
         return shape, expected_value
 
     @pytest.fixture(
@@ -633,7 +633,7 @@ class DescribeBaseShape:
     )
     def rotation_set_fixture(self, request):
         xSp_cxml, new_value, expected_xSp_cxml = request.param
-        shape = BaseShapeFactory(element(xSp_cxml), None)
+        shape = _BaseShapeFactory(element(xSp_cxml), None)
         expected_xml = xml(expected_xSp_cxml)
         return shape, new_value, expected_xml
 
@@ -857,7 +857,7 @@ class DescribeSubshape:
     @pytest.fixture
     def subshape_with_parent_(self, request):
         parent_ = loose_mock(request, name="parent_")
-        subshape = Subshape(parent_)
+        subshape = _Subshape(parent_)
         return subshape, parent_
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterator, cast
 
+from openpptx._util import lazyproperty
 from openpptx.dml.fill import FillFormat
 from openpptx.enum.dml import MSO_FILL
 from openpptx.enum.lang import MSO_LANGUAGE_ID
@@ -19,10 +20,10 @@ from openpptx.enum.text import (
 from openpptx.exc import InvalidValueError
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from openpptx.oxml.simpletypes import ST_TextWrappingType
-from openpptx.shapes import Subshape
+from openpptx.shapes import _Subshape
 from openpptx.text.fonts import FontFiles
 from openpptx.text.layout import TextFitter
-from openpptx.util import Centipoints, Emu, Length, Pt, lazyproperty
+from openpptx.util import Centipoints, Emu, Length, Pt
 
 if TYPE_CHECKING:
     from openpptx.dml.color import ColorFormat
@@ -44,7 +45,7 @@ if TYPE_CHECKING:
     from openpptx.types import ProvidesExtents, ProvidesPart
 
 
-class TextFrame(Subshape):
+class TextFrame(_Subshape):
     """The part of a shape that contains its text.
 
     Not all shapes have a text frame. Corresponds to the `p:txBody` element that can
@@ -123,9 +124,9 @@ class TextFrame(Subshape):
         lookahead. Zero-width regex matches are skipped, and an empty literal pattern raises
         |InvalidValueError|. Does not change the text frame.
         """
-        from openpptx.text.search import TextFinder
+        from openpptx.text.search import _TextFinder
 
-        return TextFinder(pattern, regex=regex).find_in(self.paragraphs)
+        return _TextFinder(pattern, regex=regex).find_in(self.paragraphs)
 
     def iter_chars(self) -> Iterator[TextChar]:
         """Generate a |TextChar| for each character of each paragraph's text.
@@ -133,10 +134,10 @@ class TextFrame(Subshape):
         A line break reads as `"\\v"`. The `run` of a line break, and of the text of a field, is
         |None|. Paragraph boundaries generate nothing.
         """
-        from openpptx.text.search import iter_paragraph_chars
+        from openpptx.text.search import _iter_paragraph_chars
 
         for idx, paragraph in enumerate(self.paragraphs):
-            yield from iter_paragraph_chars(paragraph, idx)
+            yield from _iter_paragraph_chars(paragraph, idx)
 
     def iter_runs(self) -> Iterator[_Run]:
         """Generate each |_Run| in this text frame, in document order. A field is not a run."""
@@ -316,9 +317,9 @@ class TextFrame(Subshape):
         replaces every match, a negative count raises |InvalidValueError| and one that is not an
         `int` raises |InvalidTypeError|.
         """
-        from openpptx.text.search import TextReplacer
+        from openpptx.text.search import _TextReplacer
 
-        return TextReplacer(old, new, count=count, regex=regex).replace_in(self.paragraphs)
+        return _TextReplacer(old, new, count=count, regex=regex).replace_in(self.paragraphs)
 
     @property
     def text_orientation(self) -> MSO_TEXT_VERTICAL_TYPE | None:
@@ -709,7 +710,7 @@ class Font:
         self._element.u = value
 
 
-class _Hyperlink(Subshape):
+class _Hyperlink(_Subshape):
     """Text run hyperlink object.
 
     Corresponds to `a:hlinkClick` child element of the run's properties element (`a:rPr`).
@@ -751,7 +752,7 @@ class _Hyperlink(Subshape):
         self._rPr._remove_hlinkClick()  # pyright: ignore[reportPrivateUsage]
 
 
-class _Paragraph(Subshape):
+class _Paragraph(_Subshape):
     """Paragraph object. Not intended to be constructed directly."""
 
     def __init__(self, p: CT_TextParagraph, parent: ProvidesPart):
@@ -844,9 +845,9 @@ class _Paragraph(Subshape):
 
         Interpreted as by `TextFrame.find_all()`; `paragraph_index` is 0 for every match.
         """
-        from openpptx.text.search import TextFinder
+        from openpptx.text.search import _TextFinder
 
-        return TextFinder(pattern, regex=regex).find_in((self,))
+        return _TextFinder(pattern, regex=regex).find_in((self,))
 
     @property
     def font(self) -> Font:
@@ -864,9 +865,9 @@ class _Paragraph(Subshape):
         A line break reads as `"\\v"`. The `run` of a line break, and of the text of a field, is
         |None|.
         """
-        from openpptx.text.search import iter_paragraph_chars
+        from openpptx.text.search import _iter_paragraph_chars
 
-        return iter_paragraph_chars(self, 0)
+        return _iter_paragraph_chars(self, 0)
 
     @property
     def indent(self) -> Length | None:
@@ -1014,9 +1015,9 @@ class _Paragraph(Subshape):
 
         Behaves as `TextFrame.replace()` does, within this paragraph.
         """
-        from openpptx.text.search import TextReplacer
+        from openpptx.text.search import _TextReplacer
 
-        return TextReplacer(old, new, count=count, regex=regex).replace_in((self,))
+        return _TextReplacer(old, new, count=count, regex=regex).replace_in((self,))
 
     @property
     def space_after(self) -> Length | None:
@@ -1098,7 +1099,7 @@ class _Paragraph(Subshape):
         return self._p.get_or_add_pPr()
 
 
-class _Run(Subshape):
+class _Run(_Subshape):
     """Text run object. Corresponds to `a:r` child element in a paragraph."""
 
     def __init__(self, r: CT_RegularTextRun, parent: ProvidesPart):

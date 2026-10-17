@@ -5,13 +5,13 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import TYPE_CHECKING, cast
 
+from openpptx._util import lazyproperty
 from openpptx.dml.color import RGBColor
 from openpptx.dml.line import LineFormat
 from openpptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE, PP_MEDIA_TYPE
 from openpptx.exc import ShapeError
 from openpptx.shapes.base import BaseShape
 from openpptx.shared import ParentedElementProxy
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.oxml.shapes.picture import CT_Picture

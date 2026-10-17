@@ -6,10 +6,10 @@ line and fill for chart elements.
 
 from __future__ import annotations
 
+from openpptx._util import lazyproperty
 from openpptx.dml.fill import FillFormat
 from openpptx.dml.line import LineFormat
 from openpptx.shared import ElementProxy
-from openpptx.util import lazyproperty
 
 
 class ChartFormat(ElementProxy):

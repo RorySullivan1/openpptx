@@ -19,8 +19,8 @@ from openpptx.chart.plot import (
     LinePlot,
     OfPiePlot,
     PiePlot,
-    PlotFactory,
-    PlotTypeInspector,
+    _PlotFactory,
+    _PlotTypeInspector,
     RadarPlot,
     StockPlot,
     XyPlot,
@@ -160,7 +160,7 @@ class Describe_BasePlot:
                 "0},c:showSerName{val=0},c:showPercent{val=0},c:showBubbleSi"
                 "ze{val=0},c:showLeaderLines{val=1})"
             )
-        plot = PlotFactory(element(xChart_cxml), None)
+        plot = _PlotFactory(element(xChart_cxml), None)
         expected_xml = xml(expected_cxml)
         return plot, new_value, expected_xml
 
@@ -371,7 +371,7 @@ class DescribeBubblePlot:
 class DescribePlotFactory:
     def it_contructs_a_plot_object_from_a_plot_element(self, call_fixture):
         xChart, chart_, PlotClass_, plot_ = call_fixture
-        plot = PlotFactory(xChart, chart_)
+        plot = _PlotFactory(xChart, chart_)
         PlotClass_.assert_called_once_with(xChart, chart_)
         assert plot is plot_
 
@@ -408,7 +408,7 @@ class DescribePlotFactory:
 class DescribePlotTypeInspector:
     def it_can_determine_the_chart_type_of_a_plot(self, chart_type_fixture):
         plot, expected_chart_type = chart_type_fixture
-        chart_type = PlotTypeInspector.chart_type(plot)
+        chart_type = _PlotTypeInspector.chart_type(plot)
         assert chart_type is expected_chart_type
 
     # fixtures -------------------------------------------------------
@@ -521,7 +521,7 @@ class DescribePlotTypeInspector:
     )
     def chart_type_fixture(self, request):
         xChart_cxml, expected_chart_type = request.param
-        plot = PlotFactory(element(xChart_cxml), None)
+        plot = _PlotFactory(element(xChart_cxml), None)
         return plot, expected_chart_type
 
 

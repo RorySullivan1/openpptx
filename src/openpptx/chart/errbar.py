@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openpptx._util import lazyproperty
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.enum.chart import XL_ERROR_BAR_DIRECTION, XL_ERROR_BAR_INCLUDE, XL_ERROR_BAR_TYPE
 from openpptx.oxml.xmlchemy import OxmlElement
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.oxml.chart.errbar import CT_ErrBars

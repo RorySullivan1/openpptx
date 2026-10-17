@@ -492,7 +492,7 @@ implementation, then register them in `__init__.py`.
 - [x] `CT_Surface3DChart` (`c:surface3DChart`) — same structure as surface
 - [x] `CT_OfPieChart` (`c:ofPieChart`) — `ofPieType`, `varyColors`, `ser`, `gapWidth`, `splitType`, `splitPos`, `custSplit`, `secondPieSize`, `serLines` children
 - [x] Register all new classes in `oxml/__init__.py`
-- [x] Wire into `PlotFactory` / `PlotTypeInspector` so existing API recognizes them
+- [x] Wire into `_PlotFactory` / `_PlotTypeInspector` so existing API recognizes them
 - [x] API plot classes: `Bar3DPlot`, `Line3DPlot`, `Pie3DPlot`, `StockPlot`, `SurfacePlot`, `Surface3DPlot`, `OfPiePlot`
 
 ### 18.2 Trendlines — OXML + API (DONE)
@@ -553,7 +553,7 @@ OXML already supports multiple axes via `ZeroOrMore`. API exposure added.
 - [x] `Chart.view_3d` API — `View3D` with rot_x, rot_y, right_angle_axes, perspective, depth_percent, height_percent
 - [x] `Chart.floor`, `Chart.back_wall`, `Chart.side_wall` — `ChartSurface` with format and thickness
 - [x] **Authoring a 3D chart (#115).** `add_chart` writes all 13 `XL_CHART_TYPE.THREE_D_*` types: `_Bar3DChartXmlWriter` (7 column/bar types), `_Line3DChartXmlWriter`, `_Pie3DChartXmlWriter` (plain and exploded) and `_Area3DChartXmlWriter` (3 types), on a shared `_Base3DChartXmlWriter` that emits PowerPoint's default `c:view3D` camera plus `c:floor`/`c:sideWall`/`c:backWall`. The "true 3D" types (`THREE_D_COLUMN`, `THREE_D_AREA`, `THREE_D_LINE`) get a series (depth) axis — the schema requires it on `c:line3DChart` — and a perspective camera; the clustered/stacked types keep right-angle axes. Output validates against the ISO 29500 chart schema for all 13 types, string and date categories
-- [x] `PlotTypeInspector` maps a standard-grouping `c:bar3DChart` to `THREE_D_COLUMN` (it raised `KeyError` before)
+- [x] `_PlotTypeInspector` maps a standard-grouping `c:bar3DChart` to `THREE_D_COLUMN` (it raised `KeyError` before)
 - [x] Read-path coverage from a PowerPoint-layout 3D column chart (`tests/unitutil/chart3d.py`: `c:lang`, `mc:AlternateContent` style, wall `spPr` with `a:sp3d`, third `c:axId val="0"`, series `c:extLst`, `c:externalData`) — read, edited and re-saved with that markup intact; `examples/chart_3d_view.py` demonstrates the camera and walls
 - [ ] Human check (#115): a new 3D chart of each family opens in PowerPoint without repair, and `view_3d`/floor/wall settings visibly change the plot. The read fixture is hand-built to PowerPoint's layout; a genuinely PowerPoint-saved 3D chart deck would still strengthen it
 - [ ] Not exposed: the series (depth) axis of a true 3D chart has no API proxy (`c:serAx` is written and preserved, but there is no `Chart.series_axis`)

@@ -41,6 +41,11 @@ Shapes
 
 .. automodule:: openpptx.shapes.graphfrm
 
+``openpptx.smartart``
+---------------------
+
+.. automodule:: openpptx.smartart
+
 ``openpptx.shapes.altcontent``
 ------------------------------
 

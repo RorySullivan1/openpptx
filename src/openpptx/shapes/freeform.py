@@ -5,7 +5,8 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING, Iterable, Iterator, Sequence
 
-from openpptx.util import Emu, lazyproperty
+from openpptx._util import lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -23,11 +24,11 @@ if TYPE_CHECKING:
     from openpptx.shapes.shapetree import _BaseGroupShapes  # pyright: ignore[reportPrivateUsage]
     from openpptx.util import Length
 
-CT_DrawingOperation: TypeAlias = "CT_Path2DArcTo | CT_Path2DClose | CT_Path2DCubicBezierTo | CT_Path2DLineTo | CT_Path2DMoveTo | CT_Path2DQuadBezierTo"  # noqa: E501
-DrawingOperation: TypeAlias = "_Arc | _Close | _CubicBezier | _LineSegment | _MoveTo | _QuadraticBezier"
+_CT_DrawingOperation: TypeAlias = "CT_Path2DArcTo | CT_Path2DClose | CT_Path2DCubicBezierTo | CT_Path2DLineTo | CT_Path2DMoveTo | CT_Path2DQuadBezierTo"  # noqa: E501
+_DrawingOperation: TypeAlias = "_Arc | _Close | _CubicBezier | _LineSegment | _MoveTo | _QuadraticBezier"
 
 
-class FreeformBuilder(Sequence[DrawingOperation]):
+class FreeformBuilder(Sequence[_DrawingOperation]):
     """Allows a freeform shape to be specified and created.
 
     The initial pen position is provided on construction. From there, drawing proceeds using
@@ -57,10 +58,10 @@ class FreeformBuilder(Sequence[DrawingOperation]):
 
     def __getitem__(  # pyright: ignore[reportIncompatibleMethodOverride]
         self, idx: int
-    ) -> DrawingOperation:
+    ) -> _DrawingOperation:
         return self._drawing_operations.__getitem__(idx)
 
-    def __iter__(self) -> Iterator[DrawingOperation]:
+    def __iter__(self) -> Iterator[_DrawingOperation]:
         return self._drawing_operations.__iter__()
 
     def __len__(self):
@@ -241,7 +242,7 @@ class FreeformBuilder(Sequence[DrawingOperation]):
         return self._start_x, self._start_y
 
     @lazyproperty
-    def _drawing_operations(self) -> list[DrawingOperation]:
+    def _drawing_operations(self) -> list[_DrawingOperation]:
         """Return the sequence of drawing operation objects for freeform."""
         return []
 
@@ -334,7 +335,7 @@ class _BaseDrawingOperation:
         self._x = x
         self._y = y
 
-    def apply_operation_to(self, path: CT_Path2D) -> CT_DrawingOperation:
+    def apply_operation_to(self, path: CT_Path2D) -> _CT_DrawingOperation:
         """Add the XML element(s) implementing this operation to `path`.
 
         Must be implemented by each subclass.

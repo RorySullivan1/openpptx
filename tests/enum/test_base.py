@@ -12,6 +12,7 @@ import openpptx.enum
 from openpptx.enum.action import PP_ACTION, PP_ACTION_TYPE
 from openpptx.enum.base import BaseXmlEnum
 from openpptx.enum.dml import MSO_LINE_DASH_STYLE
+from openpptx.exc import InvalidValueError
 
 
 def _xml_enums() -> list[type[BaseXmlEnum]]:
@@ -68,11 +69,11 @@ class DescribeBaseXmlEnum:
         assert MSO_LINE_DASH_STYLE.from_xml("dashDot") == MSO_LINE_DASH_STYLE.DASH_DOT
 
     def but_it_raises_on_an_attribute_value_that_is_not_regitstered(self):
-        with pytest.raises(ValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for 'wavy'"):
+        with pytest.raises(InvalidValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for 'wavy'"):
             MSO_LINE_DASH_STYLE.from_xml("wavy")
 
     def and_it_never_maps_the_empty_string_to_a_member(self):
-        with pytest.raises(ValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for ''"):
+        with pytest.raises(InvalidValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for ''"):
             MSO_LINE_DASH_STYLE.from_xml("")
 
     @pytest.mark.parametrize("enum_cls", _xml_enums(), ids=lambda cls: cls.__name__)
@@ -90,9 +91,17 @@ class DescribeBaseXmlEnum:
         assert MSO_LINE_DASH_STYLE.to_xml(3) == "sysDot"
 
     def but_it_raises_when_no_member_has_the_provided_int_value(self):
-        with pytest.raises(ValueError, match="42 is not a valid MSO_LINE_DASH_STYLE"):
+        with pytest.raises(InvalidValueError, match="42 is not a valid MSO_LINE_DASH_STYLE"):
             MSO_LINE_DASH_STYLE.to_xml(42)
 
     def and_it_raises_when_the_member_has_no_XML_value(self):
-        with pytest.raises(ValueError, match="MSO_LINE_DASH_STYLE.DASH_STYLE_MIXED has no XML r"):
+        with pytest.raises(InvalidValueError, match="MSO_LINE_DASH_STYLE.DASH_STYLE_MIXED has no XML r"):
             MSO_LINE_DASH_STYLE.to_xml(-2)
+
+    def it_accepts_a_member_as_an_assignable_value(self):
+        MSO_LINE_DASH_STYLE.validate(MSO_LINE_DASH_STYLE.DASH)
+
+    @pytest.mark.parametrize("value", [42, "dash", None])
+    def but_it_rejects_a_value_that_is_not_a_member(self, value):
+        with pytest.raises(InvalidValueError, match="not a member of MSO_LINE_DASH_STYLE"):
+            MSO_LINE_DASH_STYLE.validate(value)

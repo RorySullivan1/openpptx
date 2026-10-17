@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from openpptx._util import lazyproperty
 from openpptx.chart.datalabel import DataLabels
 from openpptx.chart.errbar import ErrorBarsCollection
 from openpptx.chart.marker import Marker
@@ -11,7 +12,6 @@ from openpptx.chart.point import BubblePoints, CategoryPoints, XyPoints
 from openpptx.chart.trendline import TrendlineCollection
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.oxml.ns import qn
-from openpptx.util import lazyproperty
 
 
 class _BaseSeries:

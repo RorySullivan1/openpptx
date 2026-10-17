@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterator
 
+from openpptx._util import lazyproperty
 from openpptx.dml.fill import FillFormat
 from openpptx.dml.line import LineFormat
 from openpptx.exc import TableError
 from openpptx.oxml.table import TcRange
-from openpptx.shapes import Subshape
+from openpptx.shapes import _Subshape
 from openpptx.text.text import TextFrame
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from openpptx.enum.text import MSO_TEXT_VERTICAL_TYPE, MSO_VERTICAL_ANCHOR
@@ -185,7 +186,7 @@ class Table:
         self._tbl.bandCol = value
 
 
-class _Cell(Subshape):
+class _Cell(_Subshape):
     """Table cell"""
 
     def __init__(self, tc: CT_TableCell, parent: ProvidesPart):
@@ -445,7 +446,7 @@ class _Cell(Subshape):
             raise TableError(tmpl % margin_value)
 
 
-class _Column(Subshape):
+class _Column(_Subshape):
     """Table column"""
 
     def __init__(self, gridCol: CT_TableCol, parent: _ColumnCollection):
@@ -464,7 +465,7 @@ class _Column(Subshape):
         self._parent.notify_width_changed()
 
 
-class _Row(Subshape):
+class _Row(_Subshape):
     """Table row"""
 
     def __init__(self, tr: CT_TableRow, parent: _RowCollection):
@@ -491,7 +492,7 @@ class _Row(Subshape):
         self._parent.notify_height_changed()
 
 
-class _CellCollection(Subshape):
+class _CellCollection(_Subshape):
     """Horizontal sequence of row cells"""
 
     def __init__(self, tr: CT_TableRow, parent: _Row):
@@ -515,7 +516,7 @@ class _CellCollection(Subshape):
         return len(self._tr.tc_lst)
 
 
-class _ColumnCollection(Subshape):
+class _ColumnCollection(_Subshape):
     """Sequence of table columns."""
 
     def __init__(self, tbl: CT_Table, parent: Table):
@@ -581,7 +582,7 @@ class _ColumnCollection(Subshape):
         self._parent.notify_width_changed()
 
 
-class _RowCollection(Subshape):
+class _RowCollection(_Subshape):
     """Sequence of table rows"""
 
     def __init__(self, tbl: CT_Table, parent: Table):

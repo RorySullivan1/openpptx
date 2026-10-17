@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from openpptx._util import lazyproperty
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.enum.chart import XL_TRENDLINE_TYPE
 from openpptx.oxml.xmlchemy import OxmlElement
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.oxml.chart.series import CT_SeriesComposite

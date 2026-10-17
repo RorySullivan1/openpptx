@@ -5,13 +5,13 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import IO, TYPE_CHECKING, Iterable, cast
 
+from openpptx._util import lazyproperty
 from openpptx.exc import SlideError
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from openpptx.opc.package import Part, XmlPart
 from openpptx.opc.packuri import PackURI
 from openpptx.parts.slide import NotesMasterPart, SlideLayoutPart, SlideMasterPart, SlidePart
 from openpptx.presentation import Presentation
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.oxml.xmlchemy import BaseOxmlElement

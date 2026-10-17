@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from openpptx._util import lazyproperty
 from openpptx.enum.action import PP_ACTION
 from openpptx.exc import SlideError
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
-from openpptx.shapes import Subshape
-from openpptx.util import lazyproperty
+from openpptx.shapes import _Subshape
 
 if TYPE_CHECKING:
     from openpptx.oxml.action import CT_Hyperlink
@@ -19,10 +19,10 @@ if TYPE_CHECKING:
     from openpptx.slide import Slide, Slides
 
 
-class ActionSetting(Subshape):
+class ActionSetting(_Subshape):
     """Properties specifying how a shape or run reacts to mouse actions."""
 
-    # -- The Subshape base class provides access to the Slide Part, which is needed to access
+    # -- The _Subshape base class provides access to the Slide Part, which is needed to access
     # -- relationships, which is where hyperlinks live.
 
     def __init__(
@@ -191,7 +191,7 @@ class ActionSetting(Subshape):
         return self.part.package.presentation_part.presentation.slides
 
 
-class Hyperlink(Subshape):
+class Hyperlink(_Subshape):
     """Represents a hyperlink action on a shape or text run."""
 
     def __init__(

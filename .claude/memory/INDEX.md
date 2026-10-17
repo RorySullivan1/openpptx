@@ -3,8 +3,8 @@
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
   repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`.** Step 1 (rename, LICENSE, metadata) DONE 2026-10-16;
-  next = step 2, API audit + stability page + public-name snapshot test. Owner actions are listed in the card.
+- 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`.** Steps 1 (rename, LICENSE, metadata) and 2 (API
+  audit, stability page, snapshot test) DONE 2026-10-16; next = step 3, docs. Owner actions are listed in the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - Sessions can't push tags (and push only to their assigned branch); owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
@@ -16,12 +16,7 @@
 - [2026-09-24..10-09] 19 earlier decisions (claudeBrain adoption, text styles, arcs, element-class keying, SmartArt,
   chartex, AlternateContent, hot-path caches, roadmap renumber, CRLF/LF, POI corpus, test names, perf gate, Sphinx,
   v0.4.0 + v0.5.0 owner decisions) — sessions/ARCHIVE-2026.md
-- [2026-10-13] "Opens without repair" is CHECKABLE on Windows: open via COM with `DisplayAlerts = ppAlertsNone` and
-  PowerPoint turns the repair prompt into `0x80070570`. Controls that make it fail: truncated slide XML, and a part deleted
-  while its relationship stays. `Presentation.Saved` is NOT a repair signal (True either way) — sessions/2026-10-13-2217-powerpoint-verification-pr119-125.md
-- [2026-10-13] A passing suite does NOT mean PowerPoint accepts the output: 3 merged features write decks it refuses
-  (#126 glow w/o colour child, #127 orphaned commentAuthors part, #128 chartex w/o chartStyle+chartColorStyle). Each
-  shipped behind an "opens in PowerPoint" check nobody ran — same log
+- [2026-10-13] 2 decisions (repair-check via COM `ppAlertsNone` -> `0x80070570`; a passing suite != PowerPoint accepts) — sessions/ARCHIVE-2026.md
 - [2026-10-13] Merge order: **merge #125 BEFORE fixing #126–#128**. The bugs live in already-merged features, so holding
   #125 contained nothing; overlap with the fixes is two TEST files only (test_chartexwriter, test_comments) — zero `src/`.
   Hold the **tag**, not the merge: merging publishes nothing (owner tags by hand) — sessions/2026-10-13-2228-pr125-merge-order-ci-unblocked.md
@@ -49,6 +44,8 @@
 - [2026-10-16] Owner: import renamed too, `pptx` → `openpptx` (no users yet). Supersedes "import stays pptx". With no
   users, nothing renamed before 1.0.0 gets a shim (the `PyPptxError` alias was dropped); the deprecation policy
   starts at 1.0.0 — same log
+- [2026-10-16] v1.0.0 step 2: the public modules ARE the `docs/api/*.rst` targets (tests/test_public_api.py parses them);
+  internal-layer classes users get (`CorePropertiesPart` etc.) use explicit `:members:`. Regen: `python -m tests.test_public_api`
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
@@ -75,5 +72,4 @@
   and examples; #114 tags; #115 3D charts; v0.4.0 hardening; v0.5.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-13..10-15 | 9 sessions (PowerPoint checks #119–#125, v0.5.0/v0.5.1 ship, #126–#132, v0.6.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-16 | 4 entries (v0.7.0 built + merged #135, v0.7.1 built + merged #136) | sessions/ARCHIVE-2026.md
-- 2026-10-16 1305 | v1.0.0 card filled in: `openpptx` dist, documented-surface contract, Pages, LICENSE | sessions/2026-10-16-1305-v100-card-expanded.md
-- 2026-10-16 | v1.0.0 step 1 done: LICENSE (both notices), pyproject metadata, setuptools>=77; build+twine OK | v1.0.0 card
+- 2026-10-16 | v1.0.0: card filled in (session 1305 log); steps 1 + 2 done, details in the card | v1.0.0 card

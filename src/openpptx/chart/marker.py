@@ -5,9 +5,9 @@ Only the line-type charts Line, XY, and Radar have markers.
 
 from __future__ import annotations
 
+from openpptx._util import lazyproperty
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.shared import ElementProxy
-from openpptx.util import lazyproperty
 
 
 class Marker(ElementProxy):

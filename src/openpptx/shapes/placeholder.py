@@ -242,7 +242,7 @@ class BasePlaceholder(Shape):
 
 
 # -- the master placeholder type each layout placeholder type inherits its properties from --
-LAYOUT_PLACEHOLDER_BASE_TYPES = {
+_LAYOUT_PLACEHOLDER_BASE_TYPES = {
     PP_PLACEHOLDER.BODY: PP_PLACEHOLDER.BODY,
     PP_PLACEHOLDER.CHART: PP_PLACEHOLDER.BODY,
     PP_PLACEHOLDER.BITMAP: PP_PLACEHOLDER.BODY,
@@ -275,7 +275,7 @@ class LayoutPlaceholder(_InheritsDimensions, Shape):
         """
         Return the master placeholder this layout placeholder inherits from.
         """
-        base_ph_type = LAYOUT_PLACEHOLDER_BASE_TYPES[self._element.ph_type]
+        base_ph_type = _LAYOUT_PLACEHOLDER_BASE_TYPES[self._element.ph_type]
         slide_master = self.part.slide_master
         return slide_master.placeholders.get(base_ph_type, None)
 

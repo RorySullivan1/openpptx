@@ -9,10 +9,11 @@ from typing import IO, TYPE_CHECKING, Any, cast
 
 from PIL import Image as PIL_Image
 
+from openpptx._util import lazyproperty
 from openpptx.exc import PackageError
 from openpptx.opc.package import Part
 from openpptx.opc.spec import image_content_types
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from openpptx.opc.packuri import PackURI

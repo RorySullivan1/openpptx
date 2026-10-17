@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from openpptx._util import lazyproperty
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.enum.chart import XL_LEGEND_POSITION
 from openpptx.text.text import Font
-from openpptx.util import lazyproperty
 
 
 class Legend:

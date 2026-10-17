@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Callable, Iterator, cast
 
+from openpptx._util import lazyproperty
 from openpptx.enum.text import MSO_TEXT_VERTICAL_TYPE, MSO_VERTICAL_ANCHOR
 from openpptx.exc import InvalidValueError
 from openpptx.oxml import parse_xml
@@ -22,7 +23,7 @@ from openpptx.oxml.xmlchemy import (
     ZeroOrOne,
     ZeroOrOneChoice,
 )
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from openpptx.oxml.shapes.shared import CT_LineProperties

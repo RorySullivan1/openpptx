@@ -35,7 +35,7 @@ from openpptx.shapes.placeholder import (
 )
 from openpptx.shapes.shapetree import (
     BasePlaceholders,
-    BaseShapeFactory,
+    _BaseShapeFactory,
     GroupShapes,
     LayoutPlaceholders,
     LayoutShapes,
@@ -44,7 +44,7 @@ from openpptx.shapes.shapetree import (
     NotesSlidePlaceholders,
     NotesSlideShapes,
     SlidePlaceholders,
-    SlideShapeFactory,
+    _SlideShapeFactory,
     SlideShapes,
     _BaseGroupShapes,
     _BaseShapes,
@@ -78,7 +78,7 @@ from ..unitutil.mock import (
 class DescribeBaseShapeFactory:
     def it_constructs_the_right_shape_for_an_element(self, factory_fixture):
         shape_elm, parent_, ShapeClass_, shape_ = factory_fixture
-        shape = BaseShapeFactory(shape_elm, parent_)
+        shape = _BaseShapeFactory(shape_elm, parent_)
         ShapeClass_.assert_called_once_with(shape_elm, parent_)
         assert shape is shape_
 
@@ -423,7 +423,7 @@ class Describe_BaseShapes:
     def BaseShapeFactory_(self, request, shape_):
         return function_mock(
             request,
-            "openpptx.shapes.shapetree.BaseShapeFactory",
+            "openpptx.shapes.shapetree._BaseShapeFactory",
             return_value=shape_,
             autospec=True,
         )
@@ -1281,7 +1281,7 @@ class DescribeSlidePlaceholders:
     def SlideShapeFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "openpptx.shapes.shapetree.SlideShapeFactory",
+            "openpptx.shapes.shapetree._SlideShapeFactory",
             return_value=placeholder_,
         )
 
@@ -1383,7 +1383,7 @@ class Describe_SlidePlaceholderFactory:
 class DescribeSlideShapeFactory:
     def it_constructs_the_right_type_of_shape(self, factory_fixture):
         element, parent_, Constructor_, shape_ = factory_fixture
-        shape = SlideShapeFactory(element, parent_)
+        shape = _SlideShapeFactory(element, parent_)
         Constructor_.assert_called_once_with(element, parent_)
         assert shape is shape_
 
@@ -1418,7 +1418,7 @@ class DescribeSlideShapeFactory:
     @pytest.fixture
     def BaseShapeFactory_(self, request, base_shape_):
         return function_mock(
-            request, "openpptx.shapes.shapetree.BaseShapeFactory", return_value=base_shape_
+            request, "openpptx.shapes.shapetree._BaseShapeFactory", return_value=base_shape_
         )
 
     @pytest.fixture
@@ -1721,7 +1721,7 @@ class DescribeSlideShapes:
     def SlideShapeFactory_(self, request, shape_):
         return function_mock(
             request,
-            "openpptx.shapes.shapetree.SlideShapeFactory",
+            "openpptx.shapes.shapetree._SlideShapeFactory",
             return_value=shape_,
             autospec=True,
         )
@@ -1795,7 +1795,7 @@ class Describe_LayoutShapeFactory:
     @pytest.fixture
     def BaseShapeFactory_(self, request, base_shape_):
         return function_mock(
-            request, "openpptx.shapes.shapetree.BaseShapeFactory", return_value=base_shape_
+            request, "openpptx.shapes.shapetree._BaseShapeFactory", return_value=base_shape_
         )
 
     @pytest.fixture
@@ -1931,7 +1931,7 @@ class Describe_MasterShapeFactory:
     @pytest.fixture
     def BaseShapeFactory_(self, request, base_shape_):
         return function_mock(
-            request, "openpptx.shapes.shapetree.BaseShapeFactory", return_value=base_shape_
+            request, "openpptx.shapes.shapetree._BaseShapeFactory", return_value=base_shape_
         )
 
     @pytest.fixture
@@ -2927,7 +2927,7 @@ class Describe_NotesSlideShapeFactory:
 
     @pytest.fixture(
         params=[
-            ("p:sp", "BaseShapeFactory"),
+            ("p:sp", "_BaseShapeFactory"),
             ("p:sp/p:nvSpPr/p:nvPr/p:ph", "NotesSlidePlaceholder"),
         ]
     )

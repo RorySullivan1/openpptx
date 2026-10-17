@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import IO, TYPE_CHECKING, cast
 
+from openpptx._util import lazyproperty
 from openpptx.dml.color import ColorFormat
 from openpptx.enum.dml import MSO_FILL, MSO_GRADIENT_TYPE, MSO_RECT_ALIGNMENT
 from openpptx.exc import ShapeError
@@ -19,7 +20,7 @@ from openpptx.oxml.dml.fill import (
 from openpptx.oxml.simpletypes import ST_TileFlipMode
 from openpptx.oxml.xmlchemy import BaseOxmlElement
 from openpptx.shared import ElementProxy
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from openpptx.enum.dml import MSO_FILL_TYPE, MSO_PATTERN_TYPE

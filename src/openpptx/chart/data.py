@@ -6,6 +6,7 @@ import datetime
 from collections.abc import Sequence
 from numbers import Number
 
+from openpptx._util import lazyproperty
 from openpptx.chart.xlsx import (
     BubbleWorkbookWriter,
     CategoryWorkbookWriter,
@@ -13,7 +14,6 @@ from openpptx.chart.xlsx import (
 )
 from openpptx.chart.xmlwriter import ChartXmlWriter
 from openpptx.exc import ChartError
-from openpptx.util import lazyproperty
 
 
 class _BaseChartData(Sequence):

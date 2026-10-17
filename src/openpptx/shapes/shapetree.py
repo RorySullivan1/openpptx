@@ -7,6 +7,7 @@ import os
 from copy import deepcopy
 from typing import IO, TYPE_CHECKING, Callable, Iterable, Iterator, cast
 
+from openpptx._util import lazyproperty
 from openpptx.chart.chartexwriter import chartex_type, is_chartex_type
 from openpptx.enum.shapes import PP_PLACEHOLDER, PROG_ID
 from openpptx.exc import ShapeError
@@ -30,7 +31,7 @@ from openpptx.shapes.graphfrm import GraphicFrame
 from openpptx.shapes.group import GroupShape
 from openpptx.shapes.picture import Audio, Movie, Picture
 from openpptx.shapes.placeholder import (
-    LAYOUT_PLACEHOLDER_BASE_TYPES,
+    _LAYOUT_PLACEHOLDER_BASE_TYPES,
     ChartPlaceholder,
     LayoutPlaceholder,
     MasterPlaceholder,
@@ -42,7 +43,7 @@ from openpptx.shapes.placeholder import (
     TablePlaceholder,
 )
 from openpptx.shared import ParentedElementProxy
-from openpptx.util import Emu, lazyproperty
+from openpptx.util import Emu
 
 if TYPE_CHECKING:
     from openpptx.chart.chart import Chart
@@ -344,7 +345,7 @@ class _BaseShapes(ParentedElementProxy):
 
     def _shape_factory(self, shape_elm: ShapeElement) -> BaseShape:
         """Return an instance of the appropriate shape proxy class for `shape_elm`."""
-        return BaseShapeFactory(shape_elm, self)
+        return _BaseShapeFactory(shape_elm, self)
 
 
 class _BaseGroupShapes(_BaseShapes):
@@ -913,7 +914,7 @@ class SlideShapes(_BaseGroupShapes):
 
     def _shape_factory(self, shape_elm: ShapeElement) -> BaseShape:
         """Return an instance of the appropriate shape proxy class for `shape_elm`."""
-        return SlideShapeFactory(shape_elm, self)
+        return _SlideShapeFactory(shape_elm, self)
 
 
 class LayoutShapes(_BaseShapes):
@@ -961,7 +962,7 @@ class LayoutShapes(_BaseShapes):
         when the layout already has a title and `ph_type` is a title, or when `ph_type` is not
         a slide-layout placeholder type (such as `HEADER`, which only notes and handouts use).
         """
-        base_type = LAYOUT_PLACEHOLDER_BASE_TYPES.get(ph_type)
+        base_type = _LAYOUT_PLACEHOLDER_BASE_TYPES.get(ph_type)
         if base_type is None:
             raise ShapeError("%s is not a slide-layout placeholder type" % ph_type.name)
         dimensions = (left, top, width, height)
@@ -1077,7 +1078,7 @@ class BasePlaceholders(_BaseShapes):
     """Base class for placeholder collections.
 
     Subclasses differentiate behaviors for a master, layout, and slide. By default, placeholder
-    shapes are constructed using :func:`BaseShapeFactory`. Subclasses should override
+    shapes are constructed using :func:`_BaseShapeFactory`. Subclasses should override
     :meth:`_shape_factory` to use custom placeholder classes.
     """
 
@@ -1179,20 +1180,20 @@ class SlidePlaceholders(ParentedElementProxy):
         """
         for e in self._element.iter_ph_elms():
             if e.ph_idx == idx:
-                return SlideShapeFactory(e, self)
+                return _SlideShapeFactory(e, self)
         raise KeyError("no placeholder on this slide with idx == %d" % idx)
 
     def __iter__(self):
         """Generate placeholder shapes in `idx` order."""
         ph_elms = sorted([e for e in self._element.iter_ph_elms()], key=lambda e: e.ph_idx)
-        return (SlideShapeFactory(e, self) for e in ph_elms)
+        return (_SlideShapeFactory(e, self) for e in ph_elms)
 
     def __len__(self) -> int:
         """Return count of placeholder shapes."""
         return len(list(self._element.iter_ph_elms()))
 
 
-def BaseShapeFactory(shape_elm: ShapeElement, parent: ProvidesPart) -> BaseShape:
+def _BaseShapeFactory(shape_elm: ShapeElement, parent: ProvidesPart) -> BaseShape:
     """Return an instance of the appropriate shape proxy class for `shape_elm`.
 
     `parent` is the object the new shape proxy reports as its parent, usually a shapes
@@ -1230,21 +1231,21 @@ def _LayoutShapeFactory(shape_elm: ShapeElement, parent: ProvidesPart) -> BaseSh
     """Return appropriate shape object for `shape_elm` on a slide layout."""
     if isinstance(shape_elm, CT_Shape) and shape_elm.has_ph_elm:
         return LayoutPlaceholder(shape_elm, parent)
-    return BaseShapeFactory(shape_elm, parent)
+    return _BaseShapeFactory(shape_elm, parent)
 
 
 def _MasterShapeFactory(shape_elm: ShapeElement, parent: ProvidesPart) -> BaseShape:
     """Return appropriate shape object for `shape_elm` on a slide master."""
     if isinstance(shape_elm, CT_Shape) and shape_elm.has_ph_elm:
         return MasterPlaceholder(shape_elm, parent)
-    return BaseShapeFactory(shape_elm, parent)
+    return _BaseShapeFactory(shape_elm, parent)
 
 
 def _NotesSlideShapeFactory(shape_elm: ShapeElement, parent: ProvidesPart) -> BaseShape:
     """Return appropriate shape object for `shape_elm` on a notes slide."""
     if isinstance(shape_elm, CT_Shape) and shape_elm.has_ph_elm:
         return NotesSlidePlaceholder(shape_elm, parent)
-    return BaseShapeFactory(shape_elm, parent)
+    return _BaseShapeFactory(shape_elm, parent)
 
 
 def _SlidePlaceholderFactory(shape_elm: ShapeElement, parent: ProvidesPart):
@@ -1262,19 +1263,19 @@ def _SlidePlaceholderFactory(shape_elm: ShapeElement, parent: ProvidesPart):
     elif tag == qn("p:pic"):
         Constructor = PlaceholderPicture
     else:
-        Constructor = BaseShapeFactory
+        Constructor = _BaseShapeFactory
     return Constructor(shape_elm, parent)  # pyright: ignore[reportArgumentType]
 
 
-def SlideShapeFactory(shape_elm: ShapeElement, parent: ProvidesPart) -> BaseShape:
+def _SlideShapeFactory(shape_elm: ShapeElement, parent: ProvidesPart) -> BaseShape:
     """Return appropriate shape object for `shape_elm` on a slide.
 
-    Like :func:`BaseShapeFactory`, with `parent` as the new shape's parent, except that a
+    Like :func:`_BaseShapeFactory`, with `parent` as the new shape's parent, except that a
     placeholder shape gets a slide-placeholder proxy.
     """
     if shape_elm.has_ph_elm and alternate_content_of(shape_elm) is None:
         return _SlidePlaceholderFactory(shape_elm, parent)
-    return BaseShapeFactory(shape_elm, parent)
+    return _BaseShapeFactory(shape_elm, parent)
 
 
 class _MoviePicElementCreator:

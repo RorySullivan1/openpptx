@@ -9,13 +9,13 @@ import zipfile
 import zlib
 from typing import IO, TYPE_CHECKING, Any, Container, Iterator, Sequence
 
+from openpptx._util import lazyproperty
 from openpptx.exc import InvalidPackageError, PackageError, PackageNotFoundError
 from openpptx.opc.constants import CONTENT_TYPE as CT
 from openpptx.opc.oxml import CT_Types, serialize_part_xml
 from openpptx.opc.packuri import CONTENT_TYPES_URI, PACKAGE_URI, PackURI
 from openpptx.opc.shared import CaseInsensitiveDict
 from openpptx.opc.spec import default_content_types
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.opc.package import Part, _Relationships  # pyright: ignore[reportPrivateUsage]

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import IO, TYPE_CHECKING, Iterator, cast
 
+from openpptx._util import lazyproperty
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from openpptx.opc.package import OpcPackage
 from openpptx.opc.packuri import PackURI
@@ -13,7 +14,6 @@ from openpptx.parts.coreprops import CorePropertiesPart
 from openpptx.parts.custprops import CustomPropertiesPart
 from openpptx.parts.image import Image, ImagePart
 from openpptx.parts.media import MediaPart
-from openpptx.util import lazyproperty
 
 if TYPE_CHECKING:
     from openpptx.media import Audio, Video

@@ -9,10 +9,10 @@ from typing import Any, Callable, Iterable, Protocol, Sequence, Type, cast
 from lxml import etree
 from lxml.etree import ElementBase, _Element  # pyright: ignore[reportPrivateUsage]
 
+from openpptx._util import lazyproperty
 from openpptx.exc import InvalidXmlError
 from openpptx.oxml import oxml_parser
 from openpptx.oxml.ns import NamespacePrefixedTag, _nsmap, qn  # pyright: ignore[reportPrivateUsage]
-from openpptx.util import lazyproperty
 
 
 class AttributeType(Protocol):

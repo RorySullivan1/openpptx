@@ -1,11 +1,13 @@
-"""Initialization module for openpptx package."""
+"""Initialization module for openpptx package.
+
+The package's public names are `Presentation` and `__version__`. The rest of this module registers
+each part class with the package reader and then removes the name.
+"""
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
-import openpptx.exc as exceptions
 from openpptx.api import Presentation
 from openpptx.opc.constants import CONTENT_TYPE as CT
 from openpptx.opc.package import Part as _BlobPart
@@ -47,12 +49,9 @@ if TYPE_CHECKING:
 
 __version__ = "0.7.1"
 
-sys.modules["openpptx.exceptions"] = exceptions
-del sys
-
 __all__ = ["Presentation"]
 
-content_type_to_part_class_map: dict[str, type[Part]] = {
+_content_type_to_part_class_map: dict[str, type[Part]] = {
     CT.PML_PRESENTATION_MAIN: PresentationPart,
     CT.PML_PRES_MACRO_MAIN: PresentationPart,
     CT.PML_TEMPLATE_MAIN: PresentationPart,
@@ -111,7 +110,7 @@ content_type_to_part_class_map: dict[str, type[Part]] = {
     "image/jpg": ImagePart,
 }
 
-PartFactory.part_type_for.update(content_type_to_part_class_map)
+PartFactory.part_type_for.update(_content_type_to_part_class_map)
 
 del (
     AuthorsPart,
@@ -127,8 +126,11 @@ del (
     DiagramDrawingPart,
     DiagramLayoutPart,
     DiagramStylePart,
+    HandoutMasterPart,
     ImagePart,
     MediaPart,
+    NotesMasterPart,
+    NotesSlidePart,
     SlidePart,
     SlideLayoutPart,
     SlideMasterPart,

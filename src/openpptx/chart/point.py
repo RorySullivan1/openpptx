@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from openpptx._util import lazyproperty
 from openpptx.chart.datalabel import DataLabel
 from openpptx.chart.marker import Marker
 from openpptx.dml.chtfmt import ChartFormat
-from openpptx.util import lazyproperty
 
 
 class _BasePoints(Sequence):

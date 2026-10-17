@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import IO, TYPE_CHECKING, Iterator, Mapping, cast
 
+from openpptx._util import lazyproperty
 from openpptx.custom_show import CustomShows
 from openpptx.enum.pres import PP_SLIDE_SHOW_TYPE
 from openpptx.exc import InvalidValueError
 from openpptx.shared import PartElementProxy
 from openpptx.slide import SlideMasters, Slides
-from openpptx.text.search import TextFinder, TextReplacer
-from openpptx.util import lazyproperty
+from openpptx.text.search import _TextFinder, _TextReplacer
 
 if TYPE_CHECKING:
     from openpptx.fonts import EmbeddedFonts
@@ -90,7 +90,7 @@ class Presentation(PartElementProxy):
         Each slide is searched as by `Slide.find_text()`: its shapes, group members, table cells
         and existing notes slide. Layouts, masters, charts, SmartArt and comments are not.
         """
-        finder = TextFinder(pattern, regex=regex)
+        finder = _TextFinder(pattern, regex=regex)
         return [match for slide in self.slides for match in finder.find_in_slide(slide)]
 
     @property
@@ -119,7 +119,7 @@ class Presentation(PartElementProxy):
         Each slide is covered as by `Slide.replace_text()`, slides in presentation order, and
         `count` limits the replacements over the whole presentation.
         """
-        replacer = TextReplacer(old, new, count=count, regex=regex)
+        replacer = _TextReplacer(old, new, count=count, regex=regex)
         for slide in self.slides:
             if replacer.done:
                 break
