@@ -13,6 +13,11 @@ entries use the current `openpptx` names; the 1.0.0 section lists the renames.
 
 ## [Unreleased]
 
+### Added
+
+- Each release on PyPI also gets a GitHub Release, with its notes from this file and the same
+  sdist and wheel attached.
+
 ## [1.0.0] - 2026-10-18
 
 The first stable release, and the first on PyPI: `pip install openpptx`. From here on the public

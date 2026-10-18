@@ -8,7 +8,8 @@
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - Tags: local sessions can push them (pushed `v1.0.0rc1`, `v1.0.0`, as `refs/tags/...`); cloud sessions can't. Older v0.x
-  rows in `.meta/release-tags.md` are still untagged; remote also has lightweight `v0.7.1`, `0.7.0`, `alpha`. No GitHub Releases yet.
+  rows in `.meta/release-tags.md` are still untagged; remote also has lightweight `v0.7.1`, `0.7.0`, `alpha`. GitHub Releases: v1.0.0 (Latest) + v1.0.0rc1 with files
+  (made 2026-10-18; `release.yml` makes them from now on, PR #140); the owner's v0.6.0/v0.7.0/v0.7.1 pre-releases have none.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 
 ## Decisions        (append-only; supersede, never delete)
