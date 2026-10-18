@@ -2,7 +2,7 @@
 status: in-progress
 started: 2026-10-16
 branch: v1.0.0
-pr:
+pr: #137 (https://github.com/RorySullivan1/openpptx/pull/137)
 
 Release milestone: API freeze, docs, SemVer, PyPI. Owner decisions 2026-10-16:
 - Complete rebrand to `openpptx`: distribution, import package and repo (`RorySullivan1/openpptx`). The

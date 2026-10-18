@@ -19,6 +19,7 @@ only, the merge of its PR. Found by walking `main`'s first-parent history
 | `v0.6.0` | `100a9c84a2586a634057facec1ae76f07b6a4481` | 2026-10-16 | PR #134 | 0.6.0 | Lazy binary blobs and the caching audit (11 stale caches fixed, plus L1/L2). Its shipped status is recorded on the v0.7.0 branch |
 | `v0.7.0` | `0db7ef1718a49c97e41fbabbf3ba096854135ba8` | 2026-10-16 | PR #135 | 0.7.0 | Cross-run text find/replace on frames, paragraphs, slides and the deck. Its shipped status is recorded on the v1.0.0 branch |
 | `v0.7.1` | `2627dddae28fdfa2daee0abef05b39b993e8046a` | 2026-10-16 | PR #136 | 0.7.1 | Patch: find/replace review fixes. **Already tagged on the remote** (lightweight). Its shipped status is recorded on the v1.0.0 branch |
+| `v1.0.0rc1` | `2042409dfaa7276238bbdd36d13cc0cc964f59ce` | 2026-10-18 | — (on branch `v1.0.0`, before PR #137 merged) | 1.0.0rc1 | **Pushed** (annotated); published to PyPI by release run 39139591806 |
 
 **On the remote as of 2026-10-16** (`git ls-remote --tags origin`), all lightweight: `v0.7.1` → `2627ddd` (matches
 the row above); `0.7.0` → `0db7ef1`, the v0.7.0 commit but without the `v`; `alpha` → `100a9c8`, the v0.6.0 merge.
@@ -60,8 +61,10 @@ the rc can still be fixed in the branch. `1.0.0` itself (step 5) is tagged on `m
 
 Once, before the first release tag:
 
-1. **PyPI**: Account settings → Publishing → *Add a new pending publisher*: project `openpptx`,
-   owner `RorySullivan1`, repository `openpptx`, workflow `release.yml`, environment `pypi`.
+1. **PyPI**, logged in as `r_sullivan112`: Account settings → Publishing → *Add a new pending
+   publisher*: project `openpptx`, owner `RorySullivan1`, repository `openpptx`, workflow
+   `release.yml`, environment `pypi`. "Owner" is the GitHub owner, not the PyPI user; the PyPI
+   account becomes the project's owner when the first release publishes.
 2. **GitHub**: Settings → Environments → *New environment* `pypi`. Adding yourself as a required
    reviewer makes each publish wait for your approval in the Actions run.
 3. **GitHub** (for the docs, not the release): Settings → Pages → Source: *GitHub Actions*.
@@ -81,7 +84,21 @@ python -m venv rc1 && rc1/bin/python -m pip install openpptx==1.0.0rc1   # rc1\S
 rc1/bin/python -c "import openpptx; print(openpptx.__version__)"         # 1.0.0rc1
 ```
 
-`pip install openpptx` without a version skips a pre-release, so nobody gets the rc by accident.
+A plain `pip install openpptx` skips a pre-release only once a final release exists. While `1.0.0rc1`
+was the only version, pip 26 and uv both installed it without being asked (checked 2026-10-18).
+
+## v1.0.0
+
+Tagged on `main`: the merge commit of the PR that sets the version to `1.0.0`. Once it has merged:
+
+```bash
+git fetch origin main
+git tag -a v1.0.0 "$(git rev-parse origin/main)" -m "openpptx 1.0.0"   # check it is the merge first
+git push origin v1.0.0
+```
+
+The `release` run then waits for the `pypi` approval as rc1 did. After it publishes, a plain
+`pip install openpptx` gets `1.0.0`, not the rc.
 
 ## Keeping this current
 

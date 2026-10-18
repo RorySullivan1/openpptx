@@ -7,10 +7,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). What
 is, what counts as a breaking change and how deprecation works are set out in
 [`docs/stability.rst`](https://rorysullivan1.github.io/openpptx/stability.html).
 
-Releases before 1.0.0 were published as `pypptx`, imported as `pptx`. Module paths in their
-entries use the current `openpptx` names; the Unreleased section lists the renames.
+1.0.0 is the first release on PyPI. Earlier versions were never published there: they were
+tagged in this repository under the name `pypptx`, imported as `pptx`. Module paths in their
+entries use the current `openpptx` names; the 1.0.0 section lists the renames.
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-10-18
+
+The first stable release, and the first on PyPI: `pip install openpptx`. From here on the public
+API follows Semantic Versioning. It was preceded by `1.0.0rc1` on the same day, whose code is the
+same.
 
 ### Added
 
@@ -399,7 +406,8 @@ entries use the current `openpptx` names; the Unreleased section lists the renam
 - `Bevel.preset`, `ShadowFormat.shadow_type` and `Chart.display_blanks_as` return enum members
   instead of strings. Their setters still accept the old strings.
 
-[Unreleased]: https://github.com/RorySullivan1/openpptx/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/RorySullivan1/openpptx/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/RorySullivan1/openpptx/compare/v0.7.1...v1.0.0
 [0.7.1]: https://github.com/RorySullivan1/openpptx/compare/0.7.0...v0.7.1
 [0.7.0]: https://github.com/RorySullivan1/openpptx/compare/alpha...0.7.0
 [0.6.0]: https://github.com/RorySullivan1/openpptx/pull/134
