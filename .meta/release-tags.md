@@ -54,7 +54,9 @@ A GitHub Release can then be drafted from each tag; the version cards under
 From 1.0.0 on, tags are annotated and `v`-prefixed, and **pushing one publishes it to PyPI**
 (`.github/workflows/release.yml`). The workflow checks that the tag matches the version in
 `pyproject.toml`, builds and checks the sdist and wheel, runs every example against the built wheel on
-Python 3.9 and 3.13, and only then publishes. A historical `v0.x` tag above points at a commit from before
+Python 3.9 and 3.13, and only then publishes. After publishing it creates the GitHub Release for
+the tag. **A final version needs a dated `## [X.Y.Z] - YYYY-MM-DD` section in `CHANGELOG.md`**,
+or the build job stops before anything is published (`.github/scripts/release_notes.py --check`). A historical `v0.x` tag above points at a commit from before
 `release.yml` existed, so pushing it publishes nothing.
 
 The release candidate is tagged on the `v1.0.0` branch, before it merges, so that a problem found in

@@ -6,7 +6,12 @@
 #      `twine check --strict` on them;
 #   2. installs the built wheel (not the source tree) into a clean Python 3.9 and 3.13 and runs
 #      every examples/ script against it;
-#   3. publishes both files to PyPI by Trusted Publishing: no token is stored anywhere.
+#   3. publishes both files to PyPI by Trusted Publishing: no token is stored anywhere;
+#   4. creates the GitHub Release for the tag, with that version's CHANGELOG.md section as its notes
+#      and the same two files attached. A pre-release version is marked as a pre-release.
+#
+# A final version must have a dated CHANGELOG section before anything is published (step 1 checks
+# with .github/scripts/release_notes.py), so a version never reaches PyPI without its notes.
 #
 # Step 3 needs a trusted publisher on PyPI (owner RorySullivan1, repo openpptx, workflow
 # release.yml, environment pypi) and a `pypi` environment in this repo's settings. A version with a
@@ -47,6 +52,9 @@ jobs:
             exit 1
           fi
           echo "Releasing openpptx $version"
+
+      - name: Check CHANGELOG.md has notes for this version
+        run: python .github/scripts/release_notes.py "${GITHUB_REF_NAME#v}" --check
 
       - name: Build the sdist and wheel
         run: |
@@ -119,3 +127,37 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # -- the files PyPI received, byte for byte; not a rebuild --
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          python .github/scripts/release_notes.py "$version" > notes.md
+          flags=()
+          if [[ "$version" =~ (a|b|rc)[0-9]+$ ]]; then flags+=(--prerelease); fi
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            # -- a re-run of this job: refresh the notes and files instead of failing --
+            gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+            gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* --verify-tag               --title "openpptx $version" --notes-file notes.md "${flags[@]}"
+          fi
