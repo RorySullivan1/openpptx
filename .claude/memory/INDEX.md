@@ -3,12 +3,12 @@
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
 - openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
   repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`**: steps 1–4 built (2026-10-16..18; pyright return/arg
-  errors fixed, 198 left). PR #137 MERGED (`96f90bb`); Pages live; **1.0.0rc1 ON PyPI** 2026-10-18. Next = step 5.
+- **1.0.0 SHIPPED 2026-10-18**: on PyPI (`openpptx`, release run 39140694188, tag `v1.0.0` on merge `146dd1c`, PR #138; rc1
+  the same day). Docs live on Pages. Nothing planned next: 1.x via `/roadmap-set`; 198 pyright errors + gaps on the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- Tags: this local session pushed v1.0.0rc1 (cloud sessions can't); others tagged by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
-  lightweight; see that file); no Releases yet.
+- Tags: local sessions can push them (pushed `v1.0.0rc1`, `v1.0.0`, as `refs/tags/...`); cloud sessions can't. Older v0.x
+  rows in `.meta/release-tags.md` are still untagged; remote also has lightweight `v0.7.1`, `0.7.0`, `alpha`. No GitHub Releases yet.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 
 ## Decisions        (append-only; supersede, never delete)
@@ -72,3 +72,4 @@
 - 2026-10-13..10-15 | 9 sessions (PowerPoint checks #119–#125, v0.5.0/v0.5.1 ship, #126–#132, v0.6.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-16 | 4 entries (v0.7.0 built + merged #135, v0.7.1 built + merged #136) | sessions/ARCHIVE-2026.md
 - 2026-10-16..17 | v1.0.0: card filled in (session 1305 log); steps 1–3 done, details in the card | v1.0.0 card
+- 2026-10-18 | v1.0.0 SHIPPED: rc1 then 1.0.0 on PyPI; branch/tag name clash needs `refs/tags/` push | v1.0.0 card, release-tags.md

@@ -32,4 +32,7 @@ Scope and exclusions: `.claude/context/feature-manifest.md`.
 | v0.6.0  | 03    | Performance remainder: lazy blobs, caching audit        | shipped |
 | v0.7.0  | 03    | Cross-run text find/replace & text helpers              | shipped |
 | v0.7.1  | 03    | Patch: find/replace review fixes                        | shipped |
-| v1.0.0  | 04    | API freeze, comprehensive docs, SemVer commitment       | in-progress ← cursor |
+| v1.0.0  | 04    | API freeze, comprehensive docs, SemVer commitment       | shipped |
+
+All four stages are complete: `openpptx 1.0.0` is on PyPI. No version is planned yet; plan 1.x
+with `/roadmap-set` (the v1.0.0 card lists the known gaps and the 198 pyright errors left).
