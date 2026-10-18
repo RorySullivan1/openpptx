@@ -47,7 +47,7 @@ from openpptx.parts.tags import TagsPart
 if TYPE_CHECKING:
     from openpptx.opc.package import Part
 
-__version__ = "0.7.1"
+__version__ = "1.0.0rc1"
 
 __all__ = ["Presentation"]
 
