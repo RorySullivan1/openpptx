@@ -5,11 +5,11 @@ measures separately:
 
 - shape iteration (which currently calls `list(self._iter_member_elms())`
   inside both `__iter__` and `__getitem__`, see
-  `src/pptx/shapes/shapetree.py:92-113`).
+  `src/openpptx/shapes/shapetree.py:92-113`).
 - text iteration, which is the suspected hot spot: `TextFrame.paragraphs`
   and `_Paragraph.runs` are plain `@property` (not `@lazyproperty`) and
   rebuild fresh tuples of proxy objects on every access — see
-  `src/pptx/text/text.py:182-188` and `src/pptx/text/text.py:870-873`.
+  `src/openpptx/text/text.py:182-188` and `src/openpptx/text/text.py:870-873`.
 
 Two access patterns are timed:
 - "single pass": each property accessed once per element.
@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
+from openpptx import Presentation
 
 REPEAT_ACCESS = 10
 

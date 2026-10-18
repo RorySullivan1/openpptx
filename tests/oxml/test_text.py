@@ -1,4 +1,4 @@
-"""Unit-test suite for the `pptx.oxml.text` module."""
+"""Unit-test suite for the `openpptx.oxml.text` module."""
 
 from __future__ import annotations
 
@@ -6,13 +6,13 @@ from typing import cast
 
 import pytest
 
-from pptx.oxml.text import CT_RegularTextRun, CT_TextCharacterProperties, CT_TextParagraph
+from openpptx.oxml.text import CT_RegularTextRun, CT_TextCharacterProperties, CT_TextParagraph
 
 from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_TextParagraph:
-    """Unit-test suite for `pptx.oxml.text.CT_TextParagraph` objects."""
+    """Unit-test suite for `openpptx.oxml.text.CT_TextParagraph` objects."""
 
     @pytest.mark.parametrize(
         ("p_cxml", "expected_value"),
@@ -47,7 +47,7 @@ class DescribeCT_TextParagraph:
 
 
 class DescribeCT_TextCharacterProperties:
-    """Unit-test suite for `pptx.oxml.text.CT_TextCharacterProperties` objects."""
+    """Unit-test suite for `openpptx.oxml.text.CT_TextCharacterProperties` objects."""
 
     @pytest.mark.parametrize(
         ("rPr_cxml", "other_cxml"),
@@ -104,7 +104,7 @@ class DescribeCT_TextCharacterProperties:
 
 
 class DescribeCT_RegularTextRun:
-    """Unit-test suite for `pptx.oxml.text.CT_RegularTextRun` objects."""
+    """Unit-test suite for `openpptx.oxml.text.CT_RegularTextRun` objects."""
 
     @pytest.mark.parametrize(
         ("p_cxml", "lines", "expected_cxml"),

@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.enum.base`."""
+"""Unit-test suite for `openpptx.enum.base`."""
 
 from __future__ import annotations
 
@@ -7,18 +7,19 @@ import pkgutil
 
 import pytest
 
-import pptx.enum
+import openpptx.enum
 
-from pptx.enum.action import PP_ACTION, PP_ACTION_TYPE
-from pptx.enum.base import BaseXmlEnum
-from pptx.enum.dml import MSO_LINE_DASH_STYLE
+from openpptx.enum.action import PP_ACTION, PP_ACTION_TYPE
+from openpptx.enum.base import BaseXmlEnum
+from openpptx.enum.dml import MSO_LINE_DASH_STYLE
+from openpptx.exc import InvalidValueError
 
 
 def _xml_enums() -> list[type[BaseXmlEnum]]:
-    """Every XML-mapped enumeration defined in `pptx.enum`."""
+    """Every XML-mapped enumeration defined in `openpptx.enum`."""
     found: dict[str, type[BaseXmlEnum]] = {}
-    for info in pkgutil.iter_modules(pptx.enum.__path__):
-        module = importlib.import_module("pptx.enum.%s" % info.name)
+    for info in pkgutil.iter_modules(openpptx.enum.__path__):
+        module = importlib.import_module("openpptx.enum.%s" % info.name)
         for obj in vars(module).values():
             if isinstance(obj, type) and issubclass(obj, BaseXmlEnum) and obj is not BaseXmlEnum:
                 found[obj.__name__] = obj
@@ -26,7 +27,7 @@ def _xml_enums() -> list[type[BaseXmlEnum]]:
 
 
 class DescribeBaseEnum:
-    """Unit-test suite for `pptx.enum.base.BaseEnum`."""
+    """Unit-test suite for `openpptx.enum.base.BaseEnum`."""
 
     def it_produces_members_each_equivalent_to_an_integer_value(self):
         assert PP_ACTION_TYPE.END_SHOW == 6
@@ -61,18 +62,18 @@ class DescribeBaseEnum:
 
 
 class DescribeBaseXmlEnum:
-    """Unit-test suite for `pptx.enum.base.BaseXmlEnum`."""
+    """Unit-test suite for `openpptx.enum.base.BaseXmlEnum`."""
 
     def it_can_look_up_a_member_by_its_corresponding_XML_attribute_value(self):
         assert MSO_LINE_DASH_STYLE.from_xml("dash") == MSO_LINE_DASH_STYLE.DASH
         assert MSO_LINE_DASH_STYLE.from_xml("dashDot") == MSO_LINE_DASH_STYLE.DASH_DOT
 
     def but_it_raises_on_an_attribute_value_that_is_not_regitstered(self):
-        with pytest.raises(ValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for 'wavy'"):
+        with pytest.raises(InvalidValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for 'wavy'"):
             MSO_LINE_DASH_STYLE.from_xml("wavy")
 
     def and_it_never_maps_the_empty_string_to_a_member(self):
-        with pytest.raises(ValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for ''"):
+        with pytest.raises(InvalidValueError, match="MSO_LINE_DASH_STYLE has no XML mapping for ''"):
             MSO_LINE_DASH_STYLE.from_xml("")
 
     @pytest.mark.parametrize("enum_cls", _xml_enums(), ids=lambda cls: cls.__name__)
@@ -90,9 +91,17 @@ class DescribeBaseXmlEnum:
         assert MSO_LINE_DASH_STYLE.to_xml(3) == "sysDot"
 
     def but_it_raises_when_no_member_has_the_provided_int_value(self):
-        with pytest.raises(ValueError, match="42 is not a valid MSO_LINE_DASH_STYLE"):
+        with pytest.raises(InvalidValueError, match="42 is not a valid MSO_LINE_DASH_STYLE"):
             MSO_LINE_DASH_STYLE.to_xml(42)
 
     def and_it_raises_when_the_member_has_no_XML_value(self):
-        with pytest.raises(ValueError, match="MSO_LINE_DASH_STYLE.DASH_STYLE_MIXED has no XML r"):
+        with pytest.raises(InvalidValueError, match="MSO_LINE_DASH_STYLE.DASH_STYLE_MIXED has no XML r"):
             MSO_LINE_DASH_STYLE.to_xml(-2)
+
+    def it_accepts_a_member_as_an_assignable_value(self):
+        MSO_LINE_DASH_STYLE.validate(MSO_LINE_DASH_STYLE.DASH)
+
+    @pytest.mark.parametrize("value", [42, "dash", None])
+    def but_it_rejects_a_value_that_is_not_a_member(self, value):
+        with pytest.raises(InvalidValueError, match="not a member of MSO_LINE_DASH_STYLE"):
+            MSO_LINE_DASH_STYLE.validate(value)

@@ -1,19 +1,19 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.table` module."""
+"""Unit-test suite for `openpptx.table` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.dml.fill import FillFormat
-from pptx.dml.line import LineFormat
-from pptx.exc import TableError
-from pptx.enum.text import MSO_ANCHOR, MSO_TEXT_VERTICAL_TYPE
-from pptx.oxml.ns import qn
-from pptx.oxml.table import CT_Table, CT_TableCell, TcRange
-from pptx.shapes.graphfrm import GraphicFrame
-from pptx.table import (
+from openpptx.dml.fill import FillFormat
+from openpptx.dml.line import LineFormat
+from openpptx.exc import TableError
+from openpptx.enum.text import MSO_ANCHOR, MSO_TEXT_VERTICAL_TYPE
+from openpptx.oxml.ns import qn
+from openpptx.oxml.table import CT_Table, CT_TableCell, TcRange
+from openpptx.shapes.graphfrm import GraphicFrame
+from openpptx.table import (
     Table,
     _Cell,
     _CellCollection,
@@ -22,15 +22,15 @@ from pptx.table import (
     _Row,
     _RowCollection,
 )
-from pptx.text.text import TextFrame
-from pptx.util import Inches, Length, Pt
+from openpptx.text.text import TextFrame
+from openpptx.util import Inches, Length, Pt
 
 from .unitutil.cxml import element, xml
 from .unitutil.mock import call, class_mock, instance_mock, property_mock
 
 
 class DescribeTable:
-    """Unit-test suite for `pptx.table.Table` objects."""
+    """Unit-test suite for `openpptx.table.Table` objects."""
 
     def it_provides_access_to_its_cells(self, tbl_, tc_, _Cell_, cell_):
         row_idx, col_idx = 4, 2
@@ -47,7 +47,7 @@ class DescribeTable:
     def it_provides_access_to_its_columns(self, request):
         columns_ = instance_mock(request, _ColumnCollection)
         _ColumnCollection_ = class_mock(
-            request, "pptx.table._ColumnCollection", return_value=columns_
+            request, "openpptx.table._ColumnCollection", return_value=columns_
         )
         tbl = element("a:tbl")
         table = Table(tbl, None)
@@ -72,7 +72,7 @@ class DescribeTable:
 
     def it_provides_access_to_its_rows(self, request):
         rows_ = instance_mock(request, _RowCollection)
-        _RowCollection_ = class_mock(request, "pptx.table._RowCollection", return_value=rows_)
+        _RowCollection_ = class_mock(request, "openpptx.table._RowCollection", return_value=rows_)
         tbl = element("a:tbl")
         table = Table(tbl, None)
 
@@ -143,7 +143,7 @@ class DescribeTable:
 
     @pytest.fixture
     def _Cell_(self, request):
-        return class_mock(request, "pptx.table._Cell")
+        return class_mock(request, "openpptx.table._Cell")
 
     @pytest.fixture
     def cell_(self, request):
@@ -229,7 +229,7 @@ class DescribeTableBooleanProperties:
 
 
 class Describe_Cell:
-    """Unit-test suite for `pptx.table._Cell` object."""
+    """Unit-test suite for `openpptx.table._Cell` object."""
 
     def it_is_equal_to_other_instance_having_same_tc(self):
         tc = element("a:tc")
@@ -585,7 +585,7 @@ class Describe_Cell:
 
     @pytest.fixture
     def TcRange_(self, request):
-        return class_mock(request, "pptx.table.TcRange")
+        return class_mock(request, "openpptx.table.TcRange")
 
     @pytest.fixture
     def tc_range_(self, request):
@@ -658,7 +658,7 @@ class Describe_CellCollection:
 
     @pytest.fixture
     def _Cell_(self, request):
-        return class_mock(request, "pptx.table._Cell")
+        return class_mock(request, "openpptx.table._Cell")
 
     @pytest.fixture
     def cell_(self, request):
@@ -885,7 +885,7 @@ class Describe_Row:
 
     @pytest.fixture
     def _CellCollection_(self, request, cells_):
-        return class_mock(request, "pptx.table._CellCollection", return_value=cells_)
+        return class_mock(request, "openpptx.table._CellCollection", return_value=cells_)
 
     @pytest.fixture
     def cells_(self, request):

@@ -4,6 +4,8 @@
 /example_output/
 /.tox/
 /src/*.egg-info
+/build/
+/dist/
 /docs/.build
 out.txt
 tags

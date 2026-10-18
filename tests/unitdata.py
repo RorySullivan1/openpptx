@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
 
 
 class BaseBuilder:

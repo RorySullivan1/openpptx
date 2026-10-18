@@ -1,14 +1,14 @@
-"""Unit-test suite for `pptx.enum.shapes`."""
+"""Unit-test suite for `openpptx.enum.shapes`."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.enum.shapes import MSO_SHAPE_TYPE, PROG_ID
+from openpptx.enum.shapes import MSO_SHAPE_TYPE, PROG_ID
 
 
 class DescribeProgId:
-    """Unit-test suite for `pptx.enum.shapes.ProgId`."""
+    """Unit-test suite for `openpptx.enum.shapes.ProgId`."""
 
     def it_has_members_for_the_OLE_embeddings_known_to_work_on_Windows(self):
         assert PROG_ID.DOCX
@@ -47,7 +47,7 @@ class DescribeProgId:
 
 
 class DescribeMsoShapeType:
-    """Unit-test suite for `pptx.enum.shapes.MSO_SHAPE_TYPE`."""
+    """Unit-test suite for `openpptx.enum.shapes.MSO_SHAPE_TYPE`."""
 
     def it_names_smartart_SMART_ART_and_keeps_IGX_GRAPHIC_as_an_alias(self):
         assert MSO_SHAPE_TYPE.SMART_ART == 24

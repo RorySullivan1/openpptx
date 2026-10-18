@@ -4,11 +4,11 @@ Adds four shapes with different fill types and line formatting.
 Saves to shapes_and_fills.pptx.
 """
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.dml import MSO_LINE_DASH_STYLE, MSO_PATTERN_TYPE, MSO_THEME_COLOR
-from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.enum.dml import MSO_LINE_DASH_STYLE, MSO_PATTERN_TYPE, MSO_THEME_COLOR
+from openpptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank layout

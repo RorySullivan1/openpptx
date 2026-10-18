@@ -1,0 +1,954 @@
+"""Custom element classes for text-related XML elements"""
+
+from __future__ import annotations
+
+import copy
+import re
+from typing import TYPE_CHECKING, Callable, Sequence, cast
+
+from lxml import etree
+
+from openpptx.enum.lang import MSO_LANGUAGE_ID
+from openpptx.enum.text import (
+    MSO_AUTO_SIZE,
+    MSO_PRESET_TEXT_SHAPE,
+    MSO_TEXT_CAPS,
+    MSO_TEXT_FONT_ALIGN,
+    MSO_TEXT_STRIKE_TYPE,
+    MSO_TEXT_UNDERLINE_TYPE,
+    MSO_TEXT_VERTICAL_TYPE,
+    MSO_VERTICAL_ANCHOR,
+    PP_PARAGRAPH_ALIGNMENT,
+)
+from openpptx.exc import InvalidValueError, InvalidXmlError
+from openpptx.oxml import parse_xml
+from openpptx.oxml.dml.fill import CT_GradientFillProperties
+from openpptx.oxml.ns import nsdecls
+from openpptx.oxml.simpletypes import (
+    ST_Angle,
+    ST_Coordinate32,
+    ST_Percentage,
+    ST_PositiveCoordinate32,
+    ST_TextColumnCount,
+    ST_TextFontScalePercentOrPercentString,
+    ST_TextFontSize,
+    ST_TextIndent,
+    ST_TextIndentLevelType,
+    ST_TextMargin,
+    ST_TextNonNegativePoint,
+    ST_TextPoint,
+    ST_TextSpacingPercentOrPercentString,
+    ST_TextSpacingPoint,
+    ST_TextTypeface,
+    ST_TextWrappingType,
+    XsdBoolean,
+    XsdString,
+)
+from openpptx.oxml.xmlchemy import (
+    BaseOxmlElement,
+    Choice,
+    OneAndOnlyOne,
+    OneOrMore,
+    OptionalAttribute,
+    OxmlElement,
+    RequiredAttribute,
+    ZeroOrMore,
+    ZeroOrOne,
+    ZeroOrOneChoice,
+)
+from openpptx.util import Emu, Length
+
+if TYPE_CHECKING:
+    from openpptx.oxml.action import CT_Hyperlink
+
+# -- proofing state PowerPoint records on a run; it does not change how the text looks --
+_PROOFING_STATE_ATTRS = frozenset(("dirty", "err", "smtClean", "smtId"))
+
+
+class CT_RegularTextRun(BaseOxmlElement):
+    """`a:r` custom element class"""
+
+    get_or_add_rPr: Callable[[], CT_TextCharacterProperties]
+
+    rPr: CT_TextCharacterProperties | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:rPr", successors=("a:t",)
+    )
+    t: BaseOxmlElement = OneAndOnlyOne("a:t")  # pyright: ignore[reportAssignmentType]
+
+    @property
+    def text(self) -> str:
+        """All text of (required) `a:t` child."""
+        text = self.t.text
+        # -- t.text is None when t element is empty, e.g. '<a:t/>' --
+        return text or ""
+
+    @text.setter
+    def text(self, value: str):  # pyright: ignore[reportIncompatibleMethodOverride]
+        self.t.text = self._escape_ctrl_chars(value)
+
+    def formatting_key(self) -> tuple[object, ...]:
+        """The `formatting_key()` of this run's `a:rPr`, or the empty key when it has none."""
+        rPr = self.rPr
+        return () if rPr is None else rPr.formatting_key()
+
+    def splice(self, start: int, end: int, text: str) -> None:
+        """Replace `.text[start:end]` with `text`.
+
+        Control characters in `text` are escaped as the `.text` setter does; the run's existing
+        text is kept exactly as it is.
+        """
+        old = self.text
+        self.t.text = old[:start] + self._escape_ctrl_chars(text) + old[end:]
+
+    def insert_lines_after(self, lines: Sequence[str]) -> None:
+        """Insert an `a:br` and then a run of each of `lines` after this run.
+
+        Each new `a:br` and run gets its own copy of this run's `a:rPr`, so the lines look like
+        this run. An empty line gets its `a:br` but no run.
+        """
+        anchor: BaseOxmlElement = self
+        for line in lines:
+            br = cast(CT_TextLineBreak, OxmlElement("a:br"))
+            if self.rPr is not None:
+                br.append(copy.deepcopy(self.rPr))
+            anchor.addnext(br)
+            anchor = br
+            if not line:
+                continue
+            r = cast(CT_RegularTextRun, OxmlElement("a:r"))
+            if self.rPr is not None:
+                r.append(copy.deepcopy(self.rPr))
+            r.append(OxmlElement("a:t"))
+            r.text = line
+            anchor.addnext(r)
+            anchor = r
+
+    @property
+    def rel_ids(self) -> list[str]:
+        """The rId of each relationship this run refers to, once per reference.
+
+        Any `r:` attribute in the run counts, such as the `r:id` of a hyperlink or the `r:embed`
+        of a picture fill.
+        """
+        return cast("list[str]", self.xpath(".//@r:*"))
+
+    @staticmethod
+    def _escape_ctrl_chars(s: str) -> str:
+        """Return str after replacing each control character with a plain-text escape.
+
+        For example, a BEL character (x07) would appear as "_x0007_". Horizontal-tab
+        (x09) and line-feed (x0A) are not escaped. All other characters in the range
+        x00-x1F are escaped.
+        """
+        return re.sub(r"([\x00-\x08\x0B-\x1F])", lambda match: "_x%04X_" % ord(match.group(1)), s)
+
+
+class CT_TextBody(BaseOxmlElement):
+    """`p:txBody` custom element class.
+
+    Also used for `c:txPr` in charts and perhaps other elements.
+    """
+
+    add_p: Callable[[], CT_TextParagraph]
+    p_lst: list[CT_TextParagraph]
+
+    bodyPr: CT_TextBodyProperties = OneAndOnlyOne(  # pyright: ignore[reportAssignmentType]
+        "a:bodyPr"
+    )
+    p: CT_TextParagraph = OneOrMore("a:p")  # pyright: ignore[reportAssignmentType]
+
+    def clear_content(self):
+        """Remove all `a:p` children, but leave any others.
+
+        cf. lxml `_Element.clear()` method which removes all children.
+        """
+        for p in self.p_lst:
+            self.remove(p)
+
+    @property
+    def defRPr(self) -> CT_TextCharacterProperties:
+        """`a:defRPr` element of required first `p` child, added with its ancestors if not present.
+
+        Used when element is a ``c:txPr`` in a chart and the `p` element is used only to specify
+        formatting, not content.
+        """
+        p = self.p_lst[0]
+        pPr = p.get_or_add_pPr()
+        defRPr = pPr.get_or_add_defRPr()
+        return defRPr
+
+    @property
+    def is_empty(self) -> bool:
+        """True if only a single empty `a:p` element is present."""
+        ps = self.p_lst
+        if len(ps) > 1:
+            return False
+
+        if not ps:
+            raise InvalidXmlError("p:txBody must have at least one a:p")
+
+        if ps[0].text != "":
+            return False
+        return True
+
+    @classmethod
+    def new(cls):
+        """Return a new `p:txBody` element tree."""
+        xml = cls._txBody_tmpl()
+        txBody = parse_xml(xml)
+        return txBody
+
+    @classmethod
+    def new_a_txBody(cls) -> CT_TextBody:
+        """Return a new `a:txBody` element tree.
+
+        Suitable for use in a table cell and possibly other situations.
+        """
+        xml = cls._a_txBody_tmpl()
+        txBody = cast(CT_TextBody, parse_xml(xml))
+        return txBody
+
+    @classmethod
+    def new_p_txBody(cls):
+        """Return a new `p:txBody` element tree, suitable for use in an `p:sp` element."""
+        xml = cls._p_txBody_tmpl()
+        return parse_xml(xml)
+
+    @classmethod
+    def new_txPr(cls):
+        """Return a `c:txPr` element tree.
+
+        Suitable for use in a chart object like data labels or tick labels.
+        """
+        xml = (
+            "<c:txPr %s>\n"
+            "  <a:bodyPr/>\n"
+            "  <a:lstStyle/>\n"
+            "  <a:p>\n"
+            "    <a:pPr>\n"
+            "      <a:defRPr/>\n"
+            "    </a:pPr>\n"
+            "  </a:p>\n"
+            "</c:txPr>\n"
+        ) % nsdecls("c", "a")
+        txPr = parse_xml(xml)
+        return txPr
+
+    def unclear_content(self):
+        """Ensure p:txBody has at least one a:p child.
+
+        Intuitively, reverse a ".clear_content()" operation to minimum conformance with spec
+        (single empty paragraph).
+        """
+        if len(self.p_lst) > 0:
+            return
+        self.add_p()
+
+    @classmethod
+    def _a_txBody_tmpl(cls):
+        return "<a:txBody %s>\n" "  <a:bodyPr/>\n" "  <a:p/>\n" "</a:txBody>\n" % (nsdecls("a"))
+
+    @classmethod
+    def _p_txBody_tmpl(cls):
+        return (
+            "<p:txBody %s>\n" "  <a:bodyPr/>\n" "  <a:p/>\n" "</p:txBody>\n" % (nsdecls("p", "a"))
+        )
+
+    @classmethod
+    def _txBody_tmpl(cls):
+        return (
+            "<p:txBody %s>\n"
+            "  <a:bodyPr/>\n"
+            "  <a:lstStyle/>\n"
+            "  <a:p/>\n"
+            "</p:txBody>\n" % (nsdecls("a", "p"))
+        )
+
+
+class CT_TextBodyProperties(BaseOxmlElement):
+    """`a:bodyPr` custom element class."""
+
+    _add_noAutofit: Callable[[], BaseOxmlElement]
+    _add_normAutofit: Callable[[], CT_TextNormalAutofit]
+    _add_spAutoFit: Callable[[], BaseOxmlElement]
+    _remove_eg_textAutoFit: Callable[[], None]
+
+    noAutofit: BaseOxmlElement | None
+    normAutofit: CT_TextNormalAutofit | None
+    spAutoFit: BaseOxmlElement | None
+
+    prstTxWarp: CT_PresetTextShape | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:prstTxWarp",
+        successors=("a:noAutofit", "a:normAutofit", "a:spAutoFit", "a:scene3d", "a:sp3d", "a:flatTx", "a:extLst"),
+    )
+    eg_textAutoFit = ZeroOrOneChoice(
+        (Choice("a:noAutofit"), Choice("a:normAutofit"), Choice("a:spAutoFit")),
+        successors=("a:scene3d", "a:sp3d", "a:flatTx", "a:extLst"),
+    )
+    lIns: Length = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "lIns", ST_Coordinate32, default=Emu(91440)
+    )
+    tIns: Length = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "tIns", ST_Coordinate32, default=Emu(45720)
+    )
+    rIns: Length = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "rIns", ST_Coordinate32, default=Emu(91440)
+    )
+    bIns: Length = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "bIns", ST_Coordinate32, default=Emu(45720)
+    )
+    anchor: MSO_VERTICAL_ANCHOR | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "anchor", MSO_VERTICAL_ANCHOR
+    )
+    rot: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "rot", ST_Angle
+    )
+    wrap: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "wrap", ST_TextWrappingType
+    )
+    vert: MSO_TEXT_VERTICAL_TYPE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "vert", MSO_TEXT_VERTICAL_TYPE
+    )
+    numCol: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "numCol", ST_TextColumnCount
+    )
+    spcCol: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "spcCol", ST_PositiveCoordinate32
+    )
+
+    @property
+    def autofit(self):
+        """The autofit setting for the text frame, a member of the `MSO_AUTO_SIZE` enumeration."""
+        if self.noAutofit is not None:
+            return MSO_AUTO_SIZE.NONE
+        if self.normAutofit is not None:
+            return MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+        if self.spAutoFit is not None:
+            return MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+        return None
+
+    @autofit.setter
+    def autofit(self, value: MSO_AUTO_SIZE | None):
+        if value is not None and value not in MSO_AUTO_SIZE:
+            raise InvalidValueError(
+                f"only None or a member of the MSO_AUTO_SIZE enumeration can be assigned to"
+                f" CT_TextBodyProperties.autofit, got {value}"
+            )
+        self._remove_eg_textAutoFit()
+        if value == MSO_AUTO_SIZE.NONE:
+            self._add_noAutofit()
+        elif value == MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE:
+            self._add_normAutofit()
+        elif value == MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT:
+            self._add_spAutoFit()
+
+
+class CT_TextCharacterProperties(BaseOxmlElement):
+    """Custom element class for `a:rPr`, `a:defRPr`, and `a:endParaRPr`.
+
+    'rPr' is short for 'run properties', and it corresponds to the |Font| proxy class.
+    """
+
+    get_or_add_effectLst: Callable[[], BaseOxmlElement]
+    get_or_add_hlinkClick: Callable[[], CT_Hyperlink]
+    get_or_add_latin: Callable[[], CT_TextFont]
+    get_or_add_ea: Callable[[], CT_TextFont]
+    get_or_add_cs: Callable[[], CT_TextFont]
+    _remove_latin: Callable[[], None]
+    _remove_ea: Callable[[], None]
+    _remove_cs: Callable[[], None]
+    _remove_hlinkClick: Callable[[], None]
+
+    eg_fillProperties = ZeroOrOneChoice(
+        (
+            Choice("a:noFill"),
+            Choice("a:solidFill"),
+            Choice("a:gradFill"),
+            Choice("a:blipFill"),
+            Choice("a:pattFill"),
+            Choice("a:grpFill"),
+        ),
+        successors=(
+            "a:effectLst",
+            "a:effectDag",
+            "a:highlight",
+            "a:uLnTx",
+            "a:uLn",
+            "a:uFillTx",
+            "a:uFill",
+            "a:latin",
+            "a:ea",
+            "a:cs",
+            "a:sym",
+            "a:hlinkClick",
+            "a:hlinkMouseOver",
+            "a:rtl",
+            "a:extLst",
+        ),
+    )
+    effectLst = ZeroOrOne(
+        "a:effectLst",
+        successors=(
+            "a:effectDag",
+            "a:highlight",
+            "a:uLnTx",
+            "a:uLn",
+            "a:uFillTx",
+            "a:uFill",
+            "a:latin",
+            "a:ea",
+            "a:cs",
+            "a:sym",
+            "a:hlinkClick",
+            "a:hlinkMouseOver",
+            "a:rtl",
+            "a:extLst",
+        ),
+    )
+    latin: CT_TextFont | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:latin",
+        successors=(
+            "a:ea",
+            "a:cs",
+            "a:sym",
+            "a:hlinkClick",
+            "a:hlinkMouseOver",
+            "a:rtl",
+            "a:extLst",
+        ),
+    )
+    ea: CT_TextFont | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:ea",
+        successors=("a:cs", "a:sym", "a:hlinkClick", "a:hlinkMouseOver", "a:rtl", "a:extLst"),
+    )
+    cs: CT_TextFont | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:cs",
+        successors=("a:sym", "a:hlinkClick", "a:hlinkMouseOver", "a:rtl", "a:extLst"),
+    )
+    sym: CT_TextFont | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:sym",
+        successors=("a:hlinkClick", "a:hlinkMouseOver", "a:rtl", "a:extLst"),
+    )
+    hlinkClick: CT_Hyperlink | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:hlinkClick", successors=("a:hlinkMouseOver", "a:rtl", "a:extLst")
+    )
+
+    highlight = ZeroOrOne(
+        "a:highlight",
+        successors=(
+            "a:uLnTx",
+            "a:uLn",
+            "a:uFillTx",
+            "a:uFill",
+            "a:latin",
+            "a:ea",
+            "a:cs",
+            "a:sym",
+            "a:hlinkClick",
+            "a:hlinkMouseOver",
+            "a:rtl",
+            "a:extLst",
+        ),
+    )
+
+    lang: MSO_LANGUAGE_ID | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "lang", MSO_LANGUAGE_ID
+    )
+    sz: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "sz", ST_TextFontSize
+    )
+    b: bool | None = OptionalAttribute("b", XsdBoolean)  # pyright: ignore[reportAssignmentType]
+    i: bool | None = OptionalAttribute("i", XsdBoolean)  # pyright: ignore[reportAssignmentType]
+    u: MSO_TEXT_UNDERLINE_TYPE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "u", MSO_TEXT_UNDERLINE_TYPE
+    )
+    strike: MSO_TEXT_STRIKE_TYPE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "strike", MSO_TEXT_STRIKE_TYPE
+    )
+    baseline: float | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "baseline", ST_Percentage
+    )
+    cap: MSO_TEXT_CAPS | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "cap", MSO_TEXT_CAPS
+    )
+    spc: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "spc", ST_TextPoint
+    )
+    kern: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "kern", ST_TextNonNegativePoint
+    )
+
+    def formatting_key(self) -> tuple[object, ...]:
+        """A hashable value that is equal for two elements exactly when their formatting is.
+
+        Made of the attributes, less the proofing state PowerPoint records on a run (`dirty`,
+        `err`, `smtClean`, `smtId`), and the serialized children. An element with no formatting
+        has the empty key, as does a run with no `a:rPr`.
+        """
+        attrs = tuple(
+            sorted((k, v) for k, v in self.attrib.items() if k not in _PROOFING_STATE_ATTRS)
+        )
+        children = tuple(etree.tostring(child) for child in self)
+        if not attrs and not children:
+            return ()
+        return (attrs, children)
+
+    def _new_gradFill(self):
+        return CT_GradientFillProperties.new_gradFill()
+
+    def add_hlinkClick(self, rId: str) -> CT_Hyperlink:
+        """Add an `a:hlinkClick` child element with r:id attribute set to `rId`."""
+        hlinkClick = self.get_or_add_hlinkClick()
+        hlinkClick.rId = rId
+        return hlinkClick
+
+
+class CT_TextField(BaseOxmlElement):
+    """`a:fld` field element, for either a slide number or date field."""
+
+    get_or_add_rPr: Callable[[], CT_TextCharacterProperties]
+
+    rPr: CT_TextCharacterProperties | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:rPr", successors=("a:pPr", "a:t")
+    )
+    t: BaseOxmlElement | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:t", successors=()
+    )
+
+    field_type: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "type", XsdString
+    )
+
+    @property
+    def text(self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """The text of the `a:t` child element."""
+        t = self.t
+        if t is None:
+            return ""
+        return t.text or ""
+
+
+class CT_TextFont(BaseOxmlElement):
+    """Custom element class for `a:latin`, `a:ea`, `a:cs`, and `a:sym`.
+
+    These occur as child elements of CT_TextCharacterProperties, e.g. `a:rPr`.
+    """
+
+    typeface: str = RequiredAttribute(  # pyright: ignore[reportAssignmentType]
+        "typeface", ST_TextTypeface
+    )
+
+
+class CT_TextLineBreak(BaseOxmlElement):
+    """`a:br` line break element"""
+
+    get_or_add_rPr: Callable[[], CT_TextCharacterProperties]
+
+    rPr = ZeroOrOne("a:rPr", successors=())
+
+    @property
+    def text(self):  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Unconditionally a single vertical-tab character.
+
+        A line break element can contain no text other than the implicit line feed it
+        represents.
+        """
+        return "\v"
+
+
+class CT_TextNormalAutofit(BaseOxmlElement):
+    """`a:normAutofit` element specifying fit text to shape font reduction, etc."""
+
+    fontScale = OptionalAttribute(
+        "fontScale", ST_TextFontScalePercentOrPercentString, default=100.0
+    )
+    lnSpcReduction = OptionalAttribute(
+        "lnSpcReduction", ST_TextSpacingPercentOrPercentString, default=0.0
+    )
+
+
+class CT_TextParagraph(BaseOxmlElement):
+    """`a:p` custom element class"""
+
+    get_or_add_endParaRPr: Callable[[], CT_TextCharacterProperties]
+    get_or_add_pPr: Callable[[], CT_TextParagraphProperties]
+    r_lst: list[CT_RegularTextRun]
+    _add_br: Callable[[], CT_TextLineBreak]
+    _add_r: Callable[[], CT_RegularTextRun]
+
+    pPr: CT_TextParagraphProperties | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:pPr", successors=("a:r", "a:br", "a:fld", "a:endParaRPr")
+    )
+    r = ZeroOrMore("a:r", successors=("a:endParaRPr",))
+    br = ZeroOrMore("a:br", successors=("a:endParaRPr",))
+    endParaRPr: CT_TextCharacterProperties | None = ZeroOrOne(
+        "a:endParaRPr", successors=()
+    )  # pyright: ignore[reportAssignmentType]
+
+    def add_br(self) -> CT_TextLineBreak:
+        """Return a newly appended `a:br` element."""
+        return self._add_br()
+
+    def add_r(self, text: str | None = None) -> CT_RegularTextRun:
+        """Return a newly appended `a:r` element."""
+        r = self._add_r()
+        if text:
+            r.text = text
+        return r
+
+    def append_text(self, text: str):
+        """Append `a:r` and `a:br` elements to `p` based on `text`.
+
+        Any `\n` or `\v` (vertical-tab) characters in `text` delimit `a:r` (run) elements and
+        themselves are translated to `a:br` (line-break) elements. The vertical-tab character
+        appears in clipboard text from PowerPoint at "soft" line-breaks (new-line, but not new
+        paragraph).
+        """
+        for idx, r_str in enumerate(re.split("\n|\v", text)):
+            # ---breaks are only added _between_ items, not at start---
+            if idx > 0:
+                self.add_br()
+            # ---runs that would be empty are not added---
+            if r_str:
+                self.add_r(r_str)
+
+    @property
+    def content_children(self) -> tuple[CT_RegularTextRun | CT_TextLineBreak | CT_TextField, ...]:
+        """Sequence containing text-container child elements of this `a:p` element.
+
+        These include `a:r`, `a:br`, and `a:fld`.
+        """
+        return tuple(
+            e for e in self if isinstance(e, (CT_RegularTextRun, CT_TextLineBreak, CT_TextField))
+        )
+
+    def run_segments(self) -> list[tuple[int, list[CT_RegularTextRun]]]:
+        """Each maximal sequence of consecutive `a:r` children, with its offset into `.text`.
+
+        An `a:br`, an `a:fld` or any other child ends a segment, so text matched within one
+        segment never crosses a line break or a field. The offset is where the segment's text
+        starts in this paragraph's `.text`.
+        """
+        segments: list[tuple[int, list[CT_RegularTextRun]]] = []
+        runs: list[CT_RegularTextRun] = []
+        start = offset = 0
+        for child in self:
+            if isinstance(child, CT_RegularTextRun):
+                if not runs:
+                    start = offset
+                runs.append(child)
+                offset += len(child.text)
+                continue
+            if runs:
+                segments.append((start, runs))
+                runs = []
+            if isinstance(child, (CT_TextLineBreak, CT_TextField)):
+                offset += len(child.text)
+        if runs:
+            segments.append((start, runs))
+        return segments
+
+    def merge_runs(self) -> int:
+        """Merge each run into the run before it when both have the same formatting.
+
+        Only consecutive `a:r` children merge (see `.run_segments()`), and formatting is compared
+        by `formatting_key()`, so runs that differ only in proofing state merge. The merged run
+        keeps the first run's `a:rPr`. Returns the number of runs removed.
+        """
+        removed = 0
+        for _, runs in self.run_segments():
+            keep, key = runs[0], runs[0].formatting_key()
+            for r in runs[1:]:
+                r_key = r.formatting_key()
+                if r_key != key:
+                    keep, key = r, r_key
+                    continue
+                keep.t.text = keep.text + r.text
+                self.remove(r)
+                removed += 1
+        return removed
+
+    @property
+    def text(self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """str text contained in this paragraph."""
+        # ---note this shadows the lxml _Element.text---
+        return "".join([child.text for child in self.content_children])
+
+    def _new_r(self):
+        r_xml = "<a:r %s><a:t/></a:r>" % nsdecls("a")
+        return parse_xml(r_xml)
+
+
+class CT_TextParagraphProperties(BaseOxmlElement):
+    """`a:pPr` custom element class."""
+
+    get_or_add_buChar: Callable[[], BaseOxmlElement]
+    get_or_add_defRPr: Callable[[], CT_TextCharacterProperties]
+    get_or_add_tabLst: Callable[[], CT_TabStopList]
+    _remove_tabLst: Callable[[], None]
+    _add_lnSpc: Callable[[], CT_TextSpacing]
+    _add_spcAft: Callable[[], CT_TextSpacing]
+    _add_spcBef: Callable[[], CT_TextSpacing]
+    _remove_lnSpc: Callable[[], None]
+    _remove_spcAft: Callable[[], None]
+    _remove_spcBef: Callable[[], None]
+
+    _tag_seq = (
+        "a:lnSpc",
+        "a:spcBef",
+        "a:spcAft",
+        "a:buClrTx",
+        "a:buClr",
+        "a:buSzTx",
+        "a:buSzPct",
+        "a:buSzPts",
+        "a:buFontTx",
+        "a:buFont",
+        "a:buNone",
+        "a:buAutoNum",
+        "a:buChar",
+        "a:buBlip",
+        "a:tabLst",
+        "a:defRPr",
+        "a:extLst",
+    )
+    lnSpc: CT_TextSpacing | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:lnSpc", successors=_tag_seq[1:]
+    )
+    spcBef: CT_TextSpacing | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:spcBef", successors=_tag_seq[2:]
+    )
+    spcAft: CT_TextSpacing | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:spcAft", successors=_tag_seq[3:]
+    )
+    buClrTx = ZeroOrOne("a:buClrTx", successors=_tag_seq[4:])
+    buClr = ZeroOrOne("a:buClr", successors=_tag_seq[5:])
+    buSzTx = ZeroOrOne("a:buSzTx", successors=_tag_seq[6:])
+    buSzPct = ZeroOrOne("a:buSzPct", successors=_tag_seq[7:])
+    buSzPts = ZeroOrOne("a:buSzPts", successors=_tag_seq[8:])
+    buFontTx = ZeroOrOne("a:buFontTx", successors=_tag_seq[9:])
+    buFont = ZeroOrOne("a:buFont", successors=_tag_seq[10:])
+    buNone = ZeroOrOne("a:buNone", successors=_tag_seq[11:])
+    buAutoNum = ZeroOrOne("a:buAutoNum", successors=_tag_seq[12:])
+    buChar = ZeroOrOne("a:buChar", successors=_tag_seq[13:])
+    buBlip = ZeroOrOne("a:buBlip", successors=_tag_seq[14:])
+    tabLst = ZeroOrOne("a:tabLst", successors=_tag_seq[15:])
+    defRPr: CT_TextCharacterProperties | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:defRPr", successors=_tag_seq[16:]
+    )
+    lvl: int = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "lvl", ST_TextIndentLevelType, default=0
+    )
+    algn: PP_PARAGRAPH_ALIGNMENT | None = OptionalAttribute(
+        "algn", PP_PARAGRAPH_ALIGNMENT
+    )  # pyright: ignore[reportAssignmentType]
+    indent: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "indent", ST_TextIndent
+    )
+    marL: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "marL", ST_TextMargin
+    )
+    rtl: bool | None = OptionalAttribute("rtl", XsdBoolean)  # pyright: ignore[reportAssignmentType]
+    hangingPunct: bool | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "hangingPunct", XsdBoolean
+    )
+    fontAlgn: MSO_TEXT_FONT_ALIGN | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "fontAlgn", MSO_TEXT_FONT_ALIGN
+    )
+    del _tag_seq
+
+    @property
+    def line_spacing(self) -> float | Length | None:
+        """The spacing between baselines of successive lines in this paragraph.
+
+        A float value indicates a number of lines. A |Length| value indicates a fixed spacing.
+        Value is contained in `./a:lnSpc/a:spcPts/@val` or `./a:lnSpc/a:spcPct/@val`. Value is
+        |None| if no element is present.
+        """
+        lnSpc = self.lnSpc
+        if lnSpc is None:
+            return None
+        if lnSpc.spcPts is not None:
+            return lnSpc.spcPts.val
+        return cast(CT_TextSpacingPercent, lnSpc.spcPct).val
+
+    @line_spacing.setter
+    def line_spacing(self, value: float | Length | None):
+        self._remove_lnSpc()
+        if value is None:
+            return
+        if isinstance(value, Length):
+            self._add_lnSpc().set_spcPts(value)
+        else:
+            self._add_lnSpc().set_spcPct(value)
+
+    @property
+    def space_after(self) -> Length | None:
+        """The EMU equivalent of the centipoints value in `./a:spcAft/a:spcPts/@val`."""
+        spcAft = self.spcAft
+        if spcAft is None:
+            return None
+        spcPts = spcAft.spcPts
+        if spcPts is None:
+            return None
+        return spcPts.val
+
+    @space_after.setter
+    def space_after(self, value: Length | None):
+        self._remove_spcAft()
+        if value is not None:
+            self._add_spcAft().set_spcPts(value)
+
+    @property
+    def space_before(self):
+        """The EMU equivalent of the centipoints value in `./a:spcBef/a:spcPts/@val`."""
+        spcBef = self.spcBef
+        if spcBef is None:
+            return None
+        spcPts = spcBef.spcPts
+        if spcPts is None:
+            return None
+        return spcPts.val
+
+    @space_before.setter
+    def space_before(self, value: Length | None):
+        self._remove_spcBef()
+        if value is not None:
+            self._add_spcBef().set_spcPts(value)
+
+
+class CT_TextListStyle(BaseOxmlElement):
+    """`a:lstStyle` custom element class, also used for the master text-style elements.
+
+    `p:titleStyle`, `p:bodyStyle`, `p:otherStyle` (children of `p:txStyles`) and
+    `p:defaultTextStyle` share this type. Each holds an optional `a:defPPr` and per-level
+    paragraph properties `a:lvl1pPr` through `a:lvl9pPr`.
+    """
+
+    get_or_add_defPPr: Callable[[], CT_TextParagraphProperties]
+
+    _tag_seq = (
+        "a:defPPr",
+        "a:lvl1pPr",
+        "a:lvl2pPr",
+        "a:lvl3pPr",
+        "a:lvl4pPr",
+        "a:lvl5pPr",
+        "a:lvl6pPr",
+        "a:lvl7pPr",
+        "a:lvl8pPr",
+        "a:lvl9pPr",
+        "a:extLst",
+    )
+    defPPr: CT_TextParagraphProperties | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:defPPr", successors=_tag_seq[1:]
+    )
+    lvl1pPr = ZeroOrOne("a:lvl1pPr", successors=_tag_seq[2:])
+    lvl2pPr = ZeroOrOne("a:lvl2pPr", successors=_tag_seq[3:])
+    lvl3pPr = ZeroOrOne("a:lvl3pPr", successors=_tag_seq[4:])
+    lvl4pPr = ZeroOrOne("a:lvl4pPr", successors=_tag_seq[5:])
+    lvl5pPr = ZeroOrOne("a:lvl5pPr", successors=_tag_seq[6:])
+    lvl6pPr = ZeroOrOne("a:lvl6pPr", successors=_tag_seq[7:])
+    lvl7pPr = ZeroOrOne("a:lvl7pPr", successors=_tag_seq[8:])
+    lvl8pPr = ZeroOrOne("a:lvl8pPr", successors=_tag_seq[9:])
+    lvl9pPr = ZeroOrOne("a:lvl9pPr", successors=_tag_seq[10:])
+    del _tag_seq
+
+    def lvl_pPr(self, level: int) -> CT_TextParagraphProperties | None:
+        """Return the `a:lvl{level+1}pPr` child, or |None| if not present.
+
+        `level` is zero-based, matching `a:pPr/@lvl`, so level 0 is `a:lvl1pPr`.
+        """
+        return getattr(self, "lvl%dpPr" % (self._validate_level(level) + 1))
+
+    def get_or_add_lvl_pPr(self, level: int) -> CT_TextParagraphProperties:
+        """Return the `a:lvl{level+1}pPr` child, newly added if not present."""
+        return getattr(self, "get_or_add_lvl%dpPr" % (self._validate_level(level) + 1))()
+
+    @staticmethod
+    def _validate_level(level: int) -> int:
+        if not isinstance(level, int) or isinstance(level, bool) or not 0 <= level <= 8:
+            raise IndexError("text style level must be an int in range 0-8, got %r" % (level,))
+        return level
+
+
+class CT_TextSpacing(BaseOxmlElement):
+    """Used for `a:lnSpc`, `a:spcBef`, and `a:spcAft` elements."""
+
+    get_or_add_spcPct: Callable[[], CT_TextSpacingPercent]
+    get_or_add_spcPts: Callable[[], CT_TextSpacingPoint]
+    _remove_spcPct: Callable[[], None]
+    _remove_spcPts: Callable[[], None]
+
+    # this should actually be a OneAndOnlyOneChoice, but that's not
+    # implemented yet.
+    spcPct: CT_TextSpacingPercent | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:spcPct"
+    )
+    spcPts: CT_TextSpacingPoint | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "a:spcPts"
+    )
+
+    def set_spcPct(self, value: float):
+        """Set spacing to `value` lines, e.g. 1.75 lines.
+
+        A ./a:spcPts child is removed if present.
+        """
+        self._remove_spcPts()
+        spcPct = self.get_or_add_spcPct()
+        spcPct.val = value
+
+    def set_spcPts(self, value: Length):
+        """Set spacing to `value` points. A ./a:spcPct child is removed if present."""
+        self._remove_spcPct()
+        spcPts = self.get_or_add_spcPts()
+        spcPts.val = value
+
+
+class CT_TextSpacingPercent(BaseOxmlElement):
+    """`a:spcPct` element, specifying spacing in thousandths of a percent in its `val` attribute."""
+
+    val: float = RequiredAttribute(  # pyright: ignore[reportAssignmentType]
+        "val", ST_TextSpacingPercentOrPercentString
+    )
+
+
+class CT_TextSpacingPoint(BaseOxmlElement):
+    """`a:spcPts` element, specifying spacing in centipoints in its `val` attribute."""
+
+    val: Length = RequiredAttribute(  # pyright: ignore[reportAssignmentType]
+        "val", ST_TextSpacingPoint
+    )
+
+
+class CT_TabStop(BaseOxmlElement):
+    """`a:tab` element, specifying a single tab stop position and alignment."""
+
+    pos: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "pos", ST_Coordinate32
+    )
+    algn: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "algn", XsdString
+    )
+
+
+class CT_TabStopList(BaseOxmlElement):
+    """`a:tabLst` element, container for tab stop definitions."""
+
+    _add_tab: Callable[[], CT_TabStop]
+    tab_lst: list[CT_TabStop]
+
+    tab = ZeroOrMore("a:tab")
+
+
+class CT_PresetTextShape(BaseOxmlElement):
+    """`a:prstTxWarp` element, specifying a preset text warp shape.
+
+    The `prst` attribute identifies the warp preset (e.g. "textWave1").
+    Contains optional `a:avLst` child with adjustment values.
+    """
+
+    avLst = ZeroOrOne("a:avLst", successors=())
+    prst: MSO_PRESET_TEXT_SHAPE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "prst", MSO_PRESET_TEXT_SHAPE
+    )

@@ -5,13 +5,13 @@ overview (bulleted highlights, line chart, and data table), drawdown
 analysis, and a contact page. Saves to investor_presentation.pptx.
 """
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
-from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
-from pptx.enum.text import PP_ALIGN
-from pptx.util import Emu, Inches, Pt
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.dml.color import RGBColor
+from openpptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
+from openpptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
+from openpptx.enum.text import PP_ALIGN
+from openpptx.util import Emu, Inches, Pt
 
 # -- Palette --
 NAVY = RGBColor(0x0B, 0x1D, 0x3A)

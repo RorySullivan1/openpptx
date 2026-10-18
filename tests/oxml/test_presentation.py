@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.oxml.presentation` module."""
+"""Unit-test suite for `openpptx.oxml.presentation` module."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ from typing import cast
 
 import pytest
 
-from pptx.oxml.presentation import CT_Presentation, CT_SlideIdList, CT_SlideMasterIdList
+from openpptx.oxml.presentation import CT_Presentation, CT_SlideIdList, CT_SlideMasterIdList
 
 from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_Presentation:
-    """Unit-test suite for `pptx.oxml.presentation.CT_Presentation` objects."""
+    """Unit-test suite for `openpptx.oxml.presentation.CT_Presentation` objects."""
 
     def it_provides_access_to_its_embeddedFontLst(self):
         presentation = cast(
@@ -58,7 +58,7 @@ class DescribeCT_Presentation:
 
 
 class DescribeCT_SlideIdList:
-    """Unit-test suite for `pptx.oxml.presentation.CT_SlideIdLst` objects."""
+    """Unit-test suite for `openpptx.oxml.presentation.CT_SlideIdLst` objects."""
 
     def it_can_add_a_sldId_element_as_a_child(self):
         sldIdLst = cast(CT_SlideIdList, element("p:sldIdLst/p:sldId{r:id=rId4,id=256}"))
@@ -108,7 +108,7 @@ class DescribeCT_SlideIdList:
 
 
 class DescribeCT_SlideMasterIdList:
-    """Unit-test suite for `pptx.oxml.presentation.CT_SlideMasterIdList` objects."""
+    """Unit-test suite for `openpptx.oxml.presentation.CT_SlideMasterIdList` objects."""
 
     def it_can_add_an_entry_with_an_id(self):
         sldMasterIdLst = cast(CT_SlideMasterIdList, element("p:sldMasterIdLst"))

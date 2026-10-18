@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Round-trip integration tests for python-pptx.
+"""Round-trip integration tests for openpptx.
 
 These tests create presentations, save to BytesIO, reload, and verify
 that content survives the round-trip through serialization/deserialization.
@@ -18,7 +18,7 @@ import pytest
 
 def _run_roundtrip_test(test_code: str) -> None:
     """Run a round-trip test in a subprocess to avoid mock pollution from other tests."""
-    preamble = "from io import BytesIO\nfrom pptx import Presentation\nfrom pptx.util import Inches, Pt\n"
+    preamble = "from io import BytesIO\nfrom openpptx import Presentation\nfrom openpptx.util import Inches, Pt\n"
     script = preamble + dedent(test_code)
     result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True)
     if result.returncode != 0:
@@ -179,8 +179,8 @@ for s in prs2.slides:
 
     def it_gives_a_duplicated_slide_its_own_chart(self):
         _run_roundtrip_test("""\
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -211,8 +211,8 @@ assert len(partnames) == 2, partnames
 
     def it_keeps_the_workbook_of_an_imported_chart(self):
         _run_roundtrip_test("""\
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
 
 src = Presentation()
 src_slide = src.slides.add_slide(src.slide_layouts[6])
@@ -242,8 +242,8 @@ assert len({c.part.partname for c in charts}) == 2
 
     def it_round_trips_a_chart_data_table(self):
         _run_roundtrip_test("""\
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -300,8 +300,8 @@ assert shape2.hidden is True
     def it_loads_modern_comment_parts_typed_and_saves_them_untouched(self):
         _run_roundtrip_test("""\
 import zipfile
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.parts.comments import AuthorsPart, ModernCommentsPart
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.parts.comments import AuthorsPart, ModernCommentsPart
 from tests.unitutil.modern_comments import AUTHORS_XML, COMMENTS_PARTNAME, COMMENTS_XML
 from tests.unitutil.modern_comments import modern_comments_pptx
 
@@ -429,7 +429,7 @@ assert len(prs2.part.authors_part) == 3
 
     def it_leaves_modern_comments_behind_when_duplicating_a_slide(self):
         _run_roundtrip_test("""\
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from tests.unitutil.modern_comments import modern_comments_pptx
 
 prs = Presentation(modern_comments_pptx())
@@ -453,7 +453,7 @@ assert len(prs2.slides[0].threaded_comments) == 2
 
     def it_leaves_modern_comments_behind_when_importing_a_slide(self):
         _run_roundtrip_test("""\
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from tests.unitutil.modern_comments import modern_comments_pptx
 
 src = Presentation(modern_comments_pptx())
@@ -512,7 +512,7 @@ assert prs2.first_slide_number == 5
 
     def it_round_trips_transparency_color(self):
         _run_roundtrip_test("""\
-from pptx.dml.color import RGBColor
+from openpptx.dml.color import RGBColor
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank layout
@@ -541,7 +541,7 @@ try:
 
     slide2 = prs2.slides[0]
     pics = [s for s in slide2.shapes if s.shape_type is not None]
-    from pptx.shapes.picture import Picture
+    from openpptx.shapes.picture import Picture
     pic2 = [s for s in slide2.shapes if isinstance(s, Picture)][0]
     assert pic2.transparency_color == RGBColor(0xFF, 0xFF, 0xFF)
 
@@ -554,7 +554,7 @@ finally:
 
     def it_round_trips_line_cap_and_join_style(self):
         _run_roundtrip_test("""\
-from pptx.enum.dml import MSO_LINE_CAP_STYLE, MSO_LINE_JOIN_STYLE
+from openpptx.enum.dml import MSO_LINE_CAP_STYLE, MSO_LINE_JOIN_STYLE
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank layout
@@ -578,8 +578,8 @@ assert shape2.line.miter_limit == 4.0
     def it_round_trips_a_picture_filled_rectangle(self):
         _run_roundtrip_test("""\
 import os, tempfile
-from pptx.enum.shapes import MSO_SHAPE
-from pptx.enum.dml import MSO_FILL, MSO_GRADIENT_TYPE, MSO_RECT_ALIGNMENT
+from openpptx.enum.shapes import MSO_SHAPE
+from openpptx.enum.dml import MSO_FILL, MSO_GRADIENT_TYPE, MSO_RECT_ALIGNMENT
 
 # tiny valid PNG (1x1 white pixel)
 png_bytes = (
@@ -641,7 +641,7 @@ finally:
 
     def it_round_trips_theme_effect_scheme(self):
         _run_roundtrip_test("""\
-from pptx.theme import EffectScheme
+from openpptx.theme import EffectScheme
 
 prs = Presentation()
 
@@ -751,7 +751,7 @@ assert texts == ["Slide A", "Slide B1", "Slide B2"]
 
     def it_preserves_potx_content_type_on_round_trip(self):
         _run_roundtrip_test("""\
-from pptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.constants import CONTENT_TYPE as CT
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[0])
@@ -773,7 +773,7 @@ assert prs2.slides[0].shapes.title.text == "Template Slide"
 
     def it_round_trips_shape_range_alignment(self):
         _run_roundtrip_test("""\
-from pptx.shapes.range import ShapeRange
+from openpptx.shapes.range import ShapeRange
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[5])
@@ -807,7 +807,7 @@ assert len(set(lefts)) == 1
     def it_imports_slide_with_image(self):
         _run_roundtrip_test("""\
 import os, tempfile
-from pptx.shapes.picture import Picture
+from openpptx.shapes.picture import Picture
 
 # tiny valid PNG (1x1 white pixel)
 png_bytes = (
@@ -850,7 +850,7 @@ finally:
 
     def it_round_trips_master_text_styles_and_the_default_text_style(self):
         _run_roundtrip_test("""\
-from pptx.enum.text import PP_ALIGN
+from openpptx.enum.text import PP_ALIGN
 
 prs = Presentation()
 styles = prs.slide_master.text_styles
@@ -883,8 +883,8 @@ assert p.font.size is None and all(r.font.size is None for r in p.runs)
 
     def it_round_trips_a_theme_applied_from_another_presentation(self):
         _run_roundtrip_test("""\
-from pptx.enum.dml import MSO_THEME_COLOR
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.enum.dml import MSO_THEME_COLOR
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 
 source = Presentation()
 source.theme.color_scheme._clrScheme.accent1[0].set("val", "C00000")
@@ -999,9 +999,9 @@ import os
 import tempfile
 import zipfile
 
-import pptx
+import openpptx
 
-template = os.path.join(os.path.dirname(pptx.__file__), "templates", "default.pptx")
+template = os.path.join(os.path.dirname(openpptx.__file__), "templates", "default.pptx")
 with zipfile.ZipFile(template) as z:
     theme_xml = z.read("ppt/theme/theme1.xml").decode("utf-8")
 theme_xml = theme_xml.replace(
@@ -1082,10 +1082,10 @@ assert custom_show3.slides[0].slide_id == prs3.slides[0].slide_id
 
     def it_round_trips_embedded_fonts(self):
         _run_roundtrip_test("""\
-from pptx.opc.constants import CONTENT_TYPE as CT
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.opc.package import Part
-from pptx.opc.packuri import PackURI
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.opc.package import Part
+from openpptx.opc.packuri import PackURI
 
 prs = Presentation()
 prs_part = prs.part
@@ -1119,8 +1119,8 @@ assert len(prs3.embedded_fonts) == 0
 
     def it_round_trips_slide_show_settings(self):
         _run_roundtrip_test("""\\
-from pptx.enum.pres import PP_SLIDE_SHOW_TYPE
-from pptx.dml.color import RGBColor
+from openpptx.enum.pres import PP_SLIDE_SHOW_TYPE
+from openpptx.dml.color import RGBColor
 
 prs = Presentation()
 settings = prs.slide_show_settings
@@ -1166,7 +1166,7 @@ assert prs2.table_styles.default_id == default_id
         _run_roundtrip_test("""\\
 import zipfile
 
-src = "src/pptx/templates/default.pptx"
+src = "src/openpptx/templates/default.pptx"
 with zipfile.ZipFile(src) as z:
     orig_pres_props = z.read("ppt/presProps.xml")
     orig_table_styles = z.read("ppt/tableStyles.xml")
@@ -1186,7 +1186,7 @@ assert new_table_styles == orig_table_styles
 
     def it_finds_smartart_and_reads_its_node_tree(self):
         _run_roundtrip_test("""\\
-from pptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
 from tests.unitutil.smartart import smartart_pptx
 
 slide = Presentation(smartart_pptx()).slides[0]
@@ -1248,8 +1248,8 @@ assert [(node.text, node.level) for node in smartart2.iter_nodes()] == [
 
     def it_round_trips_added_chartex_charts(self):
         _run_roundtrip_test("""\\
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
 
 flat = CategoryChartData()
 flat.categories = ["Start", "Q1", "Q2", "End"]
@@ -1340,8 +1340,8 @@ assert movie2.fade_in == timedelta(milliseconds=250)
 import wave
 from datetime import timedelta
 
-from pptx.enum.shapes import MSO_SHAPE_TYPE, PP_MEDIA_TYPE
-from pptx.shapes.picture import Audio
+from openpptx.enum.shapes import MSO_SHAPE_TYPE, PP_MEDIA_TYPE
+from openpptx.shapes.picture import Audio
 
 wav_stream = BytesIO()
 with wave.open(wav_stream, "wb") as wf:
@@ -1397,7 +1397,7 @@ assert slide_xml.count("<mc:Fallback>") == 3
 
     def it_round_trips_shape_tags(self):
         _run_roundtrip_test("""\\
-from pptx.enum.shapes import MSO_SHAPE
+from openpptx.enum.shapes import MSO_SHAPE
 
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -1470,10 +1470,10 @@ assert len(shapes2._spTree.xpath("./mc:AlternateContent/mc:Fallback")) == 3
 
     def it_round_trips_3d_charts_of_every_type(self):
         _run_roundtrip_test("""\\
-from pptx.chart.data import CategoryChartData
-from pptx.chart.plot import Area3DPlot, Bar3DPlot, Line3DPlot, Pie3DPlot
-from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE as XL
+from openpptx.chart.data import CategoryChartData
+from openpptx.chart.plot import Area3DPlot, Bar3DPlot, Line3DPlot, Pie3DPlot
+from openpptx.dml.color import RGBColor
+from openpptx.enum.chart import XL_CHART_TYPE as XL
 
 plot_cls = {"AREA": Area3DPlot, "BAR": Bar3DPlot, "COLUMN": Bar3DPlot, "LINE": Line3DPlot, "PIE": Pie3DPlot}
 types = [member for member in XL if member.name.startswith("THREE_D_")]
@@ -1517,8 +1517,8 @@ for chart_type, slide in zip(types, prs2.slides):
 
     def it_replaces_the_data_of_a_3d_chart(self):
         _run_roundtrip_test("""\\
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE as XL
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE as XL
 
 chart_data = CategoryChartData()
 chart_data.categories = ["A", "B"]

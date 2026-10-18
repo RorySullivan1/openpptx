@@ -1,6 +1,6 @@
-# pypptx TODO
+# openpptx TODO
 
-Planned additions and improvements for the pypptx library.
+Planned additions and improvements for the openpptx library.
 
 **Strategy:** Bottom-up, types-first. Complete the OXML layer (XML element classes,
 simple types, enumerations) before building the Python API wrappers on top. This
@@ -192,7 +192,7 @@ New `CT_*` element classes defined and registered with `xmlchemy`.
 
 ## 5. Enumerations (DONE)
 
-`BaseXmlEnum` definitions in `pptx/enum/` with OXML attribute wiring.
+`BaseXmlEnum` definitions in `openpptx/enum/` with OXML attribute wiring.
 
 ### Text enumerations — `enum/text.py` (DONE)
 - [x] `MSO_TEXT_STRIKE_TYPE` — `noStrike`, `sngStrike`, `dblStrike` → wired to `strike` on `CT_TextCharacterProperties`
@@ -492,7 +492,7 @@ implementation, then register them in `__init__.py`.
 - [x] `CT_Surface3DChart` (`c:surface3DChart`) — same structure as surface
 - [x] `CT_OfPieChart` (`c:ofPieChart`) — `ofPieType`, `varyColors`, `ser`, `gapWidth`, `splitType`, `splitPos`, `custSplit`, `secondPieSize`, `serLines` children
 - [x] Register all new classes in `oxml/__init__.py`
-- [x] Wire into `PlotFactory` / `PlotTypeInspector` so existing API recognizes them
+- [x] Wire into `_PlotFactory` / `_PlotTypeInspector` so existing API recognizes them
 - [x] API plot classes: `Bar3DPlot`, `Line3DPlot`, `Pie3DPlot`, `StockPlot`, `SurfacePlot`, `Surface3DPlot`, `OfPiePlot`
 
 ### 18.2 Trendlines — OXML + API (DONE)
@@ -553,7 +553,7 @@ OXML already supports multiple axes via `ZeroOrMore`. API exposure added.
 - [x] `Chart.view_3d` API — `View3D` with rot_x, rot_y, right_angle_axes, perspective, depth_percent, height_percent
 - [x] `Chart.floor`, `Chart.back_wall`, `Chart.side_wall` — `ChartSurface` with format and thickness
 - [x] **Authoring a 3D chart (#115).** `add_chart` writes all 13 `XL_CHART_TYPE.THREE_D_*` types: `_Bar3DChartXmlWriter` (7 column/bar types), `_Line3DChartXmlWriter`, `_Pie3DChartXmlWriter` (plain and exploded) and `_Area3DChartXmlWriter` (3 types), on a shared `_Base3DChartXmlWriter` that emits PowerPoint's default `c:view3D` camera plus `c:floor`/`c:sideWall`/`c:backWall`. The "true 3D" types (`THREE_D_COLUMN`, `THREE_D_AREA`, `THREE_D_LINE`) get a series (depth) axis — the schema requires it on `c:line3DChart` — and a perspective camera; the clustered/stacked types keep right-angle axes. Output validates against the ISO 29500 chart schema for all 13 types, string and date categories
-- [x] `PlotTypeInspector` maps a standard-grouping `c:bar3DChart` to `THREE_D_COLUMN` (it raised `KeyError` before)
+- [x] `_PlotTypeInspector` maps a standard-grouping `c:bar3DChart` to `THREE_D_COLUMN` (it raised `KeyError` before)
 - [x] Read-path coverage from a PowerPoint-layout 3D column chart (`tests/unitutil/chart3d.py`: `c:lang`, `mc:AlternateContent` style, wall `spPr` with `a:sp3d`, third `c:axId val="0"`, series `c:extLst`, `c:externalData`) — read, edited and re-saved with that markup intact; `examples/chart_3d_view.py` demonstrates the camera and walls
 - [ ] Human check (#115): a new 3D chart of each family opens in PowerPoint without repair, and `view_3d`/floor/wall settings visibly change the plot. The read fixture is hand-built to PowerPoint's layout; a genuinely PowerPoint-saved 3D chart deck would still strengthen it
 - [ ] Not exposed: the series (depth) axis of a true 3D chart has no API proxy (`c:serAx` is written and preserved, but there is no `Chart.series_axis`)
@@ -741,9 +741,9 @@ OXML layer support exists (`CT_PresetTextShape` on `CT_TextBodyProperties`) for 
 
 ## 26. Python API — Audio Shapes & Media Trim/Fade (DONE)
 
-- [x] `SlideShapes.add_audio(audio_file, left, top, icon_file=None, mime_type=None)` inserts an MP3/WAV/M4A clip as an icon shape, mirroring `add_movie` (`a:audioFile` inside `p:nvPr`, `RT.AUDIO`/`RT.MEDIA` relationships, `p:audio`/`p:cMediaNode` timing node); default speaker icon (`pptx.media.SPEAKER_IMAGE_BYTES`) sized 487363 EMU square when `icon_file` is omitted; MIME type inferred from filename extension when not specified (#76)
+- [x] `SlideShapes.add_audio(audio_file, left, top, icon_file=None, mime_type=None)` inserts an MP3/WAV/M4A clip as an icon shape, mirroring `add_movie` (`a:audioFile` inside `p:nvPr`, `RT.AUDIO`/`RT.MEDIA` relationships, `p:audio`/`p:cMediaNode` timing node); default speaker icon (`openpptx.media.SPEAKER_IMAGE_BYTES`) sized 487363 EMU square when `icon_file` is omitted; MIME type inferred from filename extension when not specified (#76)
 - [x] New content types registered to `MediaPart`: `CT.MP3` (`audio/mpeg`), `CT.WAV`/`CT.X_WAV` (`audio/wav`, `audio/x-wav`), `CT.M4A`/`CT.X_M4A` (`audio/mp4`, `audio/x-m4a`) — `opc/constants.py`, `__init__.py` content-type map (#76)
-- [x] `pptx.shapes.picture.Audio` proxy (`MSO_SHAPE_TYPE.MEDIA`, `PP_MEDIA_TYPE.SOUND`); `pptx.media.Audio` value object parallel to `Video` (#76)
+- [x] `openpptx.shapes.picture.Audio` proxy (`MSO_SHAPE_TYPE.MEDIA`, `PP_MEDIA_TYPE.SOUND`); `openpptx.media.Audio` value object parallel to `Video` (#76)
 - [x] `p14:media`/`p14:trim`/`p14:fade` oxml element classes (`oxml/shapes/picture.py`, registered by tag) for the PowerPoint-2010 media extension (`p:nvPicPr/p:nvPr/p:extLst/p:ext[@uri="{DAA4B4D4-6D71-4841-9C94-3DE7FCFB9230}"]/p14:media`); `p14:trim{st,end}` and `p14:fade{in,out}` in milliseconds, child order trim/fade/bmkLst/extLst (#77)
 - [x] `trim_start`/`trim_end`/`fade_in`/`fade_out` read/write `datetime.timedelta | None` properties on `Movie` and `Audio` (shared `_BaseMediaShape` base in `shapes/picture.py`); `None` or a zero-length `timedelta` removes the attribute, and the enclosing `p14:trim`/`p14:fade` element is dropped once both its attributes are gone (#77)
 - [ ] Deferred — `p14:bmkLst` bookmarks, playback options beyond play-on-click
@@ -765,7 +765,7 @@ for a demonstration of "slide **and shape** tags", and only the slide half exist
 
 - [x] Slide tags — `Slide.tags` (`TagsPart`, mapping-style: `__getitem__`/`__setitem__`/
       `__delitem__`/`__contains__`/`__len__`/`__iter__`/`items`/`get`), referenced from
-      `p:cSld/p:custDataLst/p:tags`; a tags relationship no shape refers to (as pypptx wrote
+      `p:cSld/p:custDataLst/p:tags`; a tags relationship no shape refers to (as openpptx wrote
       before #114) is adopted as the slide's (#114)
 - [x] `CT_CustomerDataList` (`p:custDataLst`) and `CT_TagsData` (`p:tags`) in `oxml/tags.py`;
       `tags_rId` / `set_tags_rId()` / `remove_tags_rId()` on `p:nvPr` and `p:cSld` (#114)

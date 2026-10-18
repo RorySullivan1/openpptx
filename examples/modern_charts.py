@@ -5,10 +5,10 @@ funnel -- then a column chart showing its data table, and reads each chartex cha
 Saves to modern_charts.pptx.
 """
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.enum.chart import XL_CHART_TYPE
+from openpptx.util import Inches
 
 prs = Presentation()
 

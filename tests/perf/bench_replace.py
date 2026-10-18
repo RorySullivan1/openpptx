@@ -19,8 +19,8 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
-from pptx.text.search import iter_slide_text_frames
+from openpptx import Presentation
+from openpptx.text.search import _iter_slide_text_frames
 
 
 def _timed(fn) -> tuple[float, object]:
@@ -66,7 +66,7 @@ def bench_merge_runs_large(synth_large: Path) -> None:
     prs = Presentation(str(synth_large))
     # -- split each paragraph's run in two, with identical formatting, so each can merge back --
     for slide in prs.slides:
-        for _, text_frame in iter_slide_text_frames(slide):
+        for _, text_frame in _iter_slide_text_frames(slide):
             for paragraph in text_frame.paragraphs:
                 (run,) = paragraph.runs
                 text = run.text
@@ -77,7 +77,7 @@ def bench_merge_runs_large(synth_large: Path) -> None:
         return sum(
             text_frame.merge_runs()
             for slide in prs.slides
-            for _, text_frame in iter_slide_text_frames(slide)
+            for _, text_frame in _iter_slide_text_frames(slide)
         )
 
     elapsed, merged = _timed(merge)

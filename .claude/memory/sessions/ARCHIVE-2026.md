@@ -92,3 +92,22 @@ Decisions folded out of INDEX.md to keep it in budget. Still in force unless sup
 - 2026-10-15 0834 | Filed #131 (shadow colour) + #132 (chartex re-save repair); owner put both in v0.5.1 close-out | sessions/2026-10-15-0834-v051-followups-filed.md
 - 2026-10-15 | #131 + #132 fixed and PowerPoint-verified; package 0.5.1; close-out PR opened | sessions/2026-10-15-0834-v051-followups-filed.md
 - 2026-10-15 1347 | v0.6.0 built end to end: card, L1/L2, lazy blobs, caching audit (11 fixes), gate metric, 0.6.0; PR #134 ready | sessions/2026-10-15-1347-v060-card-expanded.md
+
+## Log entries folded from INDEX.md on 2026-10-16
+- 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
+- 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
+- 2026-10-16 | v0.7.1 built: 9 review findings → template/count errors up front, TextMatch eq, `\v` → a:br, regex context, rel drops | sessions/2026-10-16-1300-v071-review-fixes.md
+- 2026-10-16 | v0.7.1 merged (PR #136, `2627ddd`, 7/7 CI); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
+
+## Decisions folded from INDEX.md on 2026-10-16
+- [2026-10-13] "Opens without repair" is CHECKABLE on Windows: open via COM with `DisplayAlerts = ppAlertsNone` and
+  PowerPoint turns the repair prompt into `0x80070570`. Controls that make it fail: truncated slide XML, and a part deleted
+  while its relationship stays. `Presentation.Saved` is NOT a repair signal (True either way) — sessions/2026-10-13-2217-powerpoint-verification-pr119-125.md
+- [2026-10-13] A passing suite does NOT mean PowerPoint accepts the output: 3 merged features write decks it refuses
+  (#126 glow w/o colour child, #127 orphaned commentAuthors part, #128 chartex w/o chartStyle+chartColorStyle). Each
+  shipped behind an "opens in PowerPoint" check nobody ran — same log
+
+## Log entries folded from INDEX.md on 2026-10-16 (v1.0.0)
+- 2026-10-16 1305 | v1.0.0 card filled in: `openpptx` dist, documented-surface contract, Pages, LICENSE | sessions/2026-10-16-1305-v100-card-expanded.md
+- 2026-10-16 | v1.0.0 step 1 done: LICENSE (both notices), pyproject metadata, setuptools>=77; build+twine OK | v1.0.0 card
+- 2026-10-16 | v1.0.0 step 2 done: enum raises, 4 modules documented, helpers underscored, snapshot (3138 names) | v1.0.0 card

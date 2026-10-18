@@ -1,12 +1,13 @@
-"""Unit test suite for the pptx.chart.datalabel module"""
+"""Unit test suite for the openpptx.chart.datalabel module"""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.datalabel import DataLabel, DataLabels
-from pptx.enum.chart import XL_LABEL_POSITION
-from pptx.text.text import Font
+from openpptx.chart._text import CHART_TEXT_PARENT
+from openpptx.chart.datalabel import DataLabel, DataLabels
+from openpptx.enum.chart import XL_LABEL_POSITION
+from openpptx.text.text import Font
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import class_mock, instance_mock, method_mock
@@ -15,7 +16,7 @@ from ..unitutil.mock import class_mock, instance_mock, method_mock
 class DescribeDataLabel:
 
     def it_writes_its_font_after_a_text_frame_is_added(self):
-        from pptx.util import Pt
+        from openpptx.util import Pt
 
         ser = element("c:ser")
         data_label = DataLabel(ser, 0)
@@ -55,7 +56,7 @@ class DescribeDataLabel:
     def it_provides_access_to_its_text_frame(self, text_frame_fixture):
         data_label, TextFrame_, rich_, text_frame_ = text_frame_fixture
         text_frame = data_label.text_frame
-        TextFrame_.assert_called_once_with(rich_, data_label)
+        TextFrame_.assert_called_once_with(rich_, CHART_TEXT_PARENT)
         assert text_frame is text_frame_
 
     def it_gets_or_adds_rich_element_to_help(self, rich_fixture):
@@ -266,7 +267,7 @@ class DescribeDataLabel:
 
     @pytest.fixture
     def TextFrame_(self, request):
-        return class_mock(request, "pptx.chart.datalabel.TextFrame")
+        return class_mock(request, "openpptx.chart.datalabel.TextFrame")
 
 
 class DescribeDataLabels:
@@ -669,7 +670,7 @@ class DescribeDataLabels:
 
     @pytest.fixture
     def Font_(self, request, font_):
-        return class_mock(request, "pptx.chart.datalabel.Font", return_value=font_)
+        return class_mock(request, "openpptx.chart.datalabel.Font", return_value=font_)
 
     @pytest.fixture
     def font_(self, request):

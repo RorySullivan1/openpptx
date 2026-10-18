@@ -1,22 +1,23 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.chart.chart` module."""
+"""Unit-test suite for `openpptx.chart.chart` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.axis import CategoryAxis, DateAxis, ValueAxis
-from pptx.chart.chart import Chart, ChartTitle, DataTable, Legend, _Plots
-from pptx.exc import ChartError
-from pptx.chart.data import ChartData
-from pptx.chart.plot import _BasePlot
-from pptx.chart.series import SeriesCollection
-from pptx.chart.xmlwriter import _BaseSeriesXmlRewriter
-from pptx.dml.chtfmt import ChartFormat
-from pptx.enum.chart import XL_CHART_TYPE, XL_DISPLAY_BLANKS_AS
-from pptx.parts.chart import ChartWorkbook
-from pptx.text.text import Font
+from openpptx.chart._text import CHART_TEXT_PARENT
+from openpptx.chart.axis import CategoryAxis, DateAxis, ValueAxis
+from openpptx.chart.chart import Chart, ChartTitle, DataTable, Legend, _Plots
+from openpptx.exc import ChartError
+from openpptx.chart.data import ChartData
+from openpptx.chart.plot import _BasePlot
+from openpptx.chart.series import SeriesCollection
+from openpptx.chart.xmlwriter import _BaseSeriesXmlRewriter
+from openpptx.dml.chtfmt import ChartFormat
+from openpptx.enum.chart import XL_CHART_TYPE, XL_DISPLAY_BLANKS_AS
+from openpptx.parts.chart import ChartWorkbook
+from openpptx.text.text import Font
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import (
@@ -29,7 +30,7 @@ from ..unitutil.mock import (
 
 
 class DescribeChart:
-    """Unit-test suite for `pptx.chart.chart.Chart` objects."""
+    """Unit-test suite for `openpptx.chart.chart.Chart` objects."""
 
     def it_provides_access_to_its_font(self, font_fixture, Font_, font_):
         chartSpace, expected_xml = font_fixture
@@ -117,7 +118,7 @@ class DescribeChart:
         plot = chart.add_plot("line", use_secondary_axis=True)
 
         # New plot should be a LinePlot
-        from pptx.chart.plot import LinePlot
+        from openpptx.chart.plot import LinePlot
 
         assert isinstance(plot, LinePlot)
 
@@ -166,7 +167,7 @@ class DescribeChart:
         chart = Chart(chartSpace, None)
         view = chart.view_3d
 
-        from pptx.chart.view3d import View3D
+        from openpptx.chart.view3d import View3D
 
         assert isinstance(view, View3D)
 
@@ -192,7 +193,7 @@ class DescribeChart:
         chartSpace = element("c:chartSpace/c:chart")
         chart = Chart(chartSpace, None)
 
-        from pptx.chart.view3d import ChartSurface
+        from openpptx.chart.view3d import ChartSurface
 
         floor = chart.floor
         assert isinstance(floor, ChartSurface)
@@ -236,7 +237,7 @@ class DescribeChart:
         chartSpace = element("c:chartSpace/c:chart")
         chart = Chart(chartSpace, None)
 
-        from pptx.dml.chtfmt import ChartFormat
+        from openpptx.dml.chtfmt import ChartFormat
 
         fmt = chart.chart_format
         assert isinstance(fmt, ChartFormat)
@@ -245,7 +246,7 @@ class DescribeChart:
         chartSpace = element("c:chartSpace/c:chart/c:plotArea")
         chart = Chart(chartSpace, None)
 
-        from pptx.chart.plotarea import PlotArea
+        from openpptx.chart.plotarea import PlotArea
 
         pa = chart.plot_area
         assert isinstance(pa, PlotArea)
@@ -584,7 +585,7 @@ class DescribeChart:
 
     @pytest.fixture
     def CategoryAxis_(self, request, category_axis_):
-        return class_mock(request, "pptx.chart.chart.CategoryAxis", return_value=category_axis_)
+        return class_mock(request, "openpptx.chart.chart.CategoryAxis", return_value=category_axis_)
 
     @pytest.fixture
     def category_axis_(self, request):
@@ -596,7 +597,7 @@ class DescribeChart:
 
     @pytest.fixture
     def ChartTitle_(self, request, chart_title_):
-        return class_mock(request, "pptx.chart.chart.ChartTitle", return_value=chart_title_)
+        return class_mock(request, "openpptx.chart.chart.ChartTitle", return_value=chart_title_)
 
     @pytest.fixture
     def chart_title_(self, request):
@@ -604,7 +605,7 @@ class DescribeChart:
 
     @pytest.fixture
     def DateAxis_(self, request, date_axis_):
-        return class_mock(request, "pptx.chart.chart.DateAxis", return_value=date_axis_)
+        return class_mock(request, "openpptx.chart.chart.DateAxis", return_value=date_axis_)
 
     @pytest.fixture
     def date_axis_(self, request):
@@ -612,7 +613,7 @@ class DescribeChart:
 
     @pytest.fixture
     def Font_(self, request):
-        return class_mock(request, "pptx.chart.chart.Font")
+        return class_mock(request, "openpptx.chart.chart.Font")
 
     @pytest.fixture
     def font_(self, request):
@@ -620,7 +621,7 @@ class DescribeChart:
 
     @pytest.fixture
     def Legend_(self, request, legend_):
-        return class_mock(request, "pptx.chart.chart.Legend", return_value=legend_)
+        return class_mock(request, "openpptx.chart.chart.Legend", return_value=legend_)
 
     @pytest.fixture
     def legend_(self, request):
@@ -628,11 +629,11 @@ class DescribeChart:
 
     @pytest.fixture
     def PlotTypeInspector_(self, request):
-        return class_mock(request, "pptx.chart.chart.PlotTypeInspector")
+        return class_mock(request, "openpptx.chart.chart._PlotTypeInspector")
 
     @pytest.fixture
     def _Plots_(self, request, plots_):
-        return class_mock(request, "pptx.chart.chart._Plots", return_value=plots_)
+        return class_mock(request, "openpptx.chart.chart._Plots", return_value=plots_)
 
     @pytest.fixture
     def plot_(self, request):
@@ -646,7 +647,7 @@ class DescribeChart:
     def SeriesCollection_(self, request, series_collection_):
         return class_mock(
             request,
-            "pptx.chart.chart.SeriesCollection",
+            "openpptx.chart.chart.SeriesCollection",
             return_value=series_collection_,
         )
 
@@ -654,7 +655,7 @@ class DescribeChart:
     def SeriesXmlRewriterFactory_(self, request, series_rewriter_):
         return function_mock(
             request,
-            "pptx.chart.chart.SeriesXmlRewriterFactory",
+            "openpptx.chart.chart.SeriesXmlRewriterFactory",
             return_value=series_rewriter_,
             autospec=True,
         )
@@ -669,7 +670,7 @@ class DescribeChart:
 
     @pytest.fixture
     def ValueAxis_(self, request, value_axis_):
-        return class_mock(request, "pptx.chart.chart.ValueAxis", return_value=value_axis_)
+        return class_mock(request, "openpptx.chart.chart.ValueAxis", return_value=value_axis_)
 
     @pytest.fixture
     def value_axis_(self, request):
@@ -685,7 +686,7 @@ class DescribeChart:
 
 
 class DescribeChartTitle:
-    """Unit-test suite for `pptx.chart.chart.ChartTitle` objects."""
+    """Unit-test suite for `openpptx.chart.chart.ChartTitle` objects."""
 
     def it_provides_access_to_its_format(self, format_fixture):
         chart_title, ChartFormat_, format_ = format_fixture
@@ -706,7 +707,7 @@ class DescribeChartTitle:
     def it_provides_access_to_its_text_frame(self, text_frame_fixture):
         chart_title, TextFrame_, text_frame_ = text_frame_fixture
         text_frame = chart_title.text_frame
-        TextFrame_.assert_called_once_with(chart_title._element.tx.rich, chart_title)
+        TextFrame_.assert_called_once_with(chart_title._element.tx.rich, CHART_TEXT_PARENT)
         assert text_frame is text_frame_
 
     # fixtures -------------------------------------------------------
@@ -769,7 +770,7 @@ class DescribeChartTitle:
 
     @pytest.fixture
     def ChartFormat_(self, request, format_):
-        return class_mock(request, "pptx.chart.chart.ChartFormat", return_value=format_)
+        return class_mock(request, "openpptx.chart.chart.ChartFormat", return_value=format_)
 
     @pytest.fixture
     def format_(self, request):
@@ -777,11 +778,11 @@ class DescribeChartTitle:
 
     @pytest.fixture
     def TextFrame_(self, request):
-        return class_mock(request, "pptx.chart.chart.TextFrame")
+        return class_mock(request, "openpptx.chart.chart.TextFrame")
 
 
 class Describe_Plots:
-    """Unit-test suite for `pptx.chart.chart._Plots` objects."""
+    """Unit-test suite for `openpptx.chart.chart._Plots` objects."""
 
     def it_supports_indexed_access(self, getitem_fixture):
         plots, idx, PlotFactory_, plot_elm, chart_, plot_ = getitem_fixture
@@ -828,7 +829,7 @@ class Describe_Plots:
 
     @pytest.fixture
     def PlotFactory_(self, request, plot_):
-        return function_mock(request, "pptx.chart.chart.PlotFactory", return_value=plot_)
+        return function_mock(request, "openpptx.chart.chart._PlotFactory", return_value=plot_)
 
     @pytest.fixture
     def plot_(self, request):
@@ -839,12 +840,12 @@ class DescribeChart_3d:
     """Reading and editing a 3D chart saved the way PowerPoint writes one."""
 
     def it_reads_a_powerpoint_style_3d_column_chart(self):
-        import pptx
-        from pptx.chart.plot import Bar3DPlot
+        import openpptx
+        from openpptx.chart.plot import Bar3DPlot
 
         from ..unitutil.chart3d import CATEGORIES, SERIES, chart_3d_pptx
 
-        chart = pptx.Presentation(chart_3d_pptx()).slides[0].shapes[0].chart
+        chart = openpptx.Presentation(chart_3d_pptx()).slides[0].shapes[0].chart
 
         assert chart.chart_type == XL_CHART_TYPE.THREE_D_COLUMN_CLUSTERED
         plot = chart.plots[0]
@@ -865,12 +866,12 @@ class DescribeChart_3d:
     def it_keeps_powerpoint_markup_when_the_camera_and_walls_change(self):
         from io import BytesIO
 
-        import pptx
-        from pptx.dml.color import RGBColor
+        import openpptx
+        from openpptx.dml.color import RGBColor
 
         from ..unitutil.chart3d import chart_3d_pptx
 
-        prs = pptx.Presentation(chart_3d_pptx())
+        prs = openpptx.Presentation(chart_3d_pptx())
         chart = prs.slides[0].shapes[0].chart
         chart.view_3d.rot_y = 40
         chart.view_3d.right_angle_axes = False
@@ -881,7 +882,7 @@ class DescribeChart_3d:
         prs.save(stream)
         stream.seek(0)
 
-        chart = pptx.Presentation(stream).slides[0].shapes[0].chart
+        chart = openpptx.Presentation(stream).slides[0].shapes[0].chart
         chartSpace = chart._chartSpace
         assert (chart.view_3d.rot_y, chart.view_3d.right_angle_axes) == (40, False)
         assert chart.view_3d.perspective == 45

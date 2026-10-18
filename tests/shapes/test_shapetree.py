@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit test suite for pptx.shapes.shapetree module"""
+"""Unit test suite for openpptx.shapes.shapetree module"""
 
 from __future__ import annotations
 
@@ -9,33 +9,33 @@ from unittest.mock import Mock
 
 import pytest
 
-from pptx.chart.data import ChartData
-from pptx.enum.chart import XL_CHART_TYPE
-from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR, PP_PLACEHOLDER, PROG_ID
-from pptx.media import SPEAKER_IMAGE_BYTES, Video
-from pptx.media import Audio as AudioMedia
-from pptx.oxml import parse_xml
-from pptx.oxml.shapes.groupshape import CT_GroupShape
-from pptx.oxml.shapes.picture import CT_Picture
-from pptx.oxml.shapes.shared import BaseShapeElement, ST_Direction
-from pptx.parts.image import ImagePart
-from pptx.parts.slide import SlidePart
-from pptx.shapes.autoshape import AutoShapeType, Shape
-from pptx.shapes.base import BaseShape
-from pptx.shapes.connector import Connector
-from pptx.shapes.freeform import FreeformBuilder
-from pptx.shapes.graphfrm import GraphicFrame
-from pptx.shapes.group import GroupShape
-from pptx.shapes.picture import Audio, Movie, Picture
-from pptx.shapes.placeholder import (
+from openpptx.chart.data import ChartData
+from openpptx.enum.chart import XL_CHART_TYPE
+from openpptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR, PP_PLACEHOLDER, PROG_ID
+from openpptx.media import SPEAKER_IMAGE_BYTES, Video
+from openpptx.media import Audio as AudioMedia
+from openpptx.oxml import parse_xml
+from openpptx.oxml.shapes.groupshape import CT_GroupShape
+from openpptx.oxml.shapes.picture import CT_Picture
+from openpptx.oxml.shapes.shared import BaseShapeElement, ST_Direction
+from openpptx.parts.image import ImagePart
+from openpptx.parts.slide import SlidePart
+from openpptx.shapes.autoshape import AutoShapeType, Shape
+from openpptx.shapes.base import BaseShape
+from openpptx.shapes.connector import Connector
+from openpptx.shapes.freeform import FreeformBuilder
+from openpptx.shapes.graphfrm import GraphicFrame
+from openpptx.shapes.group import GroupShape
+from openpptx.shapes.picture import Audio, Movie, Picture
+from openpptx.shapes.placeholder import (
     LayoutPlaceholder,
     MasterPlaceholder,
     NotesSlidePlaceholder,
     _BaseSlidePlaceholder,
 )
-from pptx.shapes.shapetree import (
+from openpptx.shapes.shapetree import (
     BasePlaceholders,
-    BaseShapeFactory,
+    _BaseShapeFactory,
     GroupShapes,
     LayoutPlaceholders,
     LayoutShapes,
@@ -44,7 +44,7 @@ from pptx.shapes.shapetree import (
     NotesSlidePlaceholders,
     NotesSlideShapes,
     SlidePlaceholders,
-    SlideShapeFactory,
+    _SlideShapeFactory,
     SlideShapes,
     _BaseGroupShapes,
     _BaseShapes,
@@ -56,9 +56,9 @@ from pptx.shapes.shapetree import (
     _OleObjectElementCreator,
     _SlidePlaceholderFactory,
 )
-from pptx.slide import SlideLayout, SlideMaster
-from pptx.table import Table
-from pptx.util import Emu, Inches
+from openpptx.slide import SlideLayout, SlideMaster
+from openpptx.table import Table
+from openpptx.util import Emu, Inches
 
 from ..oxml.unitdata.shape import a_ph, a_pic, an_nvPr, an_nvSpPr, an_sp
 from ..unitutil.cxml import element, xml
@@ -78,7 +78,7 @@ from ..unitutil.mock import (
 class DescribeBaseShapeFactory:
     def it_constructs_the_right_shape_for_an_element(self, factory_fixture):
         shape_elm, parent_, ShapeClass_, shape_ = factory_fixture
-        shape = BaseShapeFactory(shape_elm, parent_)
+        shape = _BaseShapeFactory(shape_elm, parent_)
         ShapeClass_.assert_called_once_with(shape_elm, parent_)
         assert shape is shape_
 
@@ -101,7 +101,7 @@ class DescribeBaseShapeFactory:
         shape_mock = instance_mock(request, ShapeCls)
         ShapeClass_ = class_mock(
             request,
-            "pptx.shapes.shapetree.%s" % ShapeCls.__name__,
+            "openpptx.shapes.shapetree.%s" % ShapeCls.__name__,
             return_value=shape_mock,
         )
         return shape_elm, parent_, ShapeClass_, shape_mock
@@ -114,7 +114,7 @@ class DescribeBaseShapeFactory:
 
 
 class Describe_BaseShapes:
-    """Unit-test suite for `pptx.shapes.shapetree._BaseShapes` objects."""
+    """Unit-test suite for `openpptx.shapes.shapetree._BaseShapes` objects."""
 
     def it_knows_how_many_shapes_it_contains(self, len_fixture):
         shapes, expected_count = len_fixture
@@ -295,7 +295,7 @@ class Describe_BaseShapes:
         placeholder = element(
             "p:sp/p:nvSpPr/p:nvPr/p:ph{type=body,idx=1}"
         )
-        from pptx.shapes.placeholder import LayoutPlaceholder
+        from openpptx.shapes.placeholder import LayoutPlaceholder
 
         ph = LayoutPlaceholder(placeholder, None)
         shapes.clone_placeholder(ph)
@@ -423,7 +423,7 @@ class Describe_BaseShapes:
     def BaseShapeFactory_(self, request, shape_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree.BaseShapeFactory",
+            "openpptx.shapes.shapetree._BaseShapeFactory",
             return_value=shape_,
             autospec=True,
         )
@@ -438,7 +438,7 @@ class Describe_BaseShapes:
 
 
 class Describe_BaseGroupShapes:
-    """Unit-test suite for `pptx.shapes.shapetree._BaseGroupShapes`."""
+    """Unit-test suite for `openpptx.shapes.shapetree._BaseGroupShapes`."""
 
     def it_can_add_a_chart(
         self,
@@ -504,7 +504,7 @@ class Describe_BaseGroupShapes:
         _next_shape_id_prop_.return_value = 42
         graphicFrame = element("p:graphicFrame")
         _OleObjectElementCreator_ = class_mock(
-            request, "pptx.shapes.shapetree._OleObjectElementCreator"
+            request, "openpptx.shapes.shapetree._OleObjectElementCreator"
         )
         _OleObjectElementCreator_.graphicFrame.return_value = graphicFrame
         ole_object_shape_ = instance_mock(request, GraphicFrame)
@@ -1009,7 +1009,7 @@ class Describe_BaseGroupShapes:
 
     @pytest.fixture
     def AutoShapeType_(self, request):
-        return class_mock(request, "pptx.shapes.shapetree.AutoShapeType")
+        return class_mock(request, "openpptx.shapes.shapetree.AutoShapeType")
 
     @pytest.fixture
     def builder_(self, request):
@@ -1129,7 +1129,7 @@ class DescribeNotesSlidePlaceholders:
     def _NotesSlideShapeFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree._NotesSlideShapeFactory",
+            "openpptx.shapes.shapetree._NotesSlideShapeFactory",
             return_value=placeholder_,
             autospec=True,
         )
@@ -1175,7 +1175,7 @@ class DescribeNotesSlideShapes:
     def _NotesSlideShapeFactory_(self, request, shape_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree._NotesSlideShapeFactory",
+            "openpptx.shapes.shapetree._NotesSlideShapeFactory",
             return_value=shape_,
             autospec=True,
         )
@@ -1281,7 +1281,7 @@ class DescribeSlidePlaceholders:
     def SlideShapeFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree.SlideShapeFactory",
+            "openpptx.shapes.shapetree._SlideShapeFactory",
             return_value=placeholder_,
         )
 
@@ -1336,14 +1336,14 @@ class Describe_SlidePlaceholderFactory:
     @pytest.fixture
     def ChartPlaceholder_(self, request, placeholder_):
         return class_mock(
-            request, "pptx.shapes.shapetree.ChartPlaceholder", return_value=placeholder_
+            request, "openpptx.shapes.shapetree.ChartPlaceholder", return_value=placeholder_
         )
 
     @pytest.fixture
     def PicturePlaceholder_(self, request, placeholder_):
         return class_mock(
             request,
-            "pptx.shapes.shapetree.PicturePlaceholder",
+            "openpptx.shapes.shapetree.PicturePlaceholder",
             return_value=placeholder_,
         )
 
@@ -1351,7 +1351,7 @@ class Describe_SlidePlaceholderFactory:
     def PlaceholderGraphicFrame_(self, request, placeholder_):
         return class_mock(
             request,
-            "pptx.shapes.shapetree.PlaceholderGraphicFrame",
+            "openpptx.shapes.shapetree.PlaceholderGraphicFrame",
             return_value=placeholder_,
         )
 
@@ -1359,7 +1359,7 @@ class Describe_SlidePlaceholderFactory:
     def PlaceholderPicture_(self, request, placeholder_):
         return class_mock(
             request,
-            "pptx.shapes.shapetree.PlaceholderPicture",
+            "openpptx.shapes.shapetree.PlaceholderPicture",
             return_value=placeholder_,
         )
 
@@ -1370,20 +1370,20 @@ class Describe_SlidePlaceholderFactory:
     @pytest.fixture
     def SlidePlaceholder_(self, request, placeholder_):
         return class_mock(
-            request, "pptx.shapes.shapetree.SlidePlaceholder", return_value=placeholder_
+            request, "openpptx.shapes.shapetree.SlidePlaceholder", return_value=placeholder_
         )
 
     @pytest.fixture
     def TablePlaceholder_(self, request, placeholder_):
         return class_mock(
-            request, "pptx.shapes.shapetree.TablePlaceholder", return_value=placeholder_
+            request, "openpptx.shapes.shapetree.TablePlaceholder", return_value=placeholder_
         )
 
 
 class DescribeSlideShapeFactory:
     def it_constructs_the_right_type_of_shape(self, factory_fixture):
         element, parent_, Constructor_, shape_ = factory_fixture
-        shape = SlideShapeFactory(element, parent_)
+        shape = _SlideShapeFactory(element, parent_)
         Constructor_.assert_called_once_with(element, parent_)
         assert shape is shape_
 
@@ -1418,7 +1418,7 @@ class DescribeSlideShapeFactory:
     @pytest.fixture
     def BaseShapeFactory_(self, request, base_shape_):
         return function_mock(
-            request, "pptx.shapes.shapetree.BaseShapeFactory", return_value=base_shape_
+            request, "openpptx.shapes.shapetree._BaseShapeFactory", return_value=base_shape_
         )
 
     @pytest.fixture
@@ -1433,7 +1433,7 @@ class DescribeSlideShapeFactory:
     def _SlidePlaceholderFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree._SlidePlaceholderFactory",
+            "openpptx.shapes.shapetree._SlidePlaceholderFactory",
             return_value=placeholder_,
         )
 
@@ -1685,11 +1685,11 @@ class DescribeSlideShapes:
 
     @pytest.fixture
     def _MoviePicElementCreator_(self, request):
-        return class_mock(request, "pptx.shapes.shapetree._MoviePicElementCreator", autospec=True)
+        return class_mock(request, "openpptx.shapes.shapetree._MoviePicElementCreator", autospec=True)
 
     @pytest.fixture
     def _AudioPicElementCreator_(self, request):
-        return class_mock(request, "pptx.shapes.shapetree._AudioPicElementCreator", autospec=True)
+        return class_mock(request, "openpptx.shapes.shapetree._AudioPicElementCreator", autospec=True)
 
     @pytest.fixture
     def _next_shape_id_prop_(self, request, shape_id_):
@@ -1721,7 +1721,7 @@ class DescribeSlideShapes:
     def SlideShapeFactory_(self, request, shape_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree.SlideShapeFactory",
+            "openpptx.shapes.shapetree._SlideShapeFactory",
             return_value=shape_,
             autospec=True,
         )
@@ -1752,7 +1752,7 @@ class DescribeLayoutShapes:
     def _LayoutShapeFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree._LayoutShapeFactory",
+            "openpptx.shapes.shapetree._LayoutShapeFactory",
             return_value=placeholder_,
             autospec=True,
         )
@@ -1795,7 +1795,7 @@ class Describe_LayoutShapeFactory:
     @pytest.fixture
     def BaseShapeFactory_(self, request, base_shape_):
         return function_mock(
-            request, "pptx.shapes.shapetree.BaseShapeFactory", return_value=base_shape_
+            request, "openpptx.shapes.shapetree._BaseShapeFactory", return_value=base_shape_
         )
 
     @pytest.fixture
@@ -1806,7 +1806,7 @@ class Describe_LayoutShapeFactory:
     def _LayoutPlaceholder_(self, request, layout_placeholder_):
         return class_mock(
             request,
-            "pptx.shapes.shapetree.LayoutPlaceholder",
+            "openpptx.shapes.shapetree.LayoutPlaceholder",
             return_value=layout_placeholder_,
         )
 
@@ -1887,7 +1887,7 @@ class DescribeLayoutPlaceholders:
     def _LayoutShapeFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree._LayoutShapeFactory",
+            "openpptx.shapes.shapetree._LayoutShapeFactory",
             return_value=placeholder_,
             autospec=True,
         )
@@ -1931,7 +1931,7 @@ class Describe_MasterShapeFactory:
     @pytest.fixture
     def BaseShapeFactory_(self, request, base_shape_):
         return function_mock(
-            request, "pptx.shapes.shapetree.BaseShapeFactory", return_value=base_shape_
+            request, "openpptx.shapes.shapetree._BaseShapeFactory", return_value=base_shape_
         )
 
     @pytest.fixture
@@ -1942,7 +1942,7 @@ class Describe_MasterShapeFactory:
     def _MasterPlaceholder_(self, request, master_placeholder_):
         return class_mock(
             request,
-            "pptx.shapes.shapetree.MasterPlaceholder",
+            "openpptx.shapes.shapetree.MasterPlaceholder",
             return_value=master_placeholder_,
         )
 
@@ -1980,7 +1980,7 @@ class DescribeMasterShapes:
     def _MasterShapeFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree._MasterShapeFactory",
+            "openpptx.shapes.shapetree._MasterShapeFactory",
             return_value=placeholder_,
             autospec=True,
         )
@@ -2051,7 +2051,7 @@ class DescribeMasterPlaceholders:
     def _MasterShapeFactory_(self, request, placeholder_):
         return function_mock(
             request,
-            "pptx.shapes.shapetree._MasterShapeFactory",
+            "openpptx.shapes.shapetree._MasterShapeFactory",
             return_value=placeholder_,
             autospec=True,
         )
@@ -2132,7 +2132,7 @@ class Describe_MoviePicElementCreator:
     def it_gets_the_poster_frame_image_from_the_specified_path_to_help(
         self, request: pytest.FixtureRequest
     ):
-        BytesIO_ = class_mock(request, "pptx.shapes.shapetree.io.BytesIO")
+        BytesIO_ = class_mock(request, "openpptx.shapes.shapetree.io.BytesIO")
         movie_pic_element_creator = _MoviePicElementCreator(
             None, None, None, None, None, None, None, "image.png", None  # type: ignore
         )
@@ -2146,7 +2146,7 @@ class Describe_MoviePicElementCreator:
         self, request: pytest.FixtureRequest
     ):
         stream_ = instance_mock(request, io.BytesIO)
-        BytesIO_ = class_mock(request, "pptx.shapes.shapetree.io.BytesIO", return_value=stream_)
+        BytesIO_ = class_mock(request, "openpptx.shapes.shapetree.io.BytesIO", return_value=stream_)
         movie_pic_element_creator = _MoviePicElementCreator(
             None, None, None, None, None, None, None, None, None  # type: ignore
         )
@@ -2423,7 +2423,7 @@ class Describe_AudioPicElementCreator:
     def it_gets_the_icon_image_from_the_specified_path_to_help(
         self, request: pytest.FixtureRequest
     ):
-        BytesIO_ = class_mock(request, "pptx.shapes.shapetree.io.BytesIO")
+        BytesIO_ = class_mock(request, "openpptx.shapes.shapetree.io.BytesIO")
         audio_pic_element_creator = _AudioPicElementCreator(
             None, None, None, None, None, "icon.png", None  # type: ignore
         )
@@ -2437,7 +2437,7 @@ class Describe_AudioPicElementCreator:
         self, request: pytest.FixtureRequest
     ):
         stream_ = instance_mock(request, io.BytesIO)
-        BytesIO_ = class_mock(request, "pptx.shapes.shapetree.io.BytesIO", return_value=stream_)
+        BytesIO_ = class_mock(request, "openpptx.shapes.shapetree.io.BytesIO", return_value=stream_)
         audio_pic_element_creator = _AudioPicElementCreator(
             None, None, None, None, None, None, None  # type: ignore
         )
@@ -2646,7 +2646,7 @@ class Describe_AudioPicElementCreator:
 
 
 class Describe_OleObjectElementCreator:
-    """Unit-test suite for `pptx.shapes.shapetree._OleObjectElementCreator` objects."""
+    """Unit-test suite for `openpptx.shapes.shapetree._OleObjectElementCreator` objects."""
 
     def it_provides_a_graphicFrame_interface_method(self, request, shapes_):
         shape_id, x, y, cx, cy = 42, 1, 2, 3, 4
@@ -2927,7 +2927,7 @@ class Describe_NotesSlideShapeFactory:
 
     @pytest.fixture(
         params=[
-            ("p:sp", "BaseShapeFactory"),
+            ("p:sp", "_BaseShapeFactory"),
             ("p:sp/p:nvSpPr/p:nvPr/p:ph", "NotesSlidePlaceholder"),
         ]
     )
@@ -2935,7 +2935,7 @@ class Describe_NotesSlideShapeFactory:
         sp_cxml, shape_cls_name = request.param
         shape_elm = element(sp_cxml)
         ShapeConstructor_ = class_mock(
-            request, "pptx.shapes.shapetree.%s" % shape_cls_name, return_value=shape_
+            request, "openpptx.shapes.shapetree.%s" % shape_cls_name, return_value=shape_
         )
         return shape_elm, shapes_, ShapeConstructor_, shape_
 
@@ -2989,7 +2989,7 @@ class Describe_BaseGroupShapes_tags:
 
 
 def _blank_slide():
-    from pptx import Presentation
+    from openpptx import Presentation
 
     prs = Presentation()
     return prs.slides.add_slide(prs.slide_layouts[6])
@@ -3021,7 +3021,7 @@ class DescribePlaceholderLookup_on_real_decks:
     def it_finds_the_same_placeholder_as_a_full_scan(self):
         import pathlib
 
-        from pptx import Presentation
+        from openpptx import Presentation
 
         corpus = pathlib.Path(__file__).parent.parent / "test_files" / "real_world"
         decks = [Presentation()] + [Presentation(str(p)) for p in sorted(corpus.glob("*.pptx"))]

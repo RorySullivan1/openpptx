@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.fonts` module."""
+"""Unit-test suite for `openpptx.fonts` module."""
 
 from __future__ import annotations
 
@@ -8,16 +8,16 @@ from typing import cast
 
 import pytest
 
-from pptx.fonts import EmbeddedFont, EmbeddedFonts
-from pptx.oxml.presentation import CT_Presentation
-from pptx.parts.presentation import PresentationPart
+from openpptx.fonts import EmbeddedFont, EmbeddedFonts
+from openpptx.oxml.presentation import CT_Presentation
+from openpptx.parts.presentation import PresentationPart
 
 from .unitutil.cxml import element
 from .unitutil.mock import instance_mock, method_mock
 
 
 class DescribeEmbeddedFonts:
-    """Unit-test suite for `pptx.fonts.EmbeddedFonts` objects."""
+    """Unit-test suite for `openpptx.fonts.EmbeddedFonts` objects."""
 
     def it_is_empty_when_no_embeddedFontLst_is_present(self, part_):
         prs_elm = cast(CT_Presentation, element("p:presentation"))
@@ -74,7 +74,7 @@ class DescribeEmbeddedFonts:
 
 
 class DescribeEmbeddedFont:
-    """Unit-test suite for `pptx.fonts.EmbeddedFont` objects."""
+    """Unit-test suite for `openpptx.fonts.EmbeddedFont` objects."""
 
     def it_knows_its_typeface(self, part_):
         entry = self._entry_elm("Calibri")

@@ -1,12 +1,12 @@
-"""Unit-test suite for `pptx.text` module."""
+"""Unit-test suite for `openpptx.text` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.dml.color import ColorFormat, RGBColor
-from pptx.exc import ShapeError
-from pptx.enum.dml import MSO_COLOR_TYPE, MSO_THEME_COLOR
+from openpptx.dml.color import ColorFormat, RGBColor
+from openpptx.exc import ShapeError
+from openpptx.enum.dml import MSO_COLOR_TYPE, MSO_THEME_COLOR
 
 from ..oxml.unitdata.dml import (
     a_lumMod,

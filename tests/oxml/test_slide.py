@@ -1,11 +1,11 @@
-"""Unit-test suite for `pptx.oxml.slide` module."""
+"""Unit-test suite for `openpptx.oxml.slide` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.exc import InvalidValueError
-from pptx.oxml.slide import (
+from openpptx.exc import InvalidValueError
+from openpptx.oxml.slide import (
     CT_HandoutMaster,
     CT_NotesMaster,
     CT_NotesSlide,
@@ -18,7 +18,7 @@ from ..unitutil.file import snippet_text
 
 
 class DescribeCT_HandoutMaster:
-    """Unit-test suite for `pptx.oxml.slide.CT_HandoutMaster` objects."""
+    """Unit-test suite for `openpptx.oxml.slide.CT_HandoutMaster` objects."""
 
     def it_is_the_element_class_for_a_handout_master(self):
         handoutMaster = element("p:handoutMaster/(p:cSld/p:spTree,p:clrMap,p:hf)")
@@ -29,7 +29,7 @@ class DescribeCT_HandoutMaster:
 
 
 class DescribeCT_NotesMaster:
-    """Unit-test suite for `pptx.oxml.slide.CT_NotesMaster` objects."""
+    """Unit-test suite for `openpptx.oxml.slide.CT_NotesMaster` objects."""
 
     def it_can_create_a_default_notesMaster_element(self):
         notesMaster = CT_NotesMaster.new_default()
@@ -37,7 +37,7 @@ class DescribeCT_NotesMaster:
 
 
 class DescribeCT_NotesSlide:
-    """Unit-test suite for `pptx.oxml.slide.CT_NotesSlide` objects."""
+    """Unit-test suite for `openpptx.oxml.slide.CT_NotesSlide` objects."""
 
     def it_can_create_a_new_notes_element(self):
         notes = CT_NotesSlide.new()
@@ -45,13 +45,13 @@ class DescribeCT_NotesSlide:
 
 
 class DescribeCT_Slide:
-    """Unit-test suite for the modern-comment extension of `pptx.oxml.slide.CT_Slide`."""
+    """Unit-test suite for the modern-comment extension of `openpptx.oxml.slide.CT_Slide`."""
 
     def _sld(self, *ext_uris: str):
         """`p:sld` whose `p:extLst` has one `p:ext` per uri; "C" is the comment-rel extension."""
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
-        from pptx.oxml.slide import COMMENT_REL_EXT_URI
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
+        from openpptx.oxml.slide import COMMENT_REL_EXT_URI
 
         exts = "".join(
             '<p:ext uri="%s"><p188:commentRel r:id="rId9"/></p:ext>' % COMMENT_REL_EXT_URI
@@ -107,9 +107,9 @@ class DescribeCT_CommonSlideData:
     """Unit-test suite for the `p14:creationId` extension of `CT_CommonSlideData`."""
 
     def it_knows_its_creation_id(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
-        from pptx.oxml.slide import CREATION_ID_EXT_URI
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
+        from openpptx.oxml.slide import CREATION_ID_EXT_URI
 
         cSld = parse_xml(
             '<p:cSld %s><p:spTree/><p:extLst><p:ext uri="%s"><p14:creationId val="42"/></p:ext>'
@@ -120,8 +120,8 @@ class DescribeCT_CommonSlideData:
         assert cSld.get_or_add_creation_id() == 42
 
     def it_adds_a_creation_id_when_there_is_none(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         cSld = parse_xml("<p:cSld %s><p:spTree/></p:cSld>" % nsdecls("p"))
 
@@ -132,9 +132,9 @@ class DescribeCT_CommonSlideData:
         assert cSld[-1].tag.endswith("}extLst")
 
     def it_can_renew_its_creation_id(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
-        from pptx.oxml.slide import CREATION_ID_EXT_URI
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
+        from openpptx.oxml.slide import CREATION_ID_EXT_URI
 
         cSld = parse_xml(
             '<p:cSld %s><p:spTree/><p:extLst><p:ext uri="%s"><p14:creationId val="42"/></p:ext>'
@@ -146,8 +146,8 @@ class DescribeCT_CommonSlideData:
         assert cSld.creation_id not in (None, 42)
 
     def but_it_does_not_add_one_when_renewing(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         cSld = parse_xml("<p:cSld %s><p:spTree/></p:cSld>" % nsdecls("p"))
 
@@ -157,7 +157,7 @@ class DescribeCT_CommonSlideData:
 
 
 class DescribeCT_SlideLayout:
-    """Unit-test suite for `pptx.oxml.slide.CT_SlideLayout` objects."""
+    """Unit-test suite for `openpptx.oxml.slide.CT_SlideLayout` objects."""
 
     def it_can_create_a_new_layout_as_PowerPoint_writes_a_user_made_one(self):
         sldLayout = CT_SlideLayout.new("Quote")
@@ -178,7 +178,7 @@ class DescribeCT_SlideLayout:
 
 
 class DescribeCT_SlideLayoutIdList:
-    """Unit-test suite for `pptx.oxml.slide.CT_SlideLayoutIdList` objects."""
+    """Unit-test suite for `openpptx.oxml.slide.CT_SlideLayoutIdList` objects."""
 
     def it_can_append_an_entry_with_an_id(self):
         sldLayoutIdLst = element("p:sldLayoutIdLst/p:sldLayoutId{r:id=rId1,id=2147483649}")

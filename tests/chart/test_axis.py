@@ -1,14 +1,15 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.chart.axis` module."""
+"""Unit-test suite for `openpptx.chart.axis` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.exc import ChartError
+from openpptx.exc import ChartError
 
-from pptx.chart.axis import (
+from openpptx.chart._text import CHART_TEXT_PARENT
+from openpptx.chart.axis import (
     AxisTitle,
     CategoryAxis,
     DateAxis,
@@ -17,23 +18,23 @@ from pptx.chart.axis import (
     ValueAxis,
     _BaseAxis,
 )
-from pptx.dml.chtfmt import ChartFormat
-from pptx.enum.chart import (
+from openpptx.dml.chtfmt import ChartFormat
+from openpptx.enum.chart import (
     XL_AXIS_CROSSES,
     XL_CATEGORY_TYPE,
     XL_TICK_MARK,
 )
-from pptx.enum.chart import (
+from openpptx.enum.chart import (
     XL_TICK_LABEL_POSITION as XL_TICK_LBL_POS,
 )
-from pptx.text.text import Font
+from openpptx.text.text import Font
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import class_mock, instance_mock
 
 
 class Describe_BaseAxis:
-    """Unit-test suite for `pptx.chart.axis._BaseAxis` objects."""
+    """Unit-test suite for `openpptx.chart.axis._BaseAxis` objects."""
 
     def it_provides_access_to_its_title(self, title_fixture):
         axis, AxisTitle_, axis_title_ = title_fixture
@@ -659,7 +660,7 @@ class Describe_BaseAxis:
 
     @pytest.fixture
     def AxisTitle_(self, request, axis_title_):
-        return class_mock(request, "pptx.chart.axis.AxisTitle", return_value=axis_title_)
+        return class_mock(request, "openpptx.chart.axis.AxisTitle", return_value=axis_title_)
 
     @pytest.fixture
     def axis_title_(self, request):
@@ -667,7 +668,7 @@ class Describe_BaseAxis:
 
     @pytest.fixture
     def ChartFormat_(self, request, format_):
-        return class_mock(request, "pptx.chart.axis.ChartFormat", return_value=format_)
+        return class_mock(request, "openpptx.chart.axis.ChartFormat", return_value=format_)
 
     @pytest.fixture
     def format_(self, request):
@@ -675,7 +676,7 @@ class Describe_BaseAxis:
 
     @pytest.fixture
     def MajorGridlines_(self, request, major_gridlines_):
-        return class_mock(request, "pptx.chart.axis.MajorGridlines", return_value=major_gridlines_)
+        return class_mock(request, "openpptx.chart.axis.MajorGridlines", return_value=major_gridlines_)
 
     @pytest.fixture
     def major_gridlines_(self, request):
@@ -683,7 +684,7 @@ class Describe_BaseAxis:
 
     @pytest.fixture
     def TickLabels_(self, request, tick_labels_):
-        return class_mock(request, "pptx.chart.axis.TickLabels", return_value=tick_labels_)
+        return class_mock(request, "openpptx.chart.axis.TickLabels", return_value=tick_labels_)
 
     @pytest.fixture
     def tick_labels_(self, request):
@@ -710,7 +711,7 @@ class DescribeAxisTitle:
     def it_provides_access_to_its_text_frame(self, text_frame_fixture):
         axis_title, TextFrame_, text_frame_ = text_frame_fixture
         text_frame = axis_title.text_frame
-        TextFrame_.assert_called_once_with(axis_title._element.tx.rich, axis_title)
+        TextFrame_.assert_called_once_with(axis_title._element.tx.rich, CHART_TEXT_PARENT)
         assert text_frame is text_frame_
 
     # fixtures -------------------------------------------------------
@@ -773,7 +774,7 @@ class DescribeAxisTitle:
 
     @pytest.fixture
     def ChartFormat_(self, request, format_):
-        return class_mock(request, "pptx.chart.axis.ChartFormat", return_value=format_)
+        return class_mock(request, "openpptx.chart.axis.ChartFormat", return_value=format_)
 
     @pytest.fixture
     def format_(self, request):
@@ -781,7 +782,7 @@ class DescribeAxisTitle:
 
     @pytest.fixture
     def TextFrame_(self, request):
-        return class_mock(request, "pptx.chart.axis.TextFrame")
+        return class_mock(request, "openpptx.chart.axis.TextFrame")
 
 
 class DescribeCategoryAxis:
@@ -815,7 +816,7 @@ class DescribeDateAxis:
 class DescribeMajorGridlines:
 
     def it_adds_the_gridlines_back_when_formatted_after_they_are_removed(self):
-        from pptx.util import Pt
+        from openpptx.util import Pt
 
         axis = ValueAxis(element("c:valAx"))
         axis.major_gridlines.format.line.width = Pt(1)
@@ -851,7 +852,7 @@ class DescribeMajorGridlines:
 
     @pytest.fixture
     def ChartFormat_(self, request, format_):
-        return class_mock(request, "pptx.chart.axis.ChartFormat", return_value=format_)
+        return class_mock(request, "openpptx.chart.axis.ChartFormat", return_value=format_)
 
     @pytest.fixture
     def format_(self, request):
@@ -1024,7 +1025,7 @@ class DescribeTickLabels:
 
     @pytest.fixture
     def Font_(self, request, font_):
-        return class_mock(request, "pptx.chart.axis.Font", return_value=font_)
+        return class_mock(request, "openpptx.chart.axis.Font", return_value=font_)
 
     @pytest.fixture
     def font_(self, request):

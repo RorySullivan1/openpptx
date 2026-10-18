@@ -7,16 +7,16 @@ very different scales can be read on the same chart.
 Saves to add_chart_secondary_axis.pptx.
 """
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.dml.color import RGBColor
-from pptx.enum.chart import (
+from openpptx import Presentation
+from openpptx.chart.data import CategoryChartData
+from openpptx.dml.color import RGBColor
+from openpptx.enum.chart import (
     XL_CHART_TYPE,
     XL_LABEL_POSITION,
     XL_LEGEND_POSITION,
     XL_MARKER_STYLE,
 )
-from pptx.util import Inches, Pt
+from openpptx.util import Inches, Pt
 
 # -- Palette --
 COLUMN_BLUE = RGBColor(0x1B, 0x6B, 0xB5)
@@ -34,7 +34,7 @@ def move_series_to_overlay_plot(chart, src_plot_idx, ser_idx, dst_plot_idx):
 
     After the move, the series is re-typed automatically: a `<c:ser>` moved
     into a `<c:lineChart>` reports as a `LineSeries` on `chart.series`,
-    because `PlotFactory` dispatches off the parent xChart tag.
+    because a series' class follows the xChart element that holds it.
     """
     plotArea = chart._chartSpace.chart.plotArea
     xCharts = list(plotArea.iter_xCharts())

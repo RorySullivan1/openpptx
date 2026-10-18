@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from pptx import Presentation
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.util import Inches
 
 
 def _time_save(path: Path) -> float:

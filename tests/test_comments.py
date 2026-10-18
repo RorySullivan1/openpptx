@@ -10,18 +10,18 @@ import zipfile
 
 import pytest
 
-from pptx import Presentation
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.parts.comments import (
+from openpptx import Presentation
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.parts.comments import (
     AuthorsPart,
     CommentAuthorsPart,
     CommentsPart,
     ModernCommentsPart,
 )
-from pptx.parts.presentation import PresentationPart
-from pptx.slide import Comment, CommentReply, SlideComments, ThreadedComment
+from openpptx.parts.presentation import PresentationPart
+from openpptx.slide import Comment, CommentReply, SlideComments, ThreadedComment
 
 from .unitutil.cxml import element
 from .unitutil.mock import instance_mock
@@ -29,7 +29,7 @@ from .unitutil.mock import instance_mock
 
 
 class DescribeCommentAuthorsPart:
-    """Unit-test suite for `pptx.parts.comments.CommentAuthorsPart`."""
+    """Unit-test suite for `openpptx.parts.comments.CommentAuthorsPart`."""
 
     def _part(self):
         xml = '<p:cmAuthorLst %s/>' % nsdecls("p")
@@ -73,7 +73,7 @@ class DescribeCommentAuthorsPart:
 
 
 class DescribeCommentsPart:
-    """Unit-test suite for `pptx.parts.comments.CommentsPart`."""
+    """Unit-test suite for `openpptx.parts.comments.CommentsPart`."""
 
     def _part(self, n_comments=0):
         parts = ['<p:cmLst %s>' % nsdecls("p")]
@@ -103,7 +103,7 @@ class DescribeCommentsPart:
 
 
 class DescribeAuthorsPart:
-    """Unit-test suite for `pptx.parts.comments.AuthorsPart`."""
+    """Unit-test suite for `openpptx.parts.comments.AuthorsPart`."""
 
     def it_provides_access_to_its_authors(self):
         part = _authors_part()
@@ -134,7 +134,7 @@ class DescribeAuthorsPart:
 
 
 class DescribeModernCommentsPart:
-    """Unit-test suite for `pptx.parts.comments.ModernCommentsPart`."""
+    """Unit-test suite for `openpptx.parts.comments.ModernCommentsPart`."""
 
     def it_provides_access_to_its_threads(self):
         cmLst = element(
@@ -151,7 +151,7 @@ class DescribeModernCommentsPart:
 
 
 class DescribeComment:
-    """Unit-test suite for `pptx.slide.Comment`."""
+    """Unit-test suite for `openpptx.slide.Comment`."""
 
     def _make_comment(self, author_name="Alice", text="Hello", x=100, y=200):
         # Build authors part
@@ -232,7 +232,7 @@ def _txBody(text: str) -> str:
 
 
 class DescribeThreadedComment:
-    """Unit-test suite for `pptx.slide.ThreadedComment`."""
+    """Unit-test suite for `openpptx.slide.ThreadedComment`."""
 
     @pytest.fixture
     def prs_part_(self, request: pytest.FixtureRequest):
@@ -356,7 +356,7 @@ class DescribeThreadedComment:
 
 
 class DescribeThreadedComments:
-    """Unit-test suite for `pptx.slide.ThreadedComments`.
+    """Unit-test suite for `openpptx.slide.ThreadedComments`.
 
     Reading threads from a PowerPoint-shaped file is covered in `tests/test_roundtrip.py`.
     """
@@ -397,7 +397,7 @@ class DescribeCommentAuthorsRelationship:
         assert "ppt/commentAuthors.xml" in pkg.namelist()
 
     def it_repairs_a_deck_that_relates_the_authors_part_from_the_package(self):
-        # -- pypptx 0.5.0 and earlier related the part from the package root; opening such a
+        # -- openpptx 0.5.0 and earlier related the part from the package root; opening such a
         # -- deck moves the relationship, so re-saving it repairs it even if comments go unread
         prs = Presentation()
         package = prs.part.package

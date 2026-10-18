@@ -1,26 +1,21 @@
 # MEMORY INDEX  ·  keep ≤ ~80 lines, ≤ ~200 chars per line
 
 ## State            (rewrite in place — current truth only, ≤ ~10 lines)
-- pypptx: pure-Python `.pptx` lib (dist `pypptx`, import `pptx`); conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
-- 0.7.0 SHIPPED (PR #135, merge `0db7ef1`). **In flight: v0.7.1 on branch `v0.7.1`**: review-fix patch (owner, 2026-10-16),
-  built from `v1.0.0`'s ship-bookkeeping commit. v1.0.0 card is still a sketch: expand it before building.
+- openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
+  repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
+- 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`**: steps 1–4 built (2026-10-16..18; pyright return/arg
+  errors fixed, 198 others left for 1.0.x). Waits on the OWNER: PyPI publisher + `pypi` env, tag v1.0.0rc1 (release-tags.md).
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- No git tags or Releases yet: sessions can't push tags. Owner tags by hand from `.meta/release-tags.md`.
-- Sessions push only to their assigned branch, not `vX.Y.Z`; `.meta/version` records the real branch.
+- Sessions can't push tags (and push only to their assigned branch); owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
+  lightweight; see that file); no Releases yet.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
-- API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra).
 
 ## Decisions        (append-only; supersede, never delete)
 - [2026-09-24..10-09] 19 earlier decisions (claudeBrain adoption, text styles, arcs, element-class keying, SmartArt,
   chartex, AlternateContent, hot-path caches, roadmap renumber, CRLF/LF, POI corpus, test names, perf gate, Sphinx,
   v0.4.0 + v0.5.0 owner decisions) — sessions/ARCHIVE-2026.md
-- [2026-10-13] "Opens without repair" is CHECKABLE on Windows: open via COM with `DisplayAlerts = ppAlertsNone` and
-  PowerPoint turns the repair prompt into `0x80070570`. Controls that make it fail: truncated slide XML, and a part deleted
-  while its relationship stays. `Presentation.Saved` is NOT a repair signal (True either way) — sessions/2026-10-13-2217-powerpoint-verification-pr119-125.md
-- [2026-10-13] A passing suite does NOT mean PowerPoint accepts the output: 3 merged features write decks it refuses
-  (#126 glow w/o colour child, #127 orphaned commentAuthors part, #128 chartex w/o chartStyle+chartColorStyle). Each
-  shipped behind an "opens in PowerPoint" check nobody ran — same log
+- [2026-10-13] 2 decisions (repair-check via COM `ppAlertsNone` -> `0x80070570`; a passing suite != PowerPoint accepts) — sessions/ARCHIVE-2026.md
 - [2026-10-13] Merge order: **merge #125 BEFORE fixing #126–#128**. The bugs live in already-merged features, so holding
   #125 contained nothing; overlap with the fixes is two TEST files only (test_chartexwriter, test_comments) — zero `src/`.
   Hold the **tag**, not the merge: merging publishes nothing (owner tags by hand) — sessions/2026-10-13-2228-pr125-merge-order-ci-unblocked.md
@@ -39,6 +34,17 @@
   work-count gate counts total calls, re-budgeted from main — sessions/2026-10-15-1347-v060-card-expanded.md
 - [2026-10-15] Owner: v0.7.0 find/replace is DECK-WIDE too (slide shapes, groups, tables, existing notes; not layouts/
   masters/charts/SmartArt); property test uses hypothesis (already a dev dep) — .meta/roadmap/stages/03-hardening-and-gaps/v0.7.0.md
+- [2026-10-16] Owner, v1.0.0: PyPI `pypptx` is an unrelated 2015 project, so the dist becomes **`openpptx`** (import stays
+  `pptx`, repo stays `pypptx`). The contract is the DOCUMENTED surface (oxml/opc/parts internal, not renamed;
+  snapshot test). Docs on GitHub Pages. LICENSE adds python-pptx's MIT notice — sessions/2026-10-16-1305-v100-card-expanded.md
+- [2026-10-16] Owner: COMPLETE rebrand to openpptx, the repo included (supersedes "repo stays pypptx"). History keeps
+  the old name: shipped cards, session logs, release-tags. `PyPptxError` → `OpenPptxError` with a deprecated
+  module-`__getattr__` alias — sessions/2026-10-16-1305-v100-card-expanded.md
+- [2026-10-16] Owner: import renamed too, `pptx` → `openpptx` (no users yet). Supersedes "import stays pptx". With no
+  users, nothing renamed before 1.0.0 gets a shim (the `PyPptxError` alias was dropped); the deprecation policy
+  starts at 1.0.0 — same log
+- [2026-10-16] v1.0.0 step 2: the public modules ARE the `docs/api/*.rst` targets (tests/test_public_api.py parses them);
+  internal-layer classes users get (`CorePropertiesPart` etc.) use explicit `:members:`. Regen: `python -m tests.test_public_api`
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
@@ -64,6 +70,5 @@
 - 2026-09-24..10-09 | 22 earlier sessions (claudeBrain adoption; epics #87/#79/#56/#62/#66/#75; #51 perf; v0.3.x docs
   and examples; #114 tags; #115 3D charts; v0.4.0 hardening; v0.5.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-13..10-15 | 9 sessions (PowerPoint checks #119–#125, v0.5.0/v0.5.1 ship, #126–#132, v0.6.0 build) | sessions/ARCHIVE-2026.md
-- 2026-10-16 0345 | v0.7.0 built end to end (search.py, deck-wide, hypothesis, PowerPoint COM pass, perf flat); PR #135 ready | sessions/2026-10-16-0345-v070-built.md
-- 2026-10-16 | v0.7.0 merged (PR #135, `0db7ef1`, 7/7 CI on `f9333f5`); shipped, release-tag row added, cursor → v1.0.0 | .meta/release-tags.md
-- 2026-10-16 | v0.7.1 built: 9 review findings → template/count errors up front, TextMatch eq, `\v` → a:br, regex context, rel drops | sessions/2026-10-16-1300-v071-review-fixes.md
+- 2026-10-16 | 4 entries (v0.7.0 built + merged #135, v0.7.1 built + merged #136) | sessions/ARCHIVE-2026.md
+- 2026-10-16..17 | v1.0.0: card filled in (session 1305 log); steps 1–3 done, details in the card | v1.0.0 card

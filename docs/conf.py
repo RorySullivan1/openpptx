@@ -1,8 +1,9 @@
-"""Sphinx configuration for the pypptx API reference.
+"""Sphinx configuration for the openpptx API reference.
 
-Build locally with ``sphinx-build -W -b html docs docs/_build/html`` after
-``pip install -e ".[docs]"``. The pages are generated from the in-tree docstrings; there is no
-hosted site yet.
+Build locally with ``sphinx-build -W -E -b html docs docs/_build/html`` after
+``pip install -e ".[docs]"``. The reference pages are generated from the in-tree docstrings.
+`.github/workflows/docs.yml` builds the same way and publishes `main` to GitHub Pages, at
+https://rorysullivan1.github.io/openpptx/.
 """
 
 from __future__ import annotations
@@ -13,11 +14,11 @@ import warnings
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-import pptx  # noqa: E402
+import openpptx  # noqa: E402
 
-project = "pypptx"
-author = "pypptx contributors"
-release = pptx.__version__
+project = "openpptx"
+author = "openpptx contributors"
+release = openpptx.__version__
 version = ".".join(release.split(".")[:2])
 
 extensions = [
@@ -48,7 +49,7 @@ intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # `ShapeElement` is a string alias over element classes imported only under TYPE_CHECKING;
 # render it by name instead of trying to evaluate it.
-autodoc_type_aliases = {"ShapeElement": "pptx.oxml.shapes.ShapeElement"}
+autodoc_type_aliases = {"ShapeElement": "openpptx.oxml.shapes.ShapeElement"}
 
 
 def _documented_modules() -> list[str]:
@@ -69,12 +70,12 @@ def _substitutions() -> str:
     """Return an `rst_epilog` defining the `|Name|` substitutions the docstrings use.
 
     The docstrings follow the python-pptx convention of writing `|Chart|` for a link to the
-    `Chart` class and `|None|` for the literal. Every class defined in a `pptx` module gets a
+    `Chart` class and `|None|` for the literal. Every class defined in an `openpptx` module gets a
     substitution linking to it, so a new class needs no entry here. A `|Name|` that matches
     nothing stays undefined and fails the `-W` build, which is how a typo is caught.
 
     Each name is defined once. Precedence: the fixed entries below, then classes in the
-    documented modules (in page order), then classes anywhere else in `pptx`. Where two
+    documented modules (in page order), then classes anywhere else in `openpptx`. Where two
     modules define the same class name, the module-qualified form (`|data.Category|`) reaches
     either one.
     """
@@ -83,30 +84,30 @@ def _substitutions() -> str:
     import pkgutil
 
     subs: dict[str, str] = {name: "``%s``" % name for name in ("True", "False", "None")}
-    subs["pp"] = "pypptx"
+    subs["pp"] = "openpptx"
     builtins = ("AttributeError", "IndexError", "KeyError", "NotImplementedError", "ValueError")
     builtins += ("TypeError", "float", "int", "str", "bool")
     subs.update({name: ":class:`%s`" % name for name in builtins})
 
     # -- conceptual names the docstrings use for a family of classes whose shared base is private --
     concepts = {
-        "Axis": "pptx.chart.axis._BaseAxis",
-        "CoreProperties": "pptx.parts.coreprops.CorePropertiesPart",
-        "GradientStops": "pptx.dml.fill._GradientStops",
-        "GradientStop": "pptx.dml.fill._GradientStop",
-        "Plot": "pptx.chart.plot._BasePlot",
-        "Series": "pptx.chart.series._BaseSeries",
+        "Axis": "openpptx.chart.axis._BaseAxis",
+        "CoreProperties": "openpptx.parts.coreprops.CorePropertiesPart",
+        "GradientStops": "openpptx.dml.fill._GradientStops",
+        "GradientStop": "openpptx.dml.fill._GradientStop",
+        "Plot": "openpptx.chart.plot._BasePlot",
+        "Series": "openpptx.chart.series._BaseSeries",
     }
     subs.update({name: ":class:`%s <%s>`" % (name, target) for name, target in concepts.items()})
 
     # -- `|Class.member|` links to a member of a class --
-    subs["Chart.has_data_table"] = ":attr:`~pptx.chart.chart.Chart.has_data_table`"
-    subs["ThreadedComments.add"] = ":meth:`~pptx.slide.ThreadedComments.add`"
+    subs["Chart.has_data_table"] = ":attr:`~openpptx.chart.chart.Chart.has_data_table`"
+    subs["ThreadedComments.add"] = ":meth:`~openpptx.slide.ThreadedComments.add`"
 
     documented = _documented_modules()
-    others = [pptx.__name__] + [
+    others = [openpptx.__name__] + [
         info.name
-        for info in pkgutil.walk_packages(pptx.__path__, prefix="pptx.")
+        for info in pkgutil.walk_packages(openpptx.__path__, prefix="openpptx.")
         if info.name not in documented
     ]
     for module_name in documented + others:

@@ -11,7 +11,7 @@ processes with `concurrent.futures.ProcessPoolExecutor`. On 4 cores, 16 decks of
 ran 3.4x faster than a plain loop (issue #51); small decks gain less, as process start-up
 dominates.
 
-Use processes, not threads: pypptx objects (like the lxml trees under them) must not be shared
+Use processes, not threads: openpptx objects (like the lxml trees under them) must not be shared
 between threads, and a process pool also sidesteps the GIL. Give each worker a *path*, not a
 `Presentation` -- open and save the deck inside the worker so nothing large crosses processes.
 
@@ -33,8 +33,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
-from pptx import Presentation
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.util import Inches
 
 
 @dataclass

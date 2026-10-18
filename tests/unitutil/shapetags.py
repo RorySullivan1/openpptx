@@ -59,7 +59,7 @@ def _tagLst_xml(tags: dict[str, str]) -> bytes:
 
 def shape_tags_pptx() -> BytesIO:
     """Return a stream holding a one-slide `.pptx` with the tagged slide and shapes above."""
-    from pptx import Presentation
+    from openpptx import Presentation
 
     prs = Presentation()
     prs.slides.add_slide(prs.slide_layouts[6])

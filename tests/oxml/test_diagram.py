@@ -1,4 +1,4 @@
-"""Unit-test suite for `pptx.oxml.diagram` module."""
+"""Unit-test suite for `openpptx.oxml.diagram` module."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import re
 
 import pytest
 
-from pptx.oxml.diagram import CT_Cxn, CT_DataModel, CT_DiagramRelIds, CT_Pt
-from pptx.oxml.text import CT_TextBody
+from openpptx.oxml.diagram import CT_Cxn, CT_DataModel, CT_DiagramRelIds, CT_Pt
+from openpptx.oxml.text import CT_TextBody
 
 from ..unitutil.cxml import element, xml
 
@@ -20,7 +20,7 @@ def _without_nsdecls(xml_str: str) -> str:
 
 
 class DescribeCT_DiagramRelIds:
-    """Unit-test suite for `pptx.oxml.diagram.CT_DiagramRelIds` objects."""
+    """Unit-test suite for `openpptx.oxml.diagram.CT_DiagramRelIds` objects."""
 
     def it_knows_the_rIds_of_its_four_diagram_parts(self):
         relIds = element("dgm:relIds{r:dm=rId2,r:lo=rId3,r:qs=rId4,r:cs=rId5}")
@@ -30,7 +30,7 @@ class DescribeCT_DiagramRelIds:
 
 
 class DescribeCT_DataModel:
-    """Unit-test suite for `pptx.oxml.diagram.CT_DataModel` objects."""
+    """Unit-test suite for `openpptx.oxml.diagram.CT_DataModel` objects."""
 
     @pytest.mark.parametrize(
         ("cxml", "expected_value"),
@@ -116,7 +116,7 @@ class DescribeCT_DataModel:
 
 
 class DescribeCT_Pt:
-    """Unit-test suite for `pptx.oxml.diagram.CT_Pt` objects."""
+    """Unit-test suite for `openpptx.oxml.diagram.CT_Pt` objects."""
 
     @pytest.mark.parametrize(
         ("cxml", "expected_value"),
@@ -163,7 +163,7 @@ class DescribeCT_Pt:
 
 
 class DescribeCT_Cxn:
-    """Unit-test suite for `pptx.oxml.diagram.CT_Cxn` objects."""
+    """Unit-test suite for `openpptx.oxml.diagram.CT_Cxn` objects."""
 
     def it_knows_its_endpoints_and_order(self):
         cxn = element("dgm:cxn{modelId=c1,type=presOf,srcId=1,destId=2,srcOrd=3,destOrd=4}")

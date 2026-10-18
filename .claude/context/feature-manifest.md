@@ -1,24 +1,24 @@
-# pypptx Project Manifest
+# openpptx Project Manifest
 
 ## Purpose
 
-pypptx is a Python library for creating, reading, and modifying Microsoft PowerPoint (.pptx) presentations. It operates directly on the Office Open XML (OOXML/ECMA-376) file format — a ZIP archive of XML parts — without requiring PowerPoint or any rendering engine.
+openpptx is a Python library for creating, reading, and modifying Microsoft PowerPoint (.pptx) presentations. It operates directly on the Office Open XML (OOXML/ECMA-376) file format — a ZIP archive of XML parts — without requiring PowerPoint or any rendering engine.
 
 The library provides a Pythonic object model that mirrors the structure of the VBA PowerPoint object model where feasible within the constraints of static file manipulation.
 
 ## Version
 
-0.1.0
+0.7.1 shipped; 1.0.0 in progress (see `.meta/version`).
 
 ---
 
 ## Scope
 
-### What pypptx Is
+### What openpptx Is
 
 A file-format library. It reads and writes the XML inside `.pptx` files. Every feature it offers must be expressible as a modification to the XML parts and relationships that compose the OOXML package.
 
-### What pypptx Is Not
+### What openpptx Is Not
 
 - Not a rendering engine. It cannot convert slides to images or PDF.
 - Not a runtime environment. It cannot play slideshows, execute macros, interact with a clipboard, or manage application windows.
@@ -32,10 +32,10 @@ The codebase is organized in four layers, from low-level to high-level:
 
 | Layer | Packages | Role |
 |---|---|---|
-| OPC | `pptx.opc` | Open Packaging Convention — ZIP I/O, content types, relationships |
-| OXML | `pptx.oxml` | lxml-based element classes mapped to ECMA-376 XML schema types |
-| Parts | `pptx.parts` | Package parts — slide, image, chart, media, core properties |
-| API | `pptx.api`, `pptx.presentation`, `pptx.slide`, `pptx.shapes`, `pptx.text`, `pptx.chart`, `pptx.dml`, `pptx.table`, `pptx.action` | User-facing Pythonic object model |
+| OPC | `openpptx.opc` | Open Packaging Convention — ZIP I/O, content types, relationships |
+| OXML | `openpptx.oxml` | lxml-based element classes mapped to ECMA-376 XML schema types |
+| Parts | `openpptx.parts` | Package parts — slide, image, chart, media, core properties |
+| API | `openpptx.api`, `openpptx.presentation`, `openpptx.slide`, `openpptx.shapes`, `openpptx.text`, `openpptx.chart`, `openpptx.dml`, `openpptx.table`, `openpptx.action` | User-facing Pythonic object model |
 
 ---
 
@@ -217,7 +217,6 @@ The codebase is organized in four layers, from low-level to high-level:
 
 ### Utilities
 - Length units: EMU, Inches, Cm, Mm, Pt, Centipoints (all interconvertible)
-- `@lazyproperty` cache decorator for derived collections
 
 ---
 
@@ -247,7 +246,7 @@ These are inherent constraints of a file-format library that edits XML. They can
 - Text-level 3D scene, fill, and outline effects
 
 ### Text Range Model Limitations
-- VBA's `TextRange` provides `Characters()`, `Words()`, `Sentences()`, `Lines()`, `Find()`, `Replace()`, `InsertBefore()`, `InsertAfter()`. The `Lines()` method requires a rendering engine to know where visual line breaks occur. `Find()`/`Replace()` are implemented across runs (v0.7.0, `pptx.text.search`); `Lines()` stays out of scope, and `Characters()`, `Words()`, `Sentences()`, `InsertBefore()` and `InsertAfter()` remain gaps (below).
+- VBA's `TextRange` provides `Characters()`, `Words()`, `Sentences()`, `Lines()`, `Find()`, `Replace()`, `InsertBefore()`, `InsertAfter()`. The `Lines()` method requires a rendering engine to know where visual line breaks occur. `Find()`/`Replace()` are implemented across runs (v0.7.0, `openpptx.text.search`); `Lines()` stays out of scope, and `Characters()`, `Words()`, `Sentences()`, `InsertBefore()` and `InsertAfter()` remain gaps (below).
 
 ---
 

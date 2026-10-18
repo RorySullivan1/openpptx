@@ -1,15 +1,15 @@
-# pypptx
+# openpptx
 
 Create, read, and modify PowerPoint .pptx files in pure Python.
 
 ## Overview
 
-pypptx is a Python library for working with Microsoft PowerPoint presentations. It operates directly on the Office Open XML (OOXML) file format without requiring PowerPoint or any other software to be installed. Create presentations from scratch, open and modify existing ones, or merge slides across files — all with a clean, Pythonic API.
+openpptx is a Python library for working with Microsoft PowerPoint presentations. It operates directly on the Office Open XML (OOXML) file format without requiring PowerPoint or any other software to be installed. Create presentations from scratch, open and modify existing ones, or merge slides across files — all with a clean, Pythonic API.
 
 ## Installation
 
 ```bash
-pip install pypptx
+pip install openpptx
 ```
 
 Dependencies (installed automatically): lxml, Pillow, XlsxWriter, typing\_extensions.
@@ -17,14 +17,14 @@ Dependencies (installed automatically): lxml, Pillow, XlsxWriter, typing\_extens
 ## Quick Start
 
 ```python
-from pptx import Presentation
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.util import Inches, Pt
 
 prs = Presentation()
 
 # Add a title slide
 slide = prs.slides.add_slide(prs.slide_layouts[0])
-slide.shapes.title.text = "Hello, pypptx!"
+slide.shapes.title.text = "Hello, openpptx!"
 slide.placeholders[1].text = "Automating PowerPoint with Python"
 
 # Add a blank slide with a formatted text box
@@ -82,30 +82,30 @@ for match in prs.find_text(r"Q[1-4] 20\d\d", regex=True):
 
 ## Examples
 
-See the [`examples/`](examples/) directory for runnable scripts:
+See the [`examples/`](https://github.com/RorySullivan1/openpptx/tree/main/examples) directory for runnable scripts:
 
 | Script | Description |
 |--------|-------------|
-| [`hello_world.py`](examples/hello_world.py) | Minimal presentation with title slide and core properties |
-| [`add_textbox.py`](examples/add_textbox.py) | Text boxes with rich font formatting and paragraph alignment |
-| [`add_picture.py`](examples/add_picture.py) | Insert and format images |
-| [`picture_effects.py`](examples/picture_effects.py) | Brightness, contrast, grayscale, transparent colour, and cropping |
-| [`shapes_and_fills.py`](examples/shapes_and_fills.py) | AutoShapes with solid, gradient, and pattern fills |
-| [`shape_effects.py`](examples/shape_effects.py) | Shadow, glow, reflection, and 3D formatting |
-| [`add_table.py`](examples/add_table.py) | Tables with merged cells, borders, and cell fills |
-| [`add_chart.py`](examples/add_chart.py) | Bar and line charts with data labels and legends |
-| [`add_chart_secondary_axis.py`](examples/add_chart_secondary_axis.py) | Combo chart: column plot plus a line plot on a secondary value axis |
-| [`chart_3d_view.py`](examples/chart_3d_view.py) | 3D column, bar and pie charts; camera rotation, perspective and depth; floor and wall formatting |
-| [`chart_trendlines_error_bars.py`](examples/chart_trendlines_error_bars.py) | Linear, polynomial and moving-average trendlines; fixed, percentage and std-dev error bars |
-| [`batch_process.py`](examples/batch_process.py) | Process a folder of decks in parallel with a process pool (deck-wide `replace_text()`, per-file error reporting) |
-| [`modern_charts.py`](examples/modern_charts.py) | Waterfall, histogram, box & whisker, treemap, sunburst and funnel charts, and a chart data table |
-| [`slide_operations.py`](examples/slide_operations.py) | Duplicate, reorder, and delete slides |
-| [`merge_presentations.py`](examples/merge_presentations.py) | Import and merge slides across presentations |
-| [`bullet_lists.py`](examples/bullet_lists.py) | Bullet formatting, numbered lists, and indentation |
-| [`connectors_and_groups.py`](examples/connectors_and_groups.py) | Connectors with arrowheads and group shapes |
-| [`comments_and_metadata.py`](examples/comments_and_metadata.py) | Comments, slide and shape tags, sections, and custom properties |
-| [`custom_slide_master_walk.py`](examples/custom_slide_master_walk.py) | Walk master → layout → slide placeholder inheritance, and override one |
-| [`investor_presentation.py`](examples/investor_presentation.py) | A five-slide styled deck end to end |
+| [`hello_world.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/hello_world.py) | Minimal presentation with title slide and core properties |
+| [`add_textbox.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/add_textbox.py) | Text boxes with rich font formatting and paragraph alignment |
+| [`add_picture.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/add_picture.py) | Insert and format images |
+| [`picture_effects.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/picture_effects.py) | Brightness, contrast, grayscale, transparent colour, and cropping |
+| [`shapes_and_fills.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/shapes_and_fills.py) | AutoShapes with solid, gradient, and pattern fills |
+| [`shape_effects.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/shape_effects.py) | Shadow, glow, reflection, and 3D formatting |
+| [`add_table.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/add_table.py) | Tables with merged cells, borders, and cell fills |
+| [`add_chart.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/add_chart.py) | Bar and line charts with data labels and legends |
+| [`add_chart_secondary_axis.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/add_chart_secondary_axis.py) | Combo chart: column plot plus a line plot on a secondary value axis |
+| [`chart_3d_view.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/chart_3d_view.py) | 3D column, bar and pie charts; camera rotation, perspective and depth; floor and wall formatting |
+| [`chart_trendlines_error_bars.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/chart_trendlines_error_bars.py) | Linear, polynomial and moving-average trendlines; fixed, percentage and std-dev error bars |
+| [`batch_process.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/batch_process.py) | Process a folder of decks in parallel with a process pool (deck-wide `replace_text()`, per-file error reporting) |
+| [`modern_charts.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/modern_charts.py) | Waterfall, histogram, box & whisker, treemap, sunburst and funnel charts, and a chart data table |
+| [`slide_operations.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/slide_operations.py) | Duplicate, reorder, and delete slides |
+| [`merge_presentations.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/merge_presentations.py) | Import and merge slides across presentations |
+| [`bullet_lists.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/bullet_lists.py) | Bullet formatting, numbered lists, and indentation |
+| [`connectors_and_groups.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/connectors_and_groups.py) | Connectors with arrowheads and group shapes |
+| [`comments_and_metadata.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/comments_and_metadata.py) | Comments, slide and shape tags, sections, and custom properties |
+| [`custom_slide_master_walk.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/custom_slide_master_walk.py) | Walk master → layout → slide placeholder inheritance, and override one |
+| [`investor_presentation.py`](https://github.com/RorySullivan1/openpptx/blob/main/examples/investor_presentation.py) | A five-slide styled deck end to end |
 
 ## Requirements
 
@@ -117,6 +117,18 @@ See the [`examples/`](examples/) directory for runnable scripts:
 - **Not a runtime** — cannot play slideshows or execute VBA macros
 - **Not a print system** — cannot send presentations to a printer
 
+## Stability
+
+From 1.0.0, openpptx follows [Semantic Versioning](https://semver.org/). The public API is what the
+[API reference](https://rorysullivan1.github.io/openpptx/) documents; `openpptx.oxml`, `openpptx.opc`
+and `openpptx.parts` are internal. A deprecated name keeps working, with a `DeprecationWarning`,
+until the next major release. The details are on the
+[stability page](https://rorysullivan1.github.io/openpptx/stability.html).
+
 ## License
 
-MIT
+MIT. See [LICENSE](https://github.com/RorySullivan1/openpptx/blob/main/LICENSE).
+
+openpptx is derived from [python-pptx](https://github.com/scanny/python-pptx) by Steve Canny,
+also MIT, and LICENSE carries its notice as well. The two install side by side: python-pptx
+imports as `pptx`, openpptx as `openpptx`.

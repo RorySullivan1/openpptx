@@ -23,8 +23,8 @@ import tracemalloc
 from datetime import datetime, timezone
 from pathlib import Path
 
-from pptx import Presentation
-from pptx.util import Inches
+from openpptx import Presentation
+from openpptx.util import Inches
 from tests.perf import corpus
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -323,7 +323,7 @@ Open is median of {baseline['open_iterations']} cold opens.
 `iter{baseline['iter_repeat_access_count']}x` repeats the inner walk
 {baseline['iter_repeat_access_count']} times to amplify the cost of
 `paragraphs`/`runs` rebuilding on every access
-(`TextFrame.paragraphs`, `_Paragraph.runs` in `src/pptx/text/text.py`).
+(`TextFrame.paragraphs`, `_Paragraph.runs` in `src/openpptx/text/text.py`).
 
 {_format_table(
     ["fixture", "open", "iter1x", f"iter{baseline['iter_repeat_access_count']}x", "save"],

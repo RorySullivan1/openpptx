@@ -9,9 +9,9 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw
 
-from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.util import Inches, Pt
+from openpptx import Presentation
+from openpptx.dml.color import RGBColor
+from openpptx.util import Inches, Pt
 
 # Generate a simple gradient image in memory
 img = Image.new("RGB", (400, 300))
@@ -19,7 +19,7 @@ draw = ImageDraw.Draw(img)
 for y in range(300):
     r = int(255 * y / 300)
     draw.line([(0, y), (400, y)], fill=(r, 100, 255 - r))
-draw.text((120, 130), "pypptx", fill="white")
+draw.text((120, 130), "openpptx", fill="white")
 buf = BytesIO()
 img.save(buf, format="PNG")
 buf.seek(0)

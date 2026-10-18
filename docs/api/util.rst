@@ -12,12 +12,12 @@ centimeter and 12,700 to the point, so every common unit converts to a whole num
 lengths using the subclasses below, e.g. ``Inches(1)`` or ``Pt(18)``, and read them back in
 any unit with ``.inches``, ``.cm``, ``.pt`` and so on.
 
-``pptx.util``
--------------
+``openpptx.util``
+-----------------
 
-.. automodule:: pptx.util
+.. automodule:: openpptx.util
 
-``pptx.exc``
-------------
+``openpptx.exc``
+----------------
 
-.. automodule:: pptx.exc
+.. automodule:: openpptx.exc

@@ -1,13 +1,13 @@
-"""Test suite for `pptx.dml.line` module."""
+"""Test suite for `openpptx.dml.line` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.dml.color import ColorFormat, RGBColor
-from pptx.dml.fill import FillFormat
-from pptx.dml.line import LineFormat
-from pptx.enum.dml import (
+from openpptx.dml.color import ColorFormat, RGBColor
+from openpptx.dml.fill import FillFormat
+from openpptx.dml.line import LineFormat
+from openpptx.enum.dml import (
     MSO_FILL,
     MSO_LINE,
     MSO_LINE_CAP_STYLE,
@@ -16,8 +16,8 @@ from pptx.enum.dml import (
     MSO_LINE_END_TYPE,
     MSO_LINE_JOIN_STYLE,
 )
-from pptx.oxml.shapes.shared import CT_LineProperties
-from pptx.shapes.autoshape import Shape
+from openpptx.oxml.shapes.shared import CT_LineProperties
+from openpptx.shapes.autoshape import Shape
 
 from ..oxml.unitdata.dml import an_ln
 from ..unitutil.cxml import element, xml
@@ -27,7 +27,7 @@ from ..unitutil.mock import call, class_mock, instance_mock, property_mock
 class DescribeLineFormat:
 
     def it_makes_the_line_solid_again_when_its_color_is_set_after_a_fill_change(self):
-        from pptx.dml.color import RGBColor
+        from openpptx.dml.color import RGBColor
 
         line = Shape(element("p:sp/p:spPr"), None).line
         line.color.rgb = RGBColor(0xFF, 0x00, 0x00)
@@ -311,9 +311,9 @@ class DescribeLineFormat:
         assert color is color_
 
     def it_supports_line_transparency_via_color_alpha(self):
-        from pptx.dml.color import RGBColor
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.dml.color import RGBColor
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Line with solid fill and alpha on the color
         spPr_xml = (
@@ -336,8 +336,8 @@ class DescribeLineFormat:
         assert line.color.alpha == pytest.approx(0.75)
 
     def it_supports_pattern_fill_on_lines(self):
-        from pptx.dml.color import RGBColor
-        from pptx.enum.dml import MSO_PATTERN_TYPE
+        from openpptx.dml.color import RGBColor
+        from openpptx.enum.dml import MSO_PATTERN_TYPE
 
         spPr = element("p:spPr{a:b=c}")
         line = LineFormat(spPr)
@@ -415,7 +415,7 @@ class DescribeLineFormat:
 
     @pytest.fixture
     def FillFormat_(self, request, fill_):
-        FillFormat_ = class_mock(request, "pptx.dml.line.FillFormat")
+        FillFormat_ = class_mock(request, "openpptx.dml.line.FillFormat")
         FillFormat_.from_fill_parent.return_value = fill_
         return FillFormat_
 

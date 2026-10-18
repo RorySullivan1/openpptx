@@ -1,21 +1,21 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.parts.tablestyles` module."""
+"""Unit-test suite for `openpptx.parts.tablestyles` module."""
 
 from __future__ import annotations
 
-from pptx.opc.constants import CONTENT_TYPE as CT
-from pptx.opc.packuri import PackURI
-from pptx.parts.tablestyles import TableStylesPart
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.packuri import PackURI
+from openpptx.parts.tablestyles import TableStylesPart
 
 from ..unitutil.mock import function_mock, instance_mock
 
 
 class DescribeTableStylesPart:
-    """Unit-test suite for `pptx.parts.tablestyles.TableStylesPart`."""
+    """Unit-test suite for `openpptx.parts.tablestyles.TableStylesPart`."""
 
     def it_can_create_a_new_empty_tableStyles_part(self, request):
-        package_ = instance_mock(request, "pptx.package.Package")
+        package_ = instance_mock(request, "openpptx.package.Package")
 
         table_styles_part = TableStylesPart.new(package_)
 
@@ -25,10 +25,10 @@ class DescribeTableStylesPart:
         assert table_styles_part._element.def_ is None
 
     def it_never_parses_when_only_the_blob_is_read_back(self, request):
-        from pptx.oxml import parse_xml as real_parse_xml
+        from openpptx.oxml import parse_xml as real_parse_xml
 
-        parse_xml_ = function_mock(request, "pptx.opc.package.parse_xml")
-        package_ = instance_mock(request, "pptx.package.Package")
+        parse_xml_ = function_mock(request, "openpptx.opc.package.parse_xml")
+        package_ = instance_mock(request, "openpptx.package.Package")
         blob = real_parse_xml(
             '<a:tblStyleLst xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
             'def="{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}"/>'

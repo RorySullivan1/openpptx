@@ -1,10 +1,10 @@
-"""Unit-test suite for `pptx.util` module."""
+"""Unit-test suite for `openpptx.util` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.util import Centipoints, Cm, Emu, Inches, Length, Mm, Pt
+from openpptx.util import Centipoints, Cm, Emu, Inches, Length, Mm, Pt
 
 
 class DescribeLength:

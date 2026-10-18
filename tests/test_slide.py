@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.slide` module."""
+"""Unit-test suite for `openpptx.slide` module."""
 
 from __future__ import annotations
 
@@ -10,19 +10,19 @@ import zipfile
 
 import pytest
 
-from pptx.dml.fill import FillFormat
-from pptx.enum.shapes import PP_PLACEHOLDER
-from pptx.exc import InvalidXmlError, PackageError, SlideError
-from pptx.opc.constants import CONTENT_TYPE as CT
-from pptx.opc.package import XmlPart
-from pptx.opc.packuri import PackURI
-from pptx.package import Package
-from pptx.parts.presentation import PresentationPart
-from pptx.parts.slide import SlideLayoutPart, SlideMasterPart, SlidePart
-from pptx.presentation import Presentation
-from pptx.shapes.base import BaseShape
-from pptx.shapes.placeholder import LayoutPlaceholder, NotesSlidePlaceholder
-from pptx.shapes.shapetree import (
+from openpptx.dml.fill import FillFormat
+from openpptx.enum.shapes import PP_PLACEHOLDER
+from openpptx.exc import InvalidXmlError, PackageError, SlideError
+from openpptx.opc.constants import CONTENT_TYPE as CT
+from openpptx.opc.package import XmlPart
+from openpptx.opc.packuri import PackURI
+from openpptx.package import Package
+from openpptx.parts.presentation import PresentationPart
+from openpptx.parts.slide import SlideLayoutPart, SlideMasterPart, SlidePart
+from openpptx.presentation import Presentation
+from openpptx.shapes.base import BaseShape
+from openpptx.shapes.placeholder import LayoutPlaceholder, NotesSlidePlaceholder
+from openpptx.shapes.shapetree import (
     LayoutPlaceholders,
     LayoutShapes,
     MasterPlaceholders,
@@ -32,7 +32,7 @@ from pptx.shapes.shapetree import (
     SlidePlaceholders,
     SlideShapes,
 )
-from pptx.slide import (
+from openpptx.slide import (
     HeaderFooter,
     NotesMaster,
     NotesSlide,
@@ -48,9 +48,9 @@ from pptx.slide import (
     _source_theme_part,
     _validate_theme,
 )
-from pptx.text.styles import MasterTextStyles
-from pptx.text.text import TextFrame
-from pptx.theme import Theme
+from openpptx.text.styles import MasterTextStyles
+from openpptx.text.text import TextFrame
+from openpptx.theme import Theme
 
 from .unitutil.cxml import element, xml
 from .unitutil.mock import (
@@ -64,7 +64,7 @@ from .unitutil.mock import (
 
 
 class Describe_BaseSlide:
-    """Unit-test suite for `pptx.slide._BaseSlide` objects."""
+    """Unit-test suite for `openpptx.slide._BaseSlide` objects."""
 
     def it_knows_its_name(self, name_get_fixture):
         base_slide, expected_value = name_get_fixture
@@ -119,7 +119,7 @@ class Describe_BaseSlide:
 
     @pytest.fixture
     def _Background_(self, request):
-        return class_mock(request, "pptx.slide._Background")
+        return class_mock(request, "openpptx.slide._Background")
 
     @pytest.fixture
     def background_(self, request):
@@ -127,7 +127,7 @@ class Describe_BaseSlide:
 
 
 class Describe_BaseMaster:
-    """Unit-test suite for `pptx.slide._BaseMaster` objects."""
+    """Unit-test suite for `openpptx.slide._BaseMaster` objects."""
 
     def it_is_a_BaseSlide_subclass(self, subclass_fixture):
         base_master = subclass_fixture
@@ -169,11 +169,11 @@ class Describe_BaseMaster:
 
     @pytest.fixture
     def MasterPlaceholders_(self, request, placeholders_):
-        return class_mock(request, "pptx.slide.MasterPlaceholders", return_value=placeholders_)
+        return class_mock(request, "openpptx.slide.MasterPlaceholders", return_value=placeholders_)
 
     @pytest.fixture
     def MasterShapes_(self, request, shapes_):
-        return class_mock(request, "pptx.slide.MasterShapes", return_value=shapes_)
+        return class_mock(request, "openpptx.slide.MasterShapes", return_value=shapes_)
 
     @pytest.fixture
     def placeholders_(self, request):
@@ -185,7 +185,7 @@ class Describe_BaseMaster:
 
 
 class DescribeNotesSlide:
-    """Unit-test suite for `pptx.slide.NotesSlide` objects."""
+    """Unit-test suite for `openpptx.slide.NotesSlide` objects."""
 
     def it_can_clone_the_notes_master_placeholders(self, request, notes_master_, shapes_):
         placeholders = notes_master_.placeholders = (
@@ -287,11 +287,11 @@ class DescribeNotesSlide:
 
     @pytest.fixture
     def NotesSlidePlaceholders_(self, request, placeholders_):
-        return class_mock(request, "pptx.slide.NotesSlidePlaceholders", return_value=placeholders_)
+        return class_mock(request, "openpptx.slide.NotesSlidePlaceholders", return_value=placeholders_)
 
     @pytest.fixture
     def NotesSlideShapes_(self, request, shapes_):
-        return class_mock(request, "pptx.slide.NotesSlideShapes", return_value=shapes_)
+        return class_mock(request, "openpptx.slide.NotesSlideShapes", return_value=shapes_)
 
     @pytest.fixture
     def placeholder_(self, request):
@@ -315,7 +315,7 @@ class DescribeNotesSlide:
 
 
 class DescribeSlide:
-    """Unit-test suite for `pptx.slide.Slide` objects."""
+    """Unit-test suite for `openpptx.slide.Slide` objects."""
 
     def it_is_a_BaseSlide_subclass(self, subclass_fixture):
         slide = subclass_fixture
@@ -444,11 +444,11 @@ class DescribeSlide:
 
     @pytest.fixture
     def SlidePlaceholders_(self, request, placeholders_):
-        return class_mock(request, "pptx.slide.SlidePlaceholders", return_value=placeholders_)
+        return class_mock(request, "openpptx.slide.SlidePlaceholders", return_value=placeholders_)
 
     @pytest.fixture
     def SlideShapes_(self, request, shapes_):
-        return class_mock(request, "pptx.slide.SlideShapes", return_value=shapes_)
+        return class_mock(request, "openpptx.slide.SlideShapes", return_value=shapes_)
 
     @pytest.fixture
     def shapes_(self, request):
@@ -464,7 +464,7 @@ class DescribeSlide:
 
 
 class DescribeSlides:
-    """Unit-test suite for `pptx.slide.Slides` objects."""
+    """Unit-test suite for `openpptx.slide.Slides` objects."""
 
     def it_supports_indexed_access(self, getitem_fixture):
         slides, prs_part_, rId, slide_ = getitem_fixture
@@ -474,7 +474,7 @@ class DescribeSlides:
 
     def it_raises_on_slide_index_out_of_range(self, getitem_raises_fixture):
         slides = getitem_raises_fixture
-        with pytest.raises(SlideError):
+        with pytest.raises(IndexError, match="index out of range"):
             slides[2]
 
     def it_knows_the_index_of_a_slide_it_contains(self, index_fixture):
@@ -687,7 +687,7 @@ class DescribeSlides:
 
 
 class DescribeHeaderFooter:
-    """Unit-test suite for `pptx.slide.HeaderFooter` objects."""
+    """Unit-test suite for `openpptx.slide.HeaderFooter` objects."""
 
     @pytest.mark.parametrize(
         ("hf_cxml", "prop", "expected"),
@@ -740,8 +740,8 @@ class DescribeHeaderFooter:
         assert hf.show_footer is False
 
     def it_works_on_slide_for_per_slide_overrides(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sld_xml = '<p:sld %s><p:cSld><p:spTree/></p:cSld></p:sld>' % nsdecls("p", "a", "r")
         sld = parse_xml(sld_xml)
@@ -757,8 +757,8 @@ class DescribeHeaderFooter:
         assert hf.show_date is False
 
     def it_reads_footer_text_from_placeholder(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sld_xml = (
             '<p:sld %s><p:cSld><p:spTree>'
@@ -777,8 +777,8 @@ class DescribeHeaderFooter:
         assert hf.footer_text == "My Footer"
 
     def it_can_set_footer_text(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sld_xml = (
             '<p:sld %s><p:cSld><p:spTree>'
@@ -798,8 +798,8 @@ class DescribeHeaderFooter:
         assert hf.footer_text == "New Footer"
 
     def it_returns_None_when_no_footer_placeholder(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sld_xml = (
             '<p:sld %s><p:cSld><p:spTree>'
@@ -812,8 +812,8 @@ class DescribeHeaderFooter:
         assert hf.footer_text is None
 
     def it_reads_date_format_from_field(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sld_xml = (
             '<p:sld %s><p:cSld><p:spTree>'
@@ -836,8 +836,8 @@ class DescribeHeaderFooter:
         assert hf.is_date_auto is True
 
     def it_reports_fixed_date_when_no_field(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sld_xml = (
             '<p:sld %s><p:cSld><p:spTree>'
@@ -857,8 +857,8 @@ class DescribeHeaderFooter:
         assert hf.is_date_auto is False
 
     def it_returns_None_for_date_props_when_no_placeholder(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sld_xml = (
             '<p:sld %s><p:cSld><p:spTree>'
@@ -873,7 +873,7 @@ class DescribeHeaderFooter:
 
 
 class DescribeSlideLayout:
-    """Unit-test suite for `pptx.slide.SlideLayout` objects."""
+    """Unit-test suite for `openpptx.slide.SlideLayout` objects."""
 
     def it_is_a_BaseSlide_subclass(self):
         slide_layout = SlideLayout(None, None)
@@ -966,11 +966,11 @@ class DescribeSlideLayout:
 
     @pytest.fixture
     def LayoutPlaceholders_(self, request, placeholders_):
-        return class_mock(request, "pptx.slide.LayoutPlaceholders", return_value=placeholders_)
+        return class_mock(request, "openpptx.slide.LayoutPlaceholders", return_value=placeholders_)
 
     @pytest.fixture
     def LayoutShapes_(self, request, shapes_):
-        return class_mock(request, "pptx.slide.LayoutShapes", return_value=shapes_)
+        return class_mock(request, "openpptx.slide.LayoutShapes", return_value=shapes_)
 
     @pytest.fixture
     def package_(self, request):
@@ -1026,7 +1026,7 @@ class DescribeSlideLayout:
 
 
 class DescribeSlideLayouts:
-    """Unit-test suite for `pptx.slide.SlideLayouts` objects."""
+    """Unit-test suite for `openpptx.slide.SlideLayouts` objects."""
 
     def it_supports_len(self, len_fixture):
         slide_layouts, expected_value = len_fixture
@@ -1060,7 +1060,7 @@ class DescribeSlideLayouts:
 
     def but_it_raises_on_index_out_of_range(self, part_prop_):
         slide_layouts = SlideLayouts(element("p:sldLayoutIdLst/p:sldLayoutId{r:id=rId1}"), None)
-        with pytest.raises(SlideError):
+        with pytest.raises(IndexError, match="index out of range"):
             slide_layouts[1]
 
     def it_can_find_a_slide_layout_by_name(self, _iter_, slide_layout_, slide_layout_2_):
@@ -1181,7 +1181,7 @@ class DescribeSlideLayouts:
 
 
 class DescribeSlideMaster:
-    """Unit-test suite for `pptx.slide.SlideMaster` objects."""
+    """Unit-test suite for `openpptx.slide.SlideMaster` objects."""
 
     def it_is_a_BaseMaster_subclass(self, subclass_fixture):
         slide_master = subclass_fixture
@@ -1210,7 +1210,7 @@ class DescribeSlideMaster:
 
     @pytest.fixture
     def SlideLayouts_(self, request, slide_layouts_):
-        return class_mock(request, "pptx.slide.SlideLayouts", return_value=slide_layouts_)
+        return class_mock(request, "openpptx.slide.SlideLayouts", return_value=slide_layouts_)
 
     @pytest.fixture
     def slide_layouts_(self, request):
@@ -1236,9 +1236,9 @@ class DescribeSlideMaster_themes_and_text_styles:
             PackURI("/ppt/theme/theme2.xml"), CT.OFC_THEME, None, element("a:theme{name=New}")
         )
         _source_theme_part_ = function_mock(
-            request, "pptx.slide._source_theme_part", return_value=source_theme_part_
+            request, "openpptx.slide._source_theme_part", return_value=source_theme_part_
         )
-        _validate_theme_ = function_mock(request, "pptx.slide._validate_theme")
+        _validate_theme_ = function_mock(request, "openpptx.slide._validate_theme")
         part_ = instance_mock(request, SlideMasterPart)
         part_.apply_theme.return_value = new_theme_part_
         slide_master = SlideMaster(element("p:sldMaster"), part_)
@@ -1342,9 +1342,9 @@ def _complete_theme():
 
 
 def _default_template() -> str:
-    import pptx
+    import openpptx
 
-    return os.path.join(os.path.dirname(pptx.__file__), "templates", "default.pptx")
+    return os.path.join(os.path.dirname(openpptx.__file__), "templates", "default.pptx")
 
 
 def _write_thmx(path: str, accent1: str) -> None:
@@ -1377,7 +1377,7 @@ def _write_thmx(path: str, accent1: str) -> None:
 
 
 class DescribeSlideMasters:
-    """Unit-test suite for `pptx.slide.SlideMasters` objects."""
+    """Unit-test suite for `openpptx.slide.SlideMasters` objects."""
 
     def it_knows_how_many_masters_it_contains(self, len_fixture):
         slide_masters, expected_value = len_fixture
@@ -1397,7 +1397,7 @@ class DescribeSlideMasters:
 
     def it_raises_on_index_out_of_range(self, getitem_raises_fixture):
         slides = getitem_raises_fixture
-        with pytest.raises(SlideError):
+        with pytest.raises(IndexError, match="index out of range"):
             slides[1]
 
     # fixtures -------------------------------------------------------
@@ -1453,7 +1453,7 @@ class DescribeSlideMasters:
 
 
 class Describe_Background:
-    """Unit-test suite for `pptx.slide._Background` objects."""
+    """Unit-test suite for `openpptx.slide._Background` objects."""
 
     @pytest.mark.parametrize(
         "cSld_xml, expected_cxml",

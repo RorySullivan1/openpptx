@@ -18,7 +18,7 @@ isolated context (that's an agent).
 
 ## What's here
 
-pypptx's skills cover its one stack — **Python** (`python-development`, `python-review`,
+openpptx's skills cover its one stack — **Python** (`python-development`, `python-review`,
 `python-maintenance`, `python-deployment`, plus the `coding-standards` baseline) — its
 **GitHub** flow (`github-issues`, `github-pull-requests`, `github-comments`,
 `github-releases`), **docs** (`technical-documentation-drafter`), **roadmap planning**

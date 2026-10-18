@@ -1,14 +1,14 @@
-"""Test suite for pptx.shapes.group module."""
+"""Test suite for openpptx.shapes.group module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.dml.effect import ShadowFormat
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.exc import ShapeError, UnsupportedEffectError
-from pptx.shapes.group import GroupShape
-from pptx.shapes.shapetree import GroupShapes
+from openpptx.dml.effect import ShadowFormat
+from openpptx.enum.shapes import MSO_SHAPE_TYPE
+from openpptx.exc import ShapeError, UnsupportedEffectError
+from openpptx.shapes.group import GroupShape
+from openpptx.shapes.shapetree import GroupShapes
 
 from ..unitutil.cxml import element
 from ..unitutil.mock import class_mock, initializer_mock, instance_mock
@@ -87,4 +87,4 @@ class DescribeGroupShape:
 
     @pytest.fixture
     def ShadowFormat_(self, request):
-        return class_mock(request, "pptx.shapes.base.ShadowFormat")
+        return class_mock(request, "openpptx.shapes.base.ShadowFormat")

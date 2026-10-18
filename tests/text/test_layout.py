@@ -1,13 +1,15 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.text.layout` module."""
+"""Unit-test suite for `openpptx.text.layout` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.text.layout import TextFitter, _BinarySearchTree, _Line, _LineSource
+from openpptx.text.layout import TextFitter, _BinarySearchTree, _Line, _LineSource
+from openpptx.util import Emu, Inches
 
+from ..unitutil.file import testfile
 from ..unitutil.mock import (
     ANY,
     call,
@@ -20,12 +22,38 @@ from ..unitutil.mock import (
 )
 
 
+class DescribeTextFitterWhenTheTextCannotFit:
+    """`TextFitter` when a word is too wide for a line, or nothing fits at 1 point."""
+
+    def it_wraps_to_None_when_a_word_is_too_wide_for_a_line(self, request):
+        method_mock(request, TextFitter, "_break_line", return_value=None)
+        text_fitter = TextFitter(_LineSource("supercalifragilistic"), (Emu(9), Emu(9)), "x.ttf")
+
+        assert text_fitter._wrap_lines(_LineSource("supercalifragilistic"), 12) is None
+
+    def and_it_finds_no_fit_at_a_size_where_the_text_cannot_wrap(self, request):
+        method_mock(request, TextFitter, "_wrap_lines", return_value=None)
+        text_fitter = TextFitter(_LineSource("word"), (Emu(9), Emu(9)), "x.ttf")
+
+        assert text_fitter._fits_inside_predicate(12) is False
+
+    def it_finds_no_size_for_text_too_big_for_its_extents_at_1_point(self):
+        font_file = testfile("calibriz.ttf")
+        size = TextFitter.best_fit_font_size("word " * 400, (Emu(20000), Emu(20000)), 18, font_file)
+        assert size is None
+
+    def but_it_finds_the_largest_size_that_fits_otherwise(self):
+        font_file = testfile("calibriz.ttf")
+        size = TextFitter.best_fit_font_size("A modest line", (Inches(4), Inches(1)), 40, font_file)
+        assert size == 40
+
+
 class DescribeTextFitter:
-    """Unit-test suite for `pptx.text.layout.TextFitter` object."""
+    """Unit-test suite for `openpptx.text.layout.TextFitter` object."""
 
     def it_can_determine_the_best_fit_font_size(self, request, line_source_):
         _LineSource_ = class_mock(
-            request, "pptx.text.layout._LineSource", return_value=line_source_
+            request, "openpptx.text.layout._LineSource", return_value=line_source_
         )
         _init_ = initializer_mock(request, TextFitter)
         _best_fit_font_size_ = method_mock(
@@ -151,7 +179,7 @@ class DescribeTextFitter:
 
     @pytest.fixture
     def _BinarySearchTree_(self, request):
-        return class_mock(request, "pptx.text.layout._BinarySearchTree")
+        return class_mock(request, "openpptx.text.layout._BinarySearchTree")
 
     @pytest.fixture
     def _fits_inside_predicate_(self, request):
@@ -163,11 +191,11 @@ class DescribeTextFitter:
 
     @pytest.fixture
     def _rendered_size_(self, request):
-        return function_mock(request, "pptx.text.layout._rendered_size")
+        return function_mock(request, "openpptx.text.layout._rendered_size")
 
 
 class Describe_BinarySearchTree:
-    """Unit-test suite for `pptx.text.layout._BinarySearchTree` object."""
+    """Unit-test suite for `openpptx.text.layout._BinarySearchTree` object."""
 
     def it_can_construct_from_an_ordered_sequence(self):
         bst = _BinarySearchTree.from_ordered_sequence(range(10))
@@ -210,7 +238,7 @@ class Describe_BinarySearchTree:
 
 
 class Describe_LineSource:
-    """Unit-test suite for `pptx.text.layout._LineSource` object."""
+    """Unit-test suite for `openpptx.text.layout._LineSource` object."""
 
     def it_generates_text_remainder_pairs(self):
         line_source = _LineSource("foo bar baz")
@@ -224,7 +252,7 @@ class Describe_LineSource:
 
 # produces different results on Linux, fails Travis-CI
 
-# from pptx.text.layout import _rendered_size
+# from openpptx.text.layout import _rendered_size
 # from ..unitutil.file import testfile
 # class Describe_rendered_size:
 

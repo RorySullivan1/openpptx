@@ -1,19 +1,19 @@
-"""Unit-test suite for `pptx.parts.presentation` module."""
+"""Unit-test suite for `openpptx.parts.presentation` module."""
 
 from __future__ import annotations
 
 import pytest
 
-import pptx
-from pptx.exc import SlideError
-from pptx.opc.constants import RELATIONSHIP_TYPE as RT
-from pptx.opc.packuri import PackURI
-from pptx.package import Package
-from pptx.parts.coreprops import CorePropertiesPart
-from pptx.parts.presentation import PresentationPart
-from pptx.parts.slide import HandoutMasterPart, NotesMasterPart, SlideMasterPart, SlidePart
-from pptx.presentation import Presentation
-from pptx.slide import NotesMaster, Slide, SlideLayout, SlideMaster
+import openpptx
+from openpptx.exc import SlideError
+from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
+from openpptx.opc.packuri import PackURI
+from openpptx.package import Package
+from openpptx.parts.coreprops import CorePropertiesPart
+from openpptx.parts.presentation import PresentationPart
+from openpptx.parts.slide import HandoutMasterPart, NotesMasterPart, SlideMasterPart, SlidePart
+from openpptx.presentation import Presentation
+from openpptx.slide import NotesMaster, Slide, SlideLayout, SlideMaster
 
 from ..unitutil.cxml import element
 from ..unitutil.mock import call, class_mock, instance_mock, method_mock, property_mock
@@ -21,12 +21,12 @@ from ..unitutil.shapetags import shape_tags_pptx
 
 
 class DescribePresentationPart:
-    """Unit-test suite for `pptx.parts.presentation.PresentationPart` objects."""
+    """Unit-test suite for `openpptx.parts.presentation.PresentationPart` objects."""
 
     def it_provides_access_to_its_presentation(self, request):
         prs_ = instance_mock(request, Presentation)
         Presentation_ = class_mock(
-            request, "pptx.parts.presentation.Presentation", return_value=prs_
+            request, "openpptx.parts.presentation.Presentation", return_value=prs_
         )
         prs_elm = element("p:presentation")
         prs_part = PresentationPart(None, None, None, prs_elm)
@@ -81,7 +81,7 @@ class DescribePresentationPart:
 
         The notes master present case is just above.
         """
-        NotesMasterPart_ = class_mock(request, "pptx.parts.presentation.NotesMasterPart")
+        NotesMasterPart_ = class_mock(request, "openpptx.parts.presentation.NotesMasterPart")
         NotesMasterPart_.create_default.return_value = notes_master_part_
         part_related_by_.side_effect = KeyError
         prs_part = PresentationPart(None, None, package_, None)
@@ -201,7 +201,7 @@ class DescribePresentationPart:
         slide_layout_ = instance_mock(request, SlideLayout)
         partname = PackURI("/ppt/slides/slide9.xml")
         property_mock(request, PresentationPart, "_next_slide_partname", return_value=partname)
-        SlidePart_ = class_mock(request, "pptx.parts.presentation.SlidePart")
+        SlidePart_ = class_mock(request, "openpptx.parts.presentation.SlidePart")
         SlidePart_.new.return_value = slide_part_
         relate_to_.return_value = "rId42"
         slide_layout_part_ = slide_layout_.part
@@ -265,8 +265,8 @@ class DescribePresentationPart:
         assert prs_part._next_slide_partname == PackURI("/ppt/slides/slide3.xml")
 
     def it_can_duplicate_a_slide(self, request, package_):
-        from pptx.opc.constants import CONTENT_TYPE as CT
-        from pptx.oxml.slide import CT_Slide
+        from openpptx.opc.constants import CONTENT_TYPE as CT
+        from openpptx.oxml.slide import CT_Slide
 
         # Create a source slide part with a relationship to a layout
         partname = PackURI("/ppt/slides/slide1.xml")
@@ -297,9 +297,9 @@ class DescribePresentationPart:
         assert layout_rel is layout_part
 
     def it_remaps_rIds_across_all_relationship_attribute_types(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls, qn
-        from pptx.parts.presentation import _remap_rIds
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls, qn
+        from openpptx.parts.presentation import _remap_rIds
 
         # XML with r:id (hyperlink), r:embed (image), and r:link (linked resource)
         xml_str = (
@@ -369,7 +369,7 @@ class DescribePresentationPart_shape_tags:
     """Unit-test suite for shape and slide tags when a slide is duplicated or imported."""
 
     def it_carries_shape_tags_to_a_duplicated_slide_in_parts_of_their_own(self):
-        prs = pptx.Presentation(shape_tags_pptx())
+        prs = openpptx.Presentation(shape_tags_pptx())
         slide = prs.slides[0]
 
         dup = prs.slides.duplicate(slide)
@@ -382,7 +382,7 @@ class DescribePresentationPart_shape_tags:
         assert slide.shapes[0].tags["SOURCE"] == "crm"
 
     def it_does_not_carry_the_slide_tags_to_a_duplicated_slide(self):
-        prs = pptx.Presentation(shape_tags_pptx())
+        prs = openpptx.Presentation(shape_tags_pptx())
 
         dup = prs.slides.duplicate(prs.slides[0])
 
@@ -390,8 +390,8 @@ class DescribePresentationPart_shape_tags:
         assert len(dup.tags) == 0
 
     def it_carries_shape_tags_to_an_imported_slide(self):
-        source = pptx.Presentation(shape_tags_pptx())
-        target = pptx.Presentation()
+        source = openpptx.Presentation(shape_tags_pptx())
+        target = openpptx.Presentation()
 
         imported = target.slides.import_slide(source.slides[0])
 
@@ -402,11 +402,11 @@ class DescribePresentationPart_shape_tags:
         assert len(imported.tags) == 0
 
     def it_gives_identical_imported_shape_tags_separate_parts(self):
-        source = pptx.Presentation()
+        source = openpptx.Presentation()
         slide = source.slides.add_slide(source.slide_layouts[6])
         for _ in range(2):
             slide.shapes.add_textbox(0, 0, 100, 100).tags["same"] = "value"
-        target = pptx.Presentation()
+        target = openpptx.Presentation()
 
         imported = target.slides.import_slide(slide)
 

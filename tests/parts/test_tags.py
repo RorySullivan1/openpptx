@@ -1,18 +1,18 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.parts.tags` module."""
+"""Unit-test suite for `openpptx.parts.tags` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.parts.tags import TagsPart
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.parts.tags import TagsPart
 
 
 class DescribeTagsPart:
-    """Unit-test suite for `pptx.parts.tags.TagsPart`."""
+    """Unit-test suite for `openpptx.parts.tags.TagsPart`."""
 
     def _tags_part(self, tags: dict[str, str] | None = None):
         tag_xml_parts = ['<p:tagLst %s>' % nsdecls("p")]

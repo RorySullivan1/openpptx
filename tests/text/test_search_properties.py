@@ -26,10 +26,10 @@ from xml.sax.saxutils import escape
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.oxml.text import CT_TextParagraph
-from pptx.text.text import _Paragraph
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.oxml.text import CT_TextParagraph
+from openpptx.text.text import _Paragraph
 
 PROPERTY_SETTINGS = settings(max_examples=300, derandomize=True, database=None, deadline=None)
 

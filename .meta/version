@@ -1,21 +1,31 @@
-# version: v0.7.1
+# version: v1.0.0
 status: in-progress
 started: 2026-10-16
-branch: v0.7.1
-pr: #136
+branch: v1.0.0
+pr:
 
-Patch on v0.7.0 (shipped, PR #135, `0db7ef1`) from a code review of the merged find/replace.
-Owner decisions 2026-10-16: ship as v0.7.1; `\v`/`\n` in `new` inserts a line break; regexes see
-the whole paragraph text. Detail is in the card, `.meta/roadmap/stages/03-hardening-and-gaps/v0.7.1.md`.
+Release milestone: API freeze, docs, SemVer, PyPI. Owner decisions 2026-10-16:
+- Complete rebrand to `openpptx`: distribution, import package and repo (`RorySullivan1/openpptx`). The
+  PyPI name `pypptx` belongs to an unrelated 2015 project.
+- No users yet, so nothing renamed before 1.0.0 gets a deprecation shim.
+- The contract is the documented surface (oxml/opc/parts are internal, not renamed).
+- Docs on GitHub Pages; the LICENSE carries python-pptx's notice.
+
+Detail is in the card, `.meta/roadmap/stages/04-stable-release/v1.0.0.md`.
 
 ## Goals
-- Bad template and bad `count` raise pypptx errors up front, whatever the deck holds.
-- `TextMatch` equality and hashing by element.
-- Line breaks in the replacement; regex anchors with paragraph context.
-- No orphaned relationship when a removed run cites one rId twice; one part scan per frame.
+- Ship as `openpptx`: renamed distribution and import package, full metadata, root LICENSE with
+  python-pptx's notice.
+- Public API contract: audit the API layer, stability and deprecation page (in force from 1.0.0),
+  public-name snapshot test.
+- Docs: guides per area, migration guide from python-pptx, CHANGELOG back to v0.1.0, Pages deploy.
+- Release pipeline: Trusted Publishing on a `v*` tag; `1.0.0rc1` first, then `1.0.0`.
 
 ## Objectives / acceptance
-- [x] Each finding has a regression test that failed before its fix (32 tests).
-- [x] Full suite passes; work-count gate unchanged (1,085,069 calls).
-- [x] PowerPoint 16 opens the line-break and hyperlink decks without repair (COM, 2026-10-16).
-- [x] Docstrings, docs build and package 0.7.1.
+- [ ] CI green on 7 cells (suite, corpus, examples, work-count gate); coverage ≥ the branch-start baseline.
+- [ ] `sphinx-build -W -E` clean; Pages serves the reference, guides, stability page and migration guide.
+- [ ] sdist and wheel `openpptx` carry LICENSE with both notices; `twine check` passes; the built wheel runs
+      every example on 3.9 and 3.13.
+- [ ] The public-API snapshot test passes.
+- [ ] PowerPoint 16 opens every example's output without repair.
+- [ ] `pip install openpptx==1.0.0rc1` works from PyPI (owner-run); migration guide reviewed (human-gated).

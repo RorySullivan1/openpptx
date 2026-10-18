@@ -29,7 +29,7 @@
 ## Agents (agents/*.md)
 - github-operator — GitHub workflow operator for this repo — opens and formats pull requests, files and triages issues, … -> agents/github-operator.md
 - goal-auditor — Acceptance/goal auditor — judges whether an implemented change actually achieves the goals and … -> agents/goal-auditor.md
-- python-developer — Senior Python engineer for the pypptx library (`src/pptx/`, import name `pptx`). Use proactively … -> agents/python-developer.md
+- python-developer — Senior Python engineer for the openpptx library (`src/openpptx/`, import name `openpptx`). Use … -> agents/python-developer.md
 - software-architect — Objective software-architecture brain — designs how a project is structured to serve its objective, … -> agents/software-architect.md
 - token-manager — Delegate verbose or high-volume operations here so the bulk stays out of the main conversation and … -> agents/token-manager.md
 

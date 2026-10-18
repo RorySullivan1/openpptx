@@ -1,18 +1,18 @@
-"""Unit-test suite for `pptx.shared` module."""
+"""Unit-test suite for `openpptx.shared` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.opc.package import XmlPart
-from pptx.shared import ElementProxy, ParentedElementProxy
+from openpptx.opc.package import XmlPart
+from openpptx.shared import ElementProxy, ParentedElementProxy
 
 from .unitutil.cxml import element
 from .unitutil.mock import instance_mock
 
 
 class DescribeElementProxy:
-    """Unit-test suite for `pptx.shared.ElementProxy` objects."""
+    """Unit-test suite for `openpptx.shared.ElementProxy` objects."""
 
     def it_knows_when_its_equal_to_another_proxy_object(self, eq_fixture):
         proxy, proxy_2, proxy_3, not_a_proxy = eq_fixture
@@ -48,7 +48,7 @@ class DescribeElementProxy:
 
 
 class DescribeParentedElementProxy:
-    """Unit-test suite for `pptx.shared.ParentedElementProxy` objects."""
+    """Unit-test suite for `openpptx.shared.ParentedElementProxy` objects."""
 
     def it_knows_its_parent(self, parent_fixture):
         proxy, parent = parent_fixture

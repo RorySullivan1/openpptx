@@ -1,18 +1,18 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.parts.custprops` module."""
+"""Unit-test suite for `openpptx.parts.custprops` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.parts.custprops import CustomPropertiesPart
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.parts.custprops import CustomPropertiesPart
 
 
 class DescribeCustomPropertiesPart:
-    """Unit-test suite for `pptx.parts.custprops.CustomPropertiesPart`."""
+    """Unit-test suite for `openpptx.parts.custprops.CustomPropertiesPart`."""
 
     _FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
 

@@ -1,6 +1,6 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.shapes.base` module."""
+"""Unit-test suite for `openpptx.shapes.base` module."""
 
 from __future__ import annotations
 
@@ -8,18 +8,18 @@ from typing import TYPE_CHECKING, cast
 
 import pytest
 
-from pptx.action import ActionSetting
-from pptx.dml.effect import ShadowFormat
-from pptx.enum.shapes import PP_PLACEHOLDER
-from pptx.exc import ShapeError
-from pptx.oxml.shapes.shared import BaseShapeElement
-from pptx.oxml.text import CT_TextBody
-from pptx.shapes import Subshape
-from pptx.shapes.autoshape import Shape
-from pptx.shapes.base import BaseShape, _PlaceholderFormat
-from pptx.shapes.graphfrm import GraphicFrame
-from pptx.shapes.picture import Picture
-from pptx.shapes.shapetree import BaseShapeFactory, SlideShapes
+from openpptx.action import ActionSetting
+from openpptx.dml.effect import ShadowFormat
+from openpptx.enum.shapes import PP_PLACEHOLDER
+from openpptx.exc import ShapeError
+from openpptx.oxml.shapes.shared import BaseShapeElement
+from openpptx.oxml.text import CT_TextBody
+from openpptx.shapes import _Subshape
+from openpptx.shapes.autoshape import Shape
+from openpptx.shapes.base import BaseShape, _PlaceholderFormat
+from openpptx.shapes.graphfrm import GraphicFrame
+from openpptx.shapes.picture import Picture
+from openpptx.shapes.shapetree import _BaseShapeFactory, SlideShapes
 
 from ..oxml.unitdata.shape import (
     a_cNvPr,
@@ -40,13 +40,13 @@ from ..unitutil.cxml import element, xml
 from ..unitutil.mock import class_mock, instance_mock, loose_mock
 
 if TYPE_CHECKING:
-    from pptx.opc.package import XmlPart
-    from pptx.oxml.shapes import ShapeElement
-    from pptx.types import ProvidesPart
+    from openpptx.opc.package import XmlPart
+    from openpptx.oxml.shapes import ShapeElement
+    from openpptx.types import ProvidesPart
 
 
 class DescribeBaseShape:
-    """Unit-test suite for `pptx.shapes.base.BaseShape` objects."""
+    """Unit-test suite for `openpptx.shapes.base.BaseShape` objects."""
 
     @pytest.mark.parametrize(
         ("shape_cxml", "expected_value"),
@@ -149,8 +149,8 @@ class DescribeBaseShape:
         assert shape._element.xml == xml(expected_cxml)
 
     def it_knows_its_decorative_setting(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Shape with no extLst — defaults to False
         sp_xml = (
@@ -177,8 +177,8 @@ class DescribeBaseShape:
     def it_can_change_its_decorative_setting(self):
         from lxml import etree
 
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls, qn
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls, qn
 
         # Set decorative to True on a shape without it
         sp_xml = (
@@ -202,8 +202,8 @@ class DescribeBaseShape:
         assert extLst is None
 
     def it_knows_its_lock_aspect_ratio_setting(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Shape with no lock element — defaults to False
         sp_xml = (
@@ -223,8 +223,8 @@ class DescribeBaseShape:
         assert shape.lock_aspect_ratio is True
 
     def it_can_change_its_lock_aspect_ratio_setting(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Set lock on shape that has no lock element
         sp_xml = (
@@ -240,8 +240,8 @@ class DescribeBaseShape:
         assert shape.lock_aspect_ratio is False
 
     def it_supports_lock_aspect_ratio_on_pictures(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         pic_xml = (
             '<p:pic %s><p:nvPicPr><p:cNvPr id="1" name="pic1"/>'
@@ -255,8 +255,8 @@ class DescribeBaseShape:
         assert shape.lock_aspect_ratio is False
 
     def it_knows_if_it_is_in_a_group(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         # Shape inside a group
         grp_xml = (
@@ -282,9 +282,9 @@ class DescribeBaseShape:
         assert shape.is_in_group is False
 
     def it_can_access_its_parent_group(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
-        from pptx.shapes.group import GroupShape
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
+        from openpptx.shapes.group import GroupShape
 
         grp_xml = (
             '<p:grpSp %s><p:nvGrpSpPr><p:cNvPr id="1" name="grp1"/>'
@@ -302,8 +302,8 @@ class DescribeBaseShape:
         assert parent.name == "grp1"
 
     def it_raises_on_parent_group_when_not_in_group(self):
-        from pptx.oxml import parse_xml
-        from pptx.oxml.ns import nsdecls
+        from openpptx.oxml import parse_xml
+        from openpptx.oxml.ns import nsdecls
 
         sp_xml = (
             '<p:sp %s><p:nvSpPr><p:cNvPr id="1" name="sp1"/>'
@@ -616,7 +616,7 @@ class DescribeBaseShape:
     )
     def rotation_get_fixture(self, request):
         xSp_cxml, expected_value = request.param
-        shape = BaseShapeFactory(element(xSp_cxml), None)
+        shape = _BaseShapeFactory(element(xSp_cxml), None)
         return shape, expected_value
 
     @pytest.fixture(
@@ -633,7 +633,7 @@ class DescribeBaseShape:
     )
     def rotation_set_fixture(self, request):
         xSp_cxml, new_value, expected_xSp_cxml = request.param
-        shape = BaseShapeFactory(element(xSp_cxml), None)
+        shape = _BaseShapeFactory(element(xSp_cxml), None)
         expected_xml = xml(expected_xSp_cxml)
         return shape, new_value, expected_xml
 
@@ -658,7 +658,7 @@ class DescribeBaseShape:
 
     @pytest.fixture
     def ActionSetting_(self, request, action_setting_):
-        return class_mock(request, "pptx.shapes.base.ActionSetting", return_value=action_setting_)
+        return class_mock(request, "openpptx.shapes.base.ActionSetting", return_value=action_setting_)
 
     @pytest.fixture
     def action_setting_(self, request):
@@ -771,7 +771,7 @@ class DescribeBaseShape:
     def _PlaceholderFormat_(self, request, placeholder_format_):
         return class_mock(
             request,
-            "pptx.shapes.base._PlaceholderFormat",
+            "openpptx.shapes.base._PlaceholderFormat",
             return_value=placeholder_format_,
         )
 
@@ -785,7 +785,7 @@ class DescribeBaseShape:
 
     @pytest.fixture
     def ShadowFormat_(self, request):
-        return class_mock(request, "pptx.shapes.base.ShadowFormat")
+        return class_mock(request, "openpptx.shapes.base.ShadowFormat")
 
     @pytest.fixture
     def shape_elm_(self, request, shape_id, shape_name, txBody_):
@@ -857,7 +857,7 @@ class DescribeSubshape:
     @pytest.fixture
     def subshape_with_parent_(self, request):
         parent_ = loose_mock(request, name="parent_")
-        subshape = Subshape(parent_)
+        subshape = _Subshape(parent_)
         return subshape, parent_
 
 
@@ -961,15 +961,15 @@ class DescribeBaseShape_tags:
 
 
 def _blank_slide():
-    from pptx import Presentation
+    from openpptx import Presentation
 
     prs = Presentation()
     return prs.slides.add_slide(prs.slide_layouts[6])
 
 
 def _add_shape(slide, kind: str):
-    from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
-    from pptx.util import Inches
+    from openpptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
+    from openpptx.util import Inches
 
     shapes = slide.shapes
     if kind == "autoshape":

@@ -1,4 +1,4 @@
-"""Unit-test suite for the `pptx.animation` module."""
+"""Unit-test suite for the `openpptx.animation` module."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ import datetime as dt
 
 import pytest
 
-from pptx.animation import Animation, SlideAnimations
-from pptx.enum.animation import MSO_ANIMATION_EFFECT, MSO_ANIMATION_TRIGGER, PP_ANIMATION_CLASS
-from pptx.oxml import parse_xml
-from pptx.oxml.ns import nsdecls
-from pptx.slide import Slide
+from openpptx.animation import Animation, SlideAnimations
+from openpptx.enum.animation import MSO_ANIMATION_EFFECT, MSO_ANIMATION_TRIGGER, PP_ANIMATION_CLASS
+from openpptx.oxml import parse_xml
+from openpptx.oxml.ns import nsdecls
+from openpptx.slide import Slide
 
 
 def _sp(shape_id: int, name: str) -> str:
@@ -97,7 +97,7 @@ def _slide(*sequences: str, shapes: str | None = None) -> Slide:
 
 
 class DescribeSlideAnimations:
-    """Unit-test suite for `pptx.animation.SlideAnimations` objects."""
+    """Unit-test suite for `openpptx.animation.SlideAnimations` objects."""
 
     def it_is_provided_by_a_slide(self):
         animations = _slide().animations
@@ -140,7 +140,7 @@ class DescribeSlideAnimations:
 
 
 class DescribeAnimation:
-    """Unit-test suite for `pptx.animation.Animation` objects."""
+    """Unit-test suite for `openpptx.animation.Animation` objects."""
 
     def it_knows_its_preset(self):
         slide = _slide(_main_seq(_click_group(10, _effect(12, "clickEffect", 3, "exit", 10))))

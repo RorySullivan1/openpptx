@@ -1,15 +1,15 @@
 # pyright: reportPrivateUsage=false
 
-"""Unit-test suite for `pptx.chart.plot` module."""
+"""Unit-test suite for `openpptx.chart.plot` module."""
 
 from __future__ import annotations
 
 import pytest
 
-from pptx.chart.category import Categories
-from pptx.chart.chart import Chart
-from pptx.chart.chartlines import DropLines, HiLowLines, SeriesLines, UpDownBars
-from pptx.chart.plot import (
+from openpptx.chart.category import Categories
+from openpptx.chart.chart import Chart
+from openpptx.chart.chartlines import DropLines, HiLowLines, SeriesLines, UpDownBars
+from openpptx.chart.plot import (
     Area3DPlot,
     AreaPlot,
     BarPlot,
@@ -19,16 +19,16 @@ from pptx.chart.plot import (
     LinePlot,
     OfPiePlot,
     PiePlot,
-    PlotFactory,
-    PlotTypeInspector,
+    _PlotFactory,
+    _PlotTypeInspector,
     RadarPlot,
     StockPlot,
     XyPlot,
     _BasePlot,
 )
-from pptx.chart.series import SeriesCollection
-from pptx.exc import ChartError
-from pptx.enum.chart import XL_BAR_DIRECTION, XL_CHART_TYPE as XL, XL_GROUPING
+from openpptx.chart.series import SeriesCollection
+from openpptx.exc import ChartError
+from openpptx.enum.chart import XL_BAR_DIRECTION, XL_CHART_TYPE as XL, XL_GROUPING
 
 from ..unitutil.cxml import element, xml
 from ..unitutil.mock import class_mock, instance_mock
@@ -160,7 +160,7 @@ class Describe_BasePlot:
                 "0},c:showSerName{val=0},c:showPercent{val=0},c:showBubbleSi"
                 "ze{val=0},c:showLeaderLines{val=1})"
             )
-        plot = PlotFactory(element(xChart_cxml), None)
+        plot = _PlotFactory(element(xChart_cxml), None)
         expected_xml = xml(expected_cxml)
         return plot, new_value, expected_xml
 
@@ -200,7 +200,7 @@ class Describe_BasePlot:
 
     @pytest.fixture
     def Categories_(self, request, categories_):
-        return class_mock(request, "pptx.chart.plot.Categories", return_value=categories_)
+        return class_mock(request, "openpptx.chart.plot.Categories", return_value=categories_)
 
     @pytest.fixture
     def categories_(self, request):
@@ -212,7 +212,7 @@ class Describe_BasePlot:
 
     @pytest.fixture
     def DataLabels_(self, request, data_labels_):
-        return class_mock(request, "pptx.chart.plot.DataLabels", return_value=data_labels_)
+        return class_mock(request, "openpptx.chart.plot.DataLabels", return_value=data_labels_)
 
     @pytest.fixture
     def data_labels_(self, request):
@@ -221,7 +221,7 @@ class Describe_BasePlot:
     @pytest.fixture
     def SeriesCollection_(self, request, series_collection_):
         return class_mock(
-            request, "pptx.chart.plot.SeriesCollection", return_value=series_collection_
+            request, "openpptx.chart.plot.SeriesCollection", return_value=series_collection_
         )
 
     @pytest.fixture
@@ -371,7 +371,7 @@ class DescribeBubblePlot:
 class DescribePlotFactory:
     def it_contructs_a_plot_object_from_a_plot_element(self, call_fixture):
         xChart, chart_, PlotClass_, plot_ = call_fixture
-        plot = PlotFactory(xChart, chart_)
+        plot = _PlotFactory(xChart, chart_)
         PlotClass_.assert_called_once_with(xChart, chart_)
         assert plot is plot_
 
@@ -393,7 +393,7 @@ class DescribePlotFactory:
     def call_fixture(self, request, chart_):
         xChart_cxml, PlotCls = request.param
         plot_ = instance_mock(request, PlotCls, name="plot_")
-        class_spec = "pptx.chart.plot.%s" % PlotCls.__name__
+        class_spec = "openpptx.chart.plot.%s" % PlotCls.__name__
         PlotClass_ = class_mock(request, class_spec, return_value=plot_)
         xChart = element(xChart_cxml)
         return xChart, chart_, PlotClass_, plot_
@@ -408,7 +408,7 @@ class DescribePlotFactory:
 class DescribePlotTypeInspector:
     def it_can_determine_the_chart_type_of_a_plot(self, chart_type_fixture):
         plot, expected_chart_type = chart_type_fixture
-        chart_type = PlotTypeInspector.chart_type(plot)
+        chart_type = _PlotTypeInspector.chart_type(plot)
         assert chart_type is expected_chart_type
 
     # fixtures -------------------------------------------------------
@@ -521,7 +521,7 @@ class DescribePlotTypeInspector:
     )
     def chart_type_fixture(self, request):
         xChart_cxml, expected_chart_type = request.param
-        plot = PlotFactory(element(xChart_cxml), None)
+        plot = _PlotFactory(element(xChart_cxml), None)
         return plot, expected_chart_type
 
 
