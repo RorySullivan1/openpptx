@@ -69,6 +69,19 @@ entries use the current `openpptx` names; the Unreleased section lists the renam
 - Enum `validate()` no longer leaks a `TypeError` on Python versions before 3.12; it raises
   `InvalidValueError`.
 - `SlideShapes.add_chart()` is annotated to return the `GraphicFrame` it returns, not a `Chart`.
+- `Camera.field_of_view` read and wrote the angle 60,000 times too small or too large:
+  setting 45 wrote `fov="0"`, and a 45-degree camera read back as 0.00075. It now reads and writes
+  degrees.
+- `TextFrame.fit_text()` crashed with a `TypeError` when one word was wider than the shape. A size
+  at which a word does not fit now counts as too big, and text that fits at no size raises
+  `ShapeError` instead of failing inside the fitter.
+- A hyperlink in a chart title, an axis title or a data label raised `AttributeError`. It raises
+  `ChartError`, which says openpptx cannot read or set one there.
+- `Picture.image_width` and `image_height` on a linked picture raise `ShapeError` ("no embedded
+  image"), as `Picture.image` does, instead of a `KeyError`.
+- Type annotations: lengths such as `ShadowFormat.blur_radius`, `_Paragraph.indent`,
+  `Font.spacing` and the `Bevel` and `ThreeDFormat` sizes are typed `Length`, which they always
+  were at run time, and `openpptx.dml.threed` is annotated throughout. Pyright reports no return-type or argument-type errors in the package.
 
 ## [0.7.1] - 2026-10-16
 

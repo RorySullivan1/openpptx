@@ -18,6 +18,7 @@ from openpptx.parts.media import MediaPart
 if TYPE_CHECKING:
     from openpptx.media import Audio, Video
     from openpptx.opc.package import Part
+    from openpptx.parts.presentation import PresentationPart
 
 
 class Package(OpcPackage):
@@ -30,7 +31,7 @@ class Package(OpcPackage):
         Creates a default core properties part if one is not present (not common).
         """
         try:
-            return self.part_related_by(RT.CORE_PROPERTIES)
+            return cast(CorePropertiesPart, self.part_related_by(RT.CORE_PROPERTIES))
         except KeyError:
             core_props = CorePropertiesPart.default(self)
             self.relate_to(core_props, RT.CORE_PROPERTIES)
@@ -43,7 +44,7 @@ class Package(OpcPackage):
         Creates a default custom properties part if one is not present.
         """
         try:
-            return self.part_related_by(RT.CUSTOM_PROPERTIES)
+            return cast(CustomPropertiesPart, self.part_related_by(RT.CUSTOM_PROPERTIES))
         except KeyError:
             custom_props = CustomPropertiesPart.default(self)
             self.relate_to(custom_props, RT.CUSTOM_PROPERTIES)
@@ -104,7 +105,8 @@ class Package(OpcPackage):
         def first_available_image_idx():
             image_idxs = sorted(
                 [
-                    part.partname.idx
+                    # -- a numbered media or image partname always has an index --
+                    cast(int, part.partname.idx)
                     for part in self.iter_parts()
                     if (
                         part.partname.startswith("/ppt/media/image")
@@ -132,7 +134,8 @@ class Package(OpcPackage):
         def first_available_media_idx():
             media_idxs = sorted(
                 [
-                    part.partname.idx
+                    # -- a numbered media or image partname always has an index --
+                    cast(int, part.partname.idx)
                     for part in self.iter_parts()
                     if part.partname.startswith("/ppt/media/media")
                 ]
@@ -147,9 +150,9 @@ class Package(OpcPackage):
         return PackURI("/ppt/media/media%d.%s" % (idx, ext))
 
     @property
-    def presentation_part(self) -> OpcPackage:
+    def presentation_part(self) -> PresentationPart:
         """Reference to the |PresentationPart| instance contained in this package."""
-        return self.main_document_part
+        return cast("PresentationPart", self.main_document_part)
 
     @lazyproperty
     def _image_parts(self) -> _ImageParts:
@@ -177,7 +180,7 @@ class _ImageParts:
                 continue
             if rel.reltype != RT.IMAGE:
                 continue
-            image_part = rel.target_part
+            image_part = cast(ImagePart, rel.target_part)
             if image_part in image_parts:
                 continue
             image_parts.append(image_part)
@@ -233,7 +236,7 @@ class _MediaParts:
                 continue
             if rel.reltype not in (RT.MEDIA, RT.VIDEO):
                 continue
-            media_part = rel.target_part
+            media_part = cast(MediaPart, rel.target_part)
             if media_part in media_parts:
                 continue
             media_parts.append(media_part)

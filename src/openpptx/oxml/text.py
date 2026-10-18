@@ -312,7 +312,7 @@ class CT_TextBodyProperties(BaseOxmlElement):
     numCol: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "numCol", ST_TextColumnCount
     )
-    spcCol: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    spcCol: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "spcCol", ST_PositiveCoordinate32
     )
 
@@ -471,10 +471,10 @@ class CT_TextCharacterProperties(BaseOxmlElement):
     cap: MSO_TEXT_CAPS | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "cap", MSO_TEXT_CAPS
     )
-    spc: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    spc: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "spc", ST_TextPoint
     )
-    kern: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    kern: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "kern", ST_TextNonNegativePoint
     )
 
@@ -742,10 +742,10 @@ class CT_TextParagraphProperties(BaseOxmlElement):
     algn: PP_PARAGRAPH_ALIGNMENT | None = OptionalAttribute(
         "algn", PP_PARAGRAPH_ALIGNMENT
     )  # pyright: ignore[reportAssignmentType]
-    indent: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    indent: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "indent", ST_TextIndent
     )
-    marL: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    marL: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "marL", ST_TextMargin
     )
     rtl: bool | None = OptionalAttribute("rtl", XsdBoolean)  # pyright: ignore[reportAssignmentType]
@@ -924,7 +924,7 @@ class CT_TextSpacingPoint(BaseOxmlElement):
 class CT_TabStop(BaseOxmlElement):
     """`a:tab` element, specifying a single tab stop position and alignment."""
 
-    pos: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    pos: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "pos", ST_Coordinate32
     )
     algn: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]

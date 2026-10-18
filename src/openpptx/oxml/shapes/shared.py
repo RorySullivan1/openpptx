@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, cast
 
 from openpptx.dml.fill import CT_GradientFillProperties
 from openpptx.enum.dml import (
@@ -123,7 +123,7 @@ class BaseShapeElement(BaseOxmlElement):
 
     @property
     def cx(self) -> Length:
-        return self._get_xfrm_attr("cx")
+        return cast("Length", self._get_xfrm_attr("cx"))
 
     @cx.setter
     def cx(self, value):
@@ -131,7 +131,7 @@ class BaseShapeElement(BaseOxmlElement):
 
     @property
     def cy(self) -> Length:
-        return self._get_xfrm_attr("cy")
+        return cast("Length", self._get_xfrm_attr("cy"))
 
     @cy.setter
     def cy(self, value):
@@ -254,7 +254,7 @@ class BaseShapeElement(BaseOxmlElement):
 
     @property
     def x(self) -> Length:
-        return self._get_xfrm_attr("x")
+        return cast("Length", self._get_xfrm_attr("x"))
 
     @x.setter
     def x(self, value):
@@ -271,7 +271,7 @@ class BaseShapeElement(BaseOxmlElement):
 
     @property
     def y(self) -> Length:
-        return self._get_xfrm_attr("y")
+        return cast("Length", self._get_xfrm_attr("y"))
 
     @y.setter
     def y(self, value):
@@ -287,6 +287,8 @@ class BaseShapeElement(BaseOxmlElement):
         return self.xpath("./*[1]")[0]
 
     def _get_xfrm_attr(self, name: str) -> Length | None:
+        # -- None only without an `a:xfrm`, which PowerPoint writes only on a placeholder that
+        # -- inherits its position; the public `x`/`y`/`cx`/`cy` narrow to Length for that reason.
         xfrm = self.xfrm
         if xfrm is None:
             return None
@@ -405,7 +407,9 @@ class CT_LineProperties(BaseOxmlElement):
         "a:tailEnd", successors=_tag_seq[11:]
     )
     del _tag_seq
-    w = OptionalAttribute("w", ST_LineWidth, default=Emu(0))
+    w: Length = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w", ST_LineWidth, default=Emu(0)
+    )
     cap: MSO_LINE_CAP_STYLE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "cap", MSO_LINE_CAP_STYLE
     )

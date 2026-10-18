@@ -327,7 +327,7 @@ class _Fill:
             fill_cls = _SolidFill
         else:
             fill_cls = _Fill
-        fill = super(_Fill, cls).__new__(fill_cls)
+        fill = object.__new__(fill_cls)
         # -- recorded for every fill type, so |FillFormat| can tell when the element is replaced --
         fill._xFill = xFill
         return fill

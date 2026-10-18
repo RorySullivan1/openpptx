@@ -7,7 +7,9 @@ from __future__ import annotations
 import pytest
 
 from openpptx.text.layout import TextFitter, _BinarySearchTree, _Line, _LineSource
+from openpptx.util import Emu, Inches
 
+from ..unitutil.file import testfile
 from ..unitutil.mock import (
     ANY,
     call,
@@ -18,6 +20,32 @@ from ..unitutil.mock import (
     method_mock,
     property_mock,
 )
+
+
+class DescribeTextFitterWhenTheTextCannotFit:
+    """`TextFitter` when a word is too wide for a line, or nothing fits at 1 point."""
+
+    def it_wraps_to_None_when_a_word_is_too_wide_for_a_line(self, request):
+        method_mock(request, TextFitter, "_break_line", return_value=None)
+        text_fitter = TextFitter(_LineSource("supercalifragilistic"), (Emu(9), Emu(9)), "x.ttf")
+
+        assert text_fitter._wrap_lines(_LineSource("supercalifragilistic"), 12) is None
+
+    def and_it_finds_no_fit_at_a_size_where_the_text_cannot_wrap(self, request):
+        method_mock(request, TextFitter, "_wrap_lines", return_value=None)
+        text_fitter = TextFitter(_LineSource("word"), (Emu(9), Emu(9)), "x.ttf")
+
+        assert text_fitter._fits_inside_predicate(12) is False
+
+    def it_finds_no_size_for_text_too_big_for_its_extents_at_1_point(self):
+        font_file = testfile("calibriz.ttf")
+        size = TextFitter.best_fit_font_size("word " * 400, (Emu(20000), Emu(20000)), 18, font_file)
+        assert size is None
+
+    def but_it_finds_the_largest_size_that_fits_otherwise(self):
+        font_file = testfile("calibriz.ttf")
+        size = TextFitter.best_fit_font_size("A modest line", (Inches(4), Inches(1)), 40, font_file)
+        assert size == 40
 
 
 class DescribeTextFitter:

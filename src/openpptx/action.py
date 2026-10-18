@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     from openpptx.oxml.shapes.shared import CT_NonVisualDrawingProps
     from openpptx.oxml.text import CT_TextCharacterProperties
     from openpptx.parts.slide import SlidePart
-    from openpptx.shapes.base import BaseShape
     from openpptx.slide import Slide, Slides
+    from openpptx.types import ProvidesPart
 
 
 class ActionSetting(_Subshape):
@@ -28,7 +28,7 @@ class ActionSetting(_Subshape):
     def __init__(
         self,
         xPr: CT_NonVisualDrawingProps | CT_TextCharacterProperties,
-        parent: BaseShape,
+        parent: ProvidesPart,
         hover: bool = False,
     ):
         super(ActionSetting, self).__init__(parent)
@@ -197,7 +197,7 @@ class Hyperlink(_Subshape):
     def __init__(
         self,
         xPr: CT_NonVisualDrawingProps | CT_TextCharacterProperties,
-        parent: BaseShape,
+        parent: ProvidesPart,
         hover: bool = False,
     ):
         super(Hyperlink, self).__init__(parent)

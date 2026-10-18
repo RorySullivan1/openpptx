@@ -495,7 +495,7 @@ class SlideMasterPart(BaseSlidePart):
         Returns None if no theme relationship exists.
         """
         try:
-            return self.part_related_by(RT.THEME)
+            return cast(XmlPart, self.part_related_by(RT.THEME))
         except KeyError:
             return None
 

@@ -129,7 +129,7 @@ class MetaOxmlElement(type):
         )
         for key, value in clsdict.items():
             if isinstance(value, dispatchable):
-                value.populate_class_members(cls, key)
+                value.populate_class_members(cast("Type[BaseOxmlElement]", cls), key)
 
 
 class BaseAttribute:

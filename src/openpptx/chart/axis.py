@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from openpptx._util import lazyproperty
+from openpptx.chart._text import CHART_TEXT_PARENT
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.exc import ChartError
 from openpptx.enum.chart import (
@@ -289,7 +290,7 @@ class AxisTitle(ElementProxy):
         present.
         """
         rich = self._title.get_or_add_tx_rich()
-        return TextFrame(rich, self)
+        return TextFrame(rich, CHART_TEXT_PARENT)
 
 
 class CategoryAxis(_BaseAxis):

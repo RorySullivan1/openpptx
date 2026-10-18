@@ -17,7 +17,7 @@ from openpptx.enum.text import (
     MSO_UNDERLINE,
     MSO_VERTICAL_ANCHOR,
 )
-from openpptx.exc import InvalidValueError
+from openpptx.exc import InvalidValueError, ShapeError
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from openpptx.oxml.simpletypes import ST_TextWrappingType
 from openpptx.shapes import _Subshape
@@ -105,12 +105,16 @@ class TextFrame(_Subshape):
         as `font_file`, that font file will be used for the font metrics. If `font_file` is |None|,
         best efforts are made to locate a font file with matchhing `font_family`, `bold`, and
         `italic` installed on the current system (usually succeeds if the font is installed).
+
+        Raises |ShapeError| when the text does not fit in the shape even at 1 point.
         """
         # ---no-op when empty as fit behavior not defined for that case---
         if self.text == "":
             return  # pragma: no cover
 
         font_size = self._best_fit_font_size(font_family, max_size, bold, italic, font_file)
+        if font_size is None:
+            raise ShapeError("the text does not fit in its shape even at 1 point")
         self._apply_fit(font_family, font_size, bold, italic)
 
     def find_all(self, pattern: Pattern, *, regex: bool = False) -> list[TextMatch]:
@@ -386,8 +390,8 @@ class TextFrame(_Subshape):
 
     def _best_fit_font_size(
         self, family: str, max_size: int, bold: bool, italic: bool, font_file: str | None
-    ) -> int:
-        """Return font-size in points that best fits text in this text-frame.
+    ) -> int | None:
+        """Return font-size in points that best fits text in this text-frame, |None| if none does.
 
         The best-fit font size is the largest integer point size not greater than `max_size` that
         allows all the text in this text frame to fit inside its extents when rendered using the

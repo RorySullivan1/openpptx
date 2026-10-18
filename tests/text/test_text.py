@@ -21,6 +21,7 @@ from openpptx.enum.text import (
     MSO_UNDERLINE,
     PP_ALIGN,
 )
+from openpptx.exc import ShapeError
 from openpptx.opc.constants import RELATIONSHIP_TYPE as RT
 from openpptx.opc.package import XmlPart
 from openpptx.shapes.autoshape import Shape
@@ -326,6 +327,16 @@ class DescribeTextFrame:
             text_frame, family, max_size, bold, italic, font_file
         )
         _apply_fit_.assert_called_once_with(text_frame, family, font_size, bold, italic)
+
+    def but_it_raises_when_the_text_does_not_fit_at_any_size(self, request, text_prop_):
+        text_prop_.return_value = "some text"
+        method_mock(request, TextFrame, "_best_fit_font_size", return_value=None)
+        _apply_fit_ = method_mock(request, TextFrame, "_apply_fit")
+        text_frame = TextFrame(None, None)
+
+        with pytest.raises(ShapeError, match="does not fit in its shape even at 1 point"):
+            text_frame.fit_text("Calibri", 18, False, False, "calibriz.ttf")
+        _apply_fit_.assert_not_called()
 
     def it_calculates_its_best_fit_font_size_to_help_fit_text(self, size_font_fixture):
         text_frame, family, max_size, bold, italic = size_font_fixture[:5]

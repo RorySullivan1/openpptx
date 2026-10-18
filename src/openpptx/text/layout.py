@@ -20,12 +20,12 @@ class TextFitter(tuple):
     @classmethod
     def best_fit_font_size(
         cls, text: str, extents: tuple[Length, Length], max_size: int, font_file: str
-    ) -> int:
+    ) -> int | None:
         """Return whole-number best fit point size less than or equal to `max_size`.
 
         The return value is the largest whole-number point size less than or equal to
         `max_size` that allows `text` to fit completely within `extents` when rendered
-        using font defined in `font_file`.
+        using font defined in `font_file`, or |None| when it does not fit even at 1 point.
         """
         line_source = _LineSource(text)
         text_fitter = cls(line_source, extents, font_file)
@@ -82,6 +82,8 @@ class TextFitter(tuple):
             when rendered at `point_size` using the font defined in `font_file`.
             """
             text_lines = self._wrap_lines(self._line_source, point_size)
+            if text_lines is None:
+                return False
             cy = _rendered_size("Ty", point_size, self._font_file)[1]
             return (cy * len(text_lines)) <= self._height
 
@@ -107,12 +109,18 @@ class TextFitter(tuple):
         """
         Return a sequence of str values representing the text in
         *line_source* wrapped within this fitter when rendered at
-        *point_size*.
+        *point_size*, or |None| when a word is too wide for a line at that size.
         """
-        text, remainder = self._break_line(line_source, point_size)
+        line = self._break_line(line_source, point_size)
+        if line is None:
+            return None
+        text, remainder = line
         lines = [text]
         if remainder:
-            lines.extend(self._wrap_lines(remainder, point_size))
+            rest = self._wrap_lines(remainder, point_size)
+            if rest is None:
+                return None
+            lines.extend(rest)
         return lines
 
 

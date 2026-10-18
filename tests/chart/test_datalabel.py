@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from openpptx.chart._text import CHART_TEXT_PARENT
 from openpptx.chart.datalabel import DataLabel, DataLabels
 from openpptx.enum.chart import XL_LABEL_POSITION
 from openpptx.text.text import Font
@@ -55,7 +56,7 @@ class DescribeDataLabel:
     def it_provides_access_to_its_text_frame(self, text_frame_fixture):
         data_label, TextFrame_, rich_, text_frame_ = text_frame_fixture
         text_frame = data_label.text_frame
-        TextFrame_.assert_called_once_with(rich_, data_label)
+        TextFrame_.assert_called_once_with(rich_, CHART_TEXT_PARENT)
         assert text_frame is text_frame_
 
     def it_gets_or_adds_rich_element_to_help(self, rich_fixture):

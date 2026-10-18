@@ -7,7 +7,7 @@ non-trivial class inheritance structure.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from openpptx.enum.shapes import MSO_SHAPE_TYPE, PP_PLACEHOLDER
 from openpptx.oxml.shapes.graphfrm import CT_GraphicalObjectFrame
@@ -18,6 +18,7 @@ from openpptx.shapes.picture import Picture
 from openpptx.util import Emu
 
 if TYPE_CHECKING:
+    from openpptx.util import Length
     from openpptx.oxml.shapes.autoshape import CT_Shape
 
 
@@ -32,29 +33,29 @@ class _InheritsDimensions:
     """
 
     @property
-    def height(self):
+    def height(self) -> Length:
         """
         The effective height of this placeholder shape; its directly-applied
         height if it has one, otherwise the height of its parent layout
         placeholder.
         """
-        return self._effective_value("height")
+        return cast("Length", self._effective_value("height"))
 
     @height.setter
-    def height(self, value):
+    def height(self, value: Length):
         self._element.cy = value
 
     @property
-    def left(self):
+    def left(self) -> Length:
         """
         The effective left of this placeholder shape; its directly-applied
         left if it has one, otherwise the left of its parent layout
         placeholder.
         """
-        return self._effective_value("left")
+        return cast("Length", self._effective_value("left"))
 
     @left.setter
-    def left(self, value):
+    def left(self, value: Length):
         self._element.x = value
 
     @property
@@ -67,29 +68,29 @@ class _InheritsDimensions:
         return MSO_SHAPE_TYPE.PLACEHOLDER
 
     @property
-    def top(self):
+    def top(self) -> Length:
         """
         The effective top of this placeholder shape; its directly-applied
         top if it has one, otherwise the top of its parent layout
         placeholder.
         """
-        return self._effective_value("top")
+        return cast("Length", self._effective_value("top"))
 
     @top.setter
-    def top(self, value):
+    def top(self, value: Length):
         self._element.y = value
 
     @property
-    def width(self):
+    def width(self) -> Length:
         """
         The effective width of this placeholder shape; its directly-applied
         width if it has one, otherwise the width of its parent layout
         placeholder.
         """
-        return self._effective_value("width")
+        return cast("Length", self._effective_value("width"))
 
     @width.setter
-    def width(self, value):
+    def width(self, value: Length):
         self._element.cx = value
 
     # -- the `p:ph` attribute a placeholder is matched to its base by --
@@ -136,6 +137,9 @@ class _InheritsDimensions:
         The effective value of *attr_name* on this placeholder shape; its
         directly-applied value if it has one, otherwise the value on the
         layout placeholder it inherits from.
+
+        |None| only when neither has one; the master's placeholders always do, so the public
+        `left`, `top`, `width` and `height` narrow to |Length|.
         """
         directly_applied_value = getattr(super(_InheritsDimensions, self), attr_name)
         if directly_applied_value is not None:

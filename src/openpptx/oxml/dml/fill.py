@@ -301,7 +301,9 @@ class CT_PatternFillProperties(BaseOxmlElement):
     fgClr = ZeroOrOne("a:fgClr", successors=_tag_seq[1:])
     bgClr = ZeroOrOne("a:bgClr", successors=_tag_seq[2:])
     del _tag_seq
-    prst = OptionalAttribute("prst", MSO_PATTERN_TYPE)
+    prst: MSO_PATTERN_TYPE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "prst", MSO_PATTERN_TYPE
+    )
 
     def _new_bgClr(self):
         """Override default to add minimum subtree."""

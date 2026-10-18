@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from openpptx._util import lazyproperty
+from openpptx.chart._text import CHART_TEXT_PARENT
 from openpptx.chart.axis import CategoryAxis, DateAxis, ValueAxis
 from openpptx.chart.datatable import DataTable
 from openpptx.chart.legend import Legend
@@ -508,7 +509,7 @@ class ChartTitle(ElementProxy):
         a text frame non-destructively.
         """
         rich = self._title.get_or_add_tx_rich()
-        return TextFrame(rich, self)
+        return TextFrame(rich, CHART_TEXT_PARENT)
 
 
 class _Plots(Sequence):

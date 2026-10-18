@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from openpptx.oxml.simpletypes import ST_Angle, ST_PositiveCoordinate, XsdString
 from openpptx.oxml.xmlchemy import BaseOxmlElement, OptionalAttribute, ZeroOrOne
+
+if TYPE_CHECKING:
+    from openpptx.util import Length
 
 
 class CT_Bevel(BaseOxmlElement):
     """`a:bevelT` or `a:bevelB` element, specifying a bevel profile."""
 
-    w: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    w: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "w", ST_PositiveCoordinate
     )
-    h: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    h: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "h", ST_PositiveCoordinate
     )
     prst: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
@@ -32,10 +37,10 @@ class CT_Shape3D(BaseOxmlElement):
     )
     del _tag_seq
 
-    extrusionH: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    extrusionH: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "extrusionH", ST_PositiveCoordinate
     )
-    contourW: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    contourW: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "contourW", ST_PositiveCoordinate
     )
     prstMaterial: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]

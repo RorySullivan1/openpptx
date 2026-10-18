@@ -8,6 +8,7 @@ import pytest
 
 from openpptx.exc import ChartError
 
+from openpptx.chart._text import CHART_TEXT_PARENT
 from openpptx.chart.axis import (
     AxisTitle,
     CategoryAxis,
@@ -710,7 +711,7 @@ class DescribeAxisTitle:
     def it_provides_access_to_its_text_frame(self, text_frame_fixture):
         axis_title, TextFrame_, text_frame_ = text_frame_fixture
         text_frame = axis_title.text_frame
-        TextFrame_.assert_called_once_with(axis_title._element.tx.rich, axis_title)
+        TextFrame_.assert_called_once_with(axis_title._element.tx.rich, CHART_TEXT_PARENT)
         assert text_frame is text_frame_
 
     # fixtures -------------------------------------------------------

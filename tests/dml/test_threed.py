@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from openpptx.dml.threed import Bevel
+from openpptx.dml.threed import Bevel, Camera
 from openpptx.enum.dml import MSO_BEVEL_PRESET
 
 from ..unitutil.cxml import element, xml
@@ -45,3 +45,31 @@ class DescribeBevel:
         bevel = Bevel(element("a:bevelT{prst=circle}"))
         bevel.preset = None
         assert bevel._bevel.xml == xml("a:bevelT")
+
+
+class DescribeCamera:
+    """Unit-test suite for `openpptx.dml.threed.Camera` objects."""
+
+    @pytest.mark.parametrize(
+        ("camera_cxml", "expected_value"),
+        [
+            ("a:camera{prst=perspectiveFront,fov=2700000}", 45.0),
+            ("a:camera{prst=perspectiveFront,fov=5400000}", 90.0),
+            ("a:camera{prst=orthographicFront}", None),
+        ],
+    )
+    def it_knows_its_field_of_view_in_degrees(self, camera_cxml: str, expected_value):
+        assert Camera(element(camera_cxml)).field_of_view == expected_value
+
+    @pytest.mark.parametrize(
+        ("value", "expected_cxml"),
+        [
+            (45, "a:camera{prst=perspectiveFront,fov=2700000}"),
+            (30.5, "a:camera{prst=perspectiveFront,fov=1830000}"),
+            (None, "a:camera{prst=perspectiveFront}"),
+        ],
+    )
+    def it_can_change_its_field_of_view(self, value, expected_cxml: str):
+        camera = Camera(element("a:camera{prst=perspectiveFront,fov=600000}"))
+        camera.field_of_view = value
+        assert camera._camera.xml == xml(expected_cxml)

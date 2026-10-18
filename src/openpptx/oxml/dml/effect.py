@@ -21,6 +21,7 @@ from openpptx.oxml.xmlchemy import (
 )
 
 if TYPE_CHECKING:
+    from openpptx.util import Length
     from openpptx.oxml.dml.color import CT_PresetColor, CT_SchemeColor
 
 
@@ -55,10 +56,10 @@ class CT_OuterShadowEffect(BaseOxmlElement):
     )
     del _tag_seq
 
-    blurRad: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    blurRad: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "blurRad", ST_PositiveCoordinate
     )
-    dist: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    dist: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "dist", ST_PositiveCoordinate
     )
     dir: float | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
@@ -108,10 +109,10 @@ class CT_InnerShadowEffect(BaseOxmlElement):
     )
     del _tag_seq
 
-    blurRad: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    blurRad: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "blurRad", ST_PositiveCoordinate
     )
-    dist: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    dist: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "dist", ST_PositiveCoordinate
     )
     dir: float | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
@@ -122,7 +123,7 @@ class CT_InnerShadowEffect(BaseOxmlElement):
 class CT_ReflectionEffect(BaseOxmlElement):
     """`a:reflection` element, specifying a reflection effect."""
 
-    blurRad: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    blurRad: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "blurRad", ST_PositiveCoordinate
     )
     stA: float | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
@@ -131,7 +132,7 @@ class CT_ReflectionEffect(BaseOxmlElement):
     endA: float | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "endA", ST_PositiveFixedPercentage
     )
-    dist: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    dist: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "dist", ST_PositiveCoordinate
     )
     dir: float | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
@@ -173,7 +174,7 @@ class CT_GlowEffect(BaseOxmlElement):
     )
     del _tag_seq
 
-    rad: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    rad: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "rad", ST_PositiveCoordinate
     )
 
@@ -193,7 +194,7 @@ class CT_GlowEffect(BaseOxmlElement):
 class CT_SoftEdgesEffect(BaseOxmlElement):
     """`a:softEdge` element, specifying a soft edge effect."""
 
-    rad: int | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    rad: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
         "rad", ST_PositiveCoordinate
     )
 

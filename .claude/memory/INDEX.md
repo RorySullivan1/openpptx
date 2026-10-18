@@ -5,7 +5,7 @@
   repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
 - 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`.** Steps 1 (rename, LICENSE, metadata) and 2 (API
   audit, stability page, snapshot test) DONE 2026-10-16; step 3 (guides, migration, CHANGELOG, docs.yml) built 2026-10-17.
-  Next = step 4 (release.yml, 1.0.0rc1). Open: pyright 252 errors — owner call. Owner actions in the card.
+  Pyright return/arg errors fixed 2026-10-18 (198 others left for 1.0.x). Next = step 4 (release.yml, rc1).
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - Sessions can't push tags (and push only to their assigned branch); owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all

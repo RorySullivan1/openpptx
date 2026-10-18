@@ -103,7 +103,9 @@ class PresentationPart(XmlPart):
         new_slide_part = SlidePart(partname, CT.PML_SLIDE, self.package, new_element)
 
         # --- find or import the slide layout ---
-        source_layout_part = source_slide_part.part_related_by(RT.SLIDE_LAYOUT)
+        source_layout_part = cast(
+            SlideLayoutPart, source_slide_part.part_related_by(RT.SLIDE_LAYOUT)
+        )
         target_layout_part = self._find_or_import_layout(source_layout_part)
 
         # --- per-slide parts that should NOT be imported ---
@@ -406,7 +408,7 @@ class PresentationPart(XmlPart):
         The same single instance is returned on each call.
         """
         try:
-            return self.part_related_by(RT.NOTES_MASTER)
+            return cast(NotesMasterPart, self.part_related_by(RT.NOTES_MASTER))
         except KeyError:
             notes_master_part = NotesMasterPart.create_default(self.package)
             self.relate_to(notes_master_part, RT.NOTES_MASTER)

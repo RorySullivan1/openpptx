@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import pytest
 
+from openpptx.chart._text import CHART_TEXT_PARENT
 from openpptx.chart.axis import CategoryAxis, DateAxis, ValueAxis
 from openpptx.chart.chart import Chart, ChartTitle, DataTable, Legend, _Plots
 from openpptx.exc import ChartError
@@ -706,7 +707,7 @@ class DescribeChartTitle:
     def it_provides_access_to_its_text_frame(self, text_frame_fixture):
         chart_title, TextFrame_, text_frame_ = text_frame_fixture
         text_frame = chart_title.text_frame
-        TextFrame_.assert_called_once_with(chart_title._element.tx.rich, chart_title)
+        TextFrame_.assert_called_once_with(chart_title._element.tx.rich, CHART_TEXT_PARENT)
         assert text_frame is text_frame_
 
     # fixtures -------------------------------------------------------

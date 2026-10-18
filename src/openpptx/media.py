@@ -74,7 +74,7 @@ class Video:
             CT.SWF: "swf",
             CT.WMV: "wmv",
             CT.X_MS_VIDEO: "avi",
-        }.get(self._mime_type, "vid")
+        }.get(self._mime_type or "", "vid")
 
     @property
     def filename(self) -> str:

@@ -272,6 +272,7 @@ class CT_GroupShape(BaseShapeElement):
         for n in range(1, len(used_ids) + 2):
             if n not in used_ids:
                 return n
+        raise AssertionError("unreachable: len(used_ids) + 1 candidates cannot all be used")
 
 
 class CT_GroupShapeNonVisual(BaseShapeElement):

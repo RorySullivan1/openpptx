@@ -16,6 +16,7 @@ from openpptx.shared import ParentedElementProxy
 if TYPE_CHECKING:
     from openpptx.oxml.shapes.picture import CT_Picture
     from openpptx.oxml.shapes.shared import CT_LineProperties
+    from openpptx.parts.image import ImagePart
     from openpptx.types import ProvidesPart
     from openpptx.util import Length
 
@@ -425,10 +426,7 @@ class Picture(_BasePicture):
         Read-only. This is the original image width based on its pixel dimensions and DPI.
         Useful for resetting the picture to its natural size.
         """
-        from openpptx.parts.image import ImagePart
-
-        image_part = cast("ImagePart", self.part.related_part(self._pic.blip_rId))
-        return image_part._native_size[0]  # pyright: ignore[reportPrivateUsage]
+        return self._embedded_image_part._native_size[0]  # pyright: ignore[reportPrivateUsage]
 
     @property
     def image_height(self) -> Length:
@@ -437,10 +435,15 @@ class Picture(_BasePicture):
         Read-only. This is the original image height based on its pixel dimensions and DPI.
         Useful for resetting the picture to its natural size.
         """
-        from openpptx.parts.image import ImagePart
+        return self._embedded_image_part._native_size[1]  # pyright: ignore[reportPrivateUsage]
 
-        image_part = cast("ImagePart", self.part.related_part(self._pic.blip_rId))
-        return image_part._native_size[1]  # pyright: ignore[reportPrivateUsage]
+    @property
+    def _embedded_image_part(self) -> ImagePart:
+        """The image part this picture shows; |ShapeError| for a linked picture, which has none."""
+        rId = self._pic.blip_rId
+        if rId is None:
+            raise ShapeError("no embedded image")
+        return cast("ImagePart", self.part.related_part(rId))
 
     @property
     def auto_shape_type(self) -> MSO_SHAPE | None:

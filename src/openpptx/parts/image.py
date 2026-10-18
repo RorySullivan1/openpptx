@@ -78,7 +78,7 @@ class ImagePart(Part):
 
         Note this is an `openpptx.parts.image.Image` object, not a PIL Image.
         """
-        return Image(self._blob, self.desc)
+        return Image(self.blob, self.desc)
 
     def scale(self, scaled_cx: int | None, scaled_cy: int | None) -> tuple[int, int]:
         """Return scaled image dimensions in EMU based on the combination of parameters supplied.
@@ -112,12 +112,12 @@ class ImagePart(Part):
 
         like: `"1be010ea47803b00e140b852765cdf84f491da47"`.
         """
-        return hashlib.sha1(self._blob).hexdigest()
+        return hashlib.sha1(self.blob).hexdigest()
 
     @property
     def _dpi(self) -> tuple[int, int]:
         """(horz_dpi, vert_dpi) pair representing the dots-per-inch resolution of this image."""
-        image = Image.from_blob(self._blob)
+        image = Image.from_blob(self.blob)
         return image.dpi
 
     @property
@@ -138,7 +138,7 @@ class ImagePart(Part):
     @property
     def _px_size(self) -> tuple[int, int]:
         """A (width, height) 2-tuple representing the dimensions of this image in pixels."""
-        image = Image.from_blob(self._blob)
+        image = Image.from_blob(self.blob)
         return image.size
 
 

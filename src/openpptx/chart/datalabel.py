@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from openpptx._util import lazyproperty
+from openpptx.chart._text import CHART_TEXT_PARENT
 from openpptx.dml.chtfmt import ChartFormat
 from openpptx.exc import ChartError
 from openpptx.text.text import Font, TextFrame
@@ -216,7 +217,7 @@ class DataLabel:
         element the font is part of.
         """
         txPr = self._get_or_add_txPr()
-        text_frame = TextFrame(txPr, self)
+        text_frame = TextFrame(txPr, CHART_TEXT_PARENT)
         paragraph = text_frame.paragraphs[0]
         return paragraph.font
 
@@ -399,7 +400,7 @@ class DataLabel:
         data label and providing access to its text formatting properties.
         """
         rich = self._get_or_add_rich()
-        return TextFrame(rich, self)
+        return TextFrame(rich, CHART_TEXT_PARENT)
 
     @property
     def _dLbl(self):
