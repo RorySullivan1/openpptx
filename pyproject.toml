@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openpptx"
-version = "1.0.0rc1"
+version = "1.0.0"
 description = "Create, read, and modify PowerPoint .pptx files"
 readme = "README.md"
 requires-python = ">=3.9"

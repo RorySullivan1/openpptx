@@ -87,6 +87,19 @@ rc1/bin/python -c "import openpptx; print(openpptx.__version__)"         # 1.0.0
 A plain `pip install openpptx` skips a pre-release only once a final release exists. While `1.0.0rc1`
 was the only version, pip 26 and uv both installed it without being asked (checked 2026-10-18).
 
+## v1.0.0
+
+Tagged on `main`: the merge commit of the PR that sets the version to `1.0.0`. Once it has merged:
+
+```bash
+git fetch origin main
+git tag -a v1.0.0 "$(git rev-parse origin/main)" -m "openpptx 1.0.0"   # check it is the merge first
+git push origin v1.0.0
+```
+
+The `release` run then waits for the `pypi` approval as rc1 did. After it publishes, a plain
+`pip install openpptx` gets `1.0.0`, not the rc.
+
 ## Keeping this current
 
 When a version ships, add its row once the PR that marks it shipped has merged (its merge
