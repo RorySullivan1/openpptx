@@ -4,13 +4,13 @@
 - openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
   repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
 - 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`.** Steps 1 (rename, LICENSE, metadata) and 2 (API
-  audit, stability page, snapshot test) DONE 2026-10-16; next = step 3, docs. Owner actions are listed in the card.
+  audit, stability page, snapshot test) DONE 2026-10-16; step 3 (guides, migration, CHANGELOG, docs.yml) built 2026-10-17.
+  Next = step 4 (release.yml, 1.0.0rc1). Open: pyright 252 errors — owner call. Owner actions in the card.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
 - Sessions can't push tags (and push only to their assigned branch); owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
   lightweight; see that file); no Releases yet.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
-- API reference: `sphinx-build -W -b html docs docs/_build/html` (docs extra).
 
 ## Decisions        (append-only; supersede, never delete)
 - [2026-09-24..10-09] 19 earlier decisions (claudeBrain adoption, text styles, arcs, element-class keying, SmartArt,
@@ -72,4 +72,4 @@
   and examples; #114 tags; #115 3D charts; v0.4.0 hardening; v0.5.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-13..10-15 | 9 sessions (PowerPoint checks #119–#125, v0.5.0/v0.5.1 ship, #126–#132, v0.6.0 build) | sessions/ARCHIVE-2026.md
 - 2026-10-16 | 4 entries (v0.7.0 built + merged #135, v0.7.1 built + merged #136) | sessions/ARCHIVE-2026.md
-- 2026-10-16 | v1.0.0: card filled in (session 1305 log); steps 1 + 2 done, details in the card | v1.0.0 card
+- 2026-10-16..17 | v1.0.0: card filled in (session 1305 log); steps 1–3 done, details in the card | v1.0.0 card

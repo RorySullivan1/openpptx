@@ -385,7 +385,7 @@ class Slides(ParentedElementProxy):
         try:
             sldId = self._sldIdLst.sldId_lst[idx]
         except IndexError:
-            raise SlideError("slide index out of range")
+            raise IndexError("slide index out of range") from None
         return self.part.related_slide(sldId.rId)
 
     def __iter__(self) -> Iterator[Slide]:
@@ -573,7 +573,7 @@ class SlideLayouts(ParentedElementProxy):
         try:
             sldLayoutId = self._sldLayoutIdLst.sldLayoutId_lst[idx]
         except IndexError:
-            raise SlideError("slide layout index out of range")
+            raise IndexError("slide layout index out of range") from None
         return self.part.related_slide_layout(sldLayoutId.rId)
 
     def __iter__(self) -> Iterator[SlideLayout]:
@@ -754,7 +754,7 @@ class SlideMasters(ParentedElementProxy):
         try:
             sldMasterId = self._sldMasterIdLst.sldMasterId_lst[idx]
         except IndexError:
-            raise SlideError("slide master index out of range")
+            raise IndexError("slide master index out of range") from None
         return self.part.related_slide_master(sldMasterId.rId)
 
     def __iter__(self) -> Iterator[SlideMaster]:

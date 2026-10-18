@@ -474,7 +474,7 @@ class DescribeSlides:
 
     def it_raises_on_slide_index_out_of_range(self, getitem_raises_fixture):
         slides = getitem_raises_fixture
-        with pytest.raises(SlideError):
+        with pytest.raises(IndexError, match="index out of range"):
             slides[2]
 
     def it_knows_the_index_of_a_slide_it_contains(self, index_fixture):
@@ -1060,7 +1060,7 @@ class DescribeSlideLayouts:
 
     def but_it_raises_on_index_out_of_range(self, part_prop_):
         slide_layouts = SlideLayouts(element("p:sldLayoutIdLst/p:sldLayoutId{r:id=rId1}"), None)
-        with pytest.raises(SlideError):
+        with pytest.raises(IndexError, match="index out of range"):
             slide_layouts[1]
 
     def it_can_find_a_slide_layout_by_name(self, _iter_, slide_layout_, slide_layout_2_):
@@ -1397,7 +1397,7 @@ class DescribeSlideMasters:
 
     def it_raises_on_index_out_of_range(self, getitem_raises_fixture):
         slides = getitem_raises_fixture
-        with pytest.raises(SlideError):
+        with pytest.raises(IndexError, match="index out of range"):
             slides[1]
 
     # fixtures -------------------------------------------------------

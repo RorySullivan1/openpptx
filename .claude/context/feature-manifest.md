@@ -8,7 +8,7 @@ The library provides a Pythonic object model that mirrors the structure of the V
 
 ## Version
 
-0.1.0
+0.7.1 shipped; 1.0.0 in progress (see `.meta/version`).
 
 ---
 
@@ -217,7 +217,6 @@ The codebase is organized in four layers, from low-level to high-level:
 
 ### Utilities
 - Length units: EMU, Inches, Cm, Mm, Pt, Centipoints (all interconvertible)
-- `@lazyproperty` cache decorator for derived collections
 
 ---
 

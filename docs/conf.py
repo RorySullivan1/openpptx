@@ -1,8 +1,9 @@
 """Sphinx configuration for the openpptx API reference.
 
-Build locally with ``sphinx-build -W -b html docs docs/_build/html`` after
-``pip install -e ".[docs]"``. The pages are generated from the in-tree docstrings; there is no
-hosted site yet.
+Build locally with ``sphinx-build -W -E -b html docs docs/_build/html`` after
+``pip install -e ".[docs]"``. The reference pages are generated from the in-tree docstrings.
+`.github/workflows/docs.yml` builds the same way and publishes `main` to GitHub Pages, at
+https://rorysullivan1.github.io/openpptx/.
 """
 
 from __future__ import annotations

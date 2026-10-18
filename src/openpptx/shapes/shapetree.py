@@ -46,7 +46,6 @@ from openpptx.shared import ParentedElementProxy
 from openpptx.util import Emu
 
 if TYPE_CHECKING:
-    from openpptx.chart.chart import Chart
     from openpptx.chart.data import CategoryChartData, ChartData
     from openpptx.enum.chart import XL_CHART_TYPE
     from openpptx.enum.shapes import MSO_CONNECTOR_TYPE, MSO_SHAPE
@@ -366,7 +365,7 @@ class _BaseGroupShapes(_BaseShapes):
         cx: Length,
         cy: Length,
         chart_data: ChartData,
-    ) -> Chart:
+    ) -> GraphicFrame:
         """Add a new chart of `chart_type` to the slide.
 
         The chart is positioned at (`x`, `y`), has size (`cx`, `cy`), and depicts `chart_data`.
@@ -385,7 +384,7 @@ class _BaseGroupShapes(_BaseShapes):
             graphicFrame = self._add_chart_graphicFrame(rId, x, y, cx, cy)
         self._invalidate_shape_cache()
         self._recalculate_extents()
-        return cast("Chart", self._shape_factory(graphicFrame))
+        return cast(GraphicFrame, self._shape_factory(graphicFrame))
 
     def add_connector(
         self,
