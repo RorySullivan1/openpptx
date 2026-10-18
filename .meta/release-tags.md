@@ -47,6 +47,42 @@ git push origin v0.1.0 v0.2.0 v0.3.0 v0.3.1 v0.3.2 v0.4.0 v0.5.0 v0.5.1 v0.6.0 v
 A GitHub Release can then be drafted from each tag; the version cards under
 `.meta/roadmap/stages/` hold the goals and acceptance for its notes.
 
+## v1.0.0rc1: the first PyPI release
+
+From 1.0.0 on, tags are annotated and `v`-prefixed, and **pushing one publishes it to PyPI**
+(`.github/workflows/release.yml`). The workflow checks that the tag matches the version in
+`pyproject.toml`, builds and checks the sdist and wheel, runs every example against the built wheel on
+Python 3.9 and 3.13, and only then publishes. A historical `v0.x` tag above points at a commit from before
+`release.yml` existed, so pushing it publishes nothing.
+
+The release candidate is tagged on the `v1.0.0` branch, before it merges, so that a problem found in
+the rc can still be fixed in the branch. `1.0.0` itself (step 5) is tagged on `main` after the merge.
+
+Once, before the first release tag:
+
+1. **PyPI**: Account settings → Publishing → *Add a new pending publisher*: project `openpptx`,
+   owner `RorySullivan1`, repository `openpptx`, workflow `release.yml`, environment `pypi`.
+2. **GitHub**: Settings → Environments → *New environment* `pypi`. Adding yourself as a required
+   reviewer makes each publish wait for your approval in the Actions run.
+3. **GitHub** (for the docs, not the release): Settings → Pages → Source: *GitHub Actions*.
+
+Then:
+
+```bash
+git fetch origin v1.0.0
+git tag -a v1.0.0rc1 2042409dfaa7276238bbdd36d13cc0cc964f59ce -m "openpptx 1.0.0rc1"
+git push origin v1.0.0rc1
+```
+
+When the `release` run is green, check it from PyPI in a fresh environment:
+
+```bash
+python -m venv rc1 && rc1/bin/python -m pip install openpptx==1.0.0rc1   # rc1\Scripts\python on Windows
+rc1/bin/python -c "import openpptx; print(openpptx.__version__)"         # 1.0.0rc1
+```
+
+`pip install openpptx` without a version skips a pre-release, so nobody gets the rc by accident.
+
 ## Keeping this current
 
 When a version ships, add its row once the PR that marks it shipped has merged (its merge
