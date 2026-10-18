@@ -4,10 +4,10 @@
 - openpptx (was pypptx/`pptx` until 2026-10-16): pure-Python `.pptx` lib. Dist AND import `openpptx` (`src/openpptx/`),
   repo `RorySullivan1/openpptx`; the local clone dir is still `Projects/pypptx`; conventions `CLAUDE.md`, tooling `.claude/` (`CATALOG.md`), docs `.claude/context/`.
 - 0.7.1 SHIPPED (PR #136). **In flight: v1.0.0 on branch `v1.0.0`**: steps 1–4 built (2026-10-16..18; pyright return/arg
-  errors fixed, 198 left). PR #137, CI 7/7 + docs green on ceede41. Waits on the OWNER: PyPI publisher, `pypi` env, tag rc1.
+  errors fixed, 198 left). PR #137 MERGED (`96f90bb`); Pages live; **1.0.0rc1 ON PyPI** 2026-10-18. Next = step 5.
 - Work-count gate counts TOTAL calls since v0.6.0 (primitive calls hid nested `lazyproperty.__get__`); 3.11 budget 1,073,411.
 - **The owner's Windows box has PowerPoint 16.0**, so the `human-gated` verification row is now runnable there.
-- Sessions can't push tags (and push only to their assigned branch); owner tags by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
+- Tags: this local session pushed v1.0.0rc1 (cloud sessions can't); others tagged by hand from `.meta/release-tags.md`. Remote has `v0.7.1`, `0.7.0`, `alpha` (all
   lightweight; see that file); no Releases yet.
 - CI: `tests.yml` covers 3.9–3.13/Win/macOS; the work-count gate runs on the ubuntu 3.11 cell only.
 

@@ -10,7 +10,8 @@
 #
 # Step 3 needs a trusted publisher on PyPI (owner RorySullivan1, repo openpptx, workflow
 # release.yml, environment pypi) and a `pypi` environment in this repo's settings. A version with a
-# pre-release suffix (1.0.0rc1) is published too, and `pip install openpptx` skips it unless asked.
+# pre-release suffix (1.0.0rc1) is published too. A plain `pip install openpptx` skips it once a final
+# release exists, but takes it while it is the only version (checked with pip 26 and uv, 1.0.0rc1).
 #
 # A tag runs the workflow file of the commit it points at, so tagging a commit from before this
 # file existed (the historical v0.x tags in .meta/release-tags.md) publishes nothing.

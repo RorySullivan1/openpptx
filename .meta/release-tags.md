@@ -19,6 +19,7 @@ only, the merge of its PR. Found by walking `main`'s first-parent history
 | `v0.6.0` | `100a9c84a2586a634057facec1ae76f07b6a4481` | 2026-10-16 | PR #134 | 0.6.0 | Lazy binary blobs and the caching audit (11 stale caches fixed, plus L1/L2). Its shipped status is recorded on the v0.7.0 branch |
 | `v0.7.0` | `0db7ef1718a49c97e41fbabbf3ba096854135ba8` | 2026-10-16 | PR #135 | 0.7.0 | Cross-run text find/replace on frames, paragraphs, slides and the deck. Its shipped status is recorded on the v1.0.0 branch |
 | `v0.7.1` | `2627dddae28fdfa2daee0abef05b39b993e8046a` | 2026-10-16 | PR #136 | 0.7.1 | Patch: find/replace review fixes. **Already tagged on the remote** (lightweight). Its shipped status is recorded on the v1.0.0 branch |
+| `v1.0.0rc1` | `2042409dfaa7276238bbdd36d13cc0cc964f59ce` | 2026-10-18 | — (on branch `v1.0.0`, before PR #137 merged) | 1.0.0rc1 | **Pushed** (annotated); published to PyPI by release run 39139591806 |
 
 **On the remote as of 2026-10-16** (`git ls-remote --tags origin`), all lightweight: `v0.7.1` → `2627ddd` (matches
 the row above); `0.7.0` → `0db7ef1`, the v0.7.0 commit but without the `v`; `alpha` → `100a9c8`, the v0.6.0 merge.
@@ -83,7 +84,8 @@ python -m venv rc1 && rc1/bin/python -m pip install openpptx==1.0.0rc1   # rc1\S
 rc1/bin/python -c "import openpptx; print(openpptx.__version__)"         # 1.0.0rc1
 ```
 
-`pip install openpptx` without a version skips a pre-release, so nobody gets the rc by accident.
+A plain `pip install openpptx` skips a pre-release only once a final release exists. While `1.0.0rc1`
+was the only version, pip 26 and uv both installed it without being asked (checked 2026-10-18).
 
 ## Keeping this current
 
