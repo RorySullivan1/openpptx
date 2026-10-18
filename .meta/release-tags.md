@@ -60,8 +60,10 @@ the rc can still be fixed in the branch. `1.0.0` itself (step 5) is tagged on `m
 
 Once, before the first release tag:
 
-1. **PyPI**: Account settings → Publishing → *Add a new pending publisher*: project `openpptx`,
-   owner `RorySullivan1`, repository `openpptx`, workflow `release.yml`, environment `pypi`.
+1. **PyPI**, logged in as `r_sullivan112`: Account settings → Publishing → *Add a new pending
+   publisher*: project `openpptx`, owner `RorySullivan1`, repository `openpptx`, workflow
+   `release.yml`, environment `pypi`. "Owner" is the GitHub owner, not the PyPI user; the PyPI
+   account becomes the project's owner when the first release publishes.
 2. **GitHub**: Settings → Environments → *New environment* `pypi`. Adding yourself as a required
    reviewer makes each publish wait for your approval in the Actions run.
 3. **GitHub** (for the docs, not the release): Settings → Pages → Source: *GitHub Actions*.
