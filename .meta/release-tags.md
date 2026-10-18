@@ -20,6 +20,7 @@ only, the merge of its PR. Found by walking `main`'s first-parent history
 | `v0.7.0` | `0db7ef1718a49c97e41fbabbf3ba096854135ba8` | 2026-10-16 | PR #135 | 0.7.0 | Cross-run text find/replace on frames, paragraphs, slides and the deck. Its shipped status is recorded on the v1.0.0 branch |
 | `v0.7.1` | `2627dddae28fdfa2daee0abef05b39b993e8046a` | 2026-10-16 | PR #136 | 0.7.1 | Patch: find/replace review fixes. **Already tagged on the remote** (lightweight). Its shipped status is recorded on the v1.0.0 branch |
 | `v1.0.0rc1` | `2042409dfaa7276238bbdd36d13cc0cc964f59ce` | 2026-10-18 | — (on branch `v1.0.0`, before PR #137 merged) | 1.0.0rc1 | **Pushed** (annotated); published to PyPI by release run 39139591806 |
+| `v1.0.0` | `146dd1ce6cd3367dfa7d980dbc6d1422b13515d5` | 2026-10-18 | PR #138 | 1.0.0 | **Pushed** (annotated); published to PyPI by release run 39140694188 |
 
 **On the remote as of 2026-10-16** (`git ls-remote --tags origin`), all lightweight: `v0.7.1` → `2627ddd` (matches
 the row above); `0.7.0` → `0db7ef1`, the v0.7.0 commit but without the `v`; `alpha` → `100a9c8`, the v0.6.0 merge.
@@ -94,8 +95,12 @@ Tagged on `main`: the merge commit of the PR that sets the version to `1.0.0`. O
 ```bash
 git fetch origin main
 git tag -a v1.0.0 "$(git rev-parse origin/main)" -m "openpptx 1.0.0"   # check it is the merge first
-git push origin v1.0.0
+git push origin refs/tags/v1.0.0:refs/tags/v1.0.0
 ```
+
+**Push a version tag by its full name.** The version's branch has the same name (`v1.0.0`), so
+`git push origin v1.0.0` fails with "src refspec v1.0.0 matches more than one". A tag and a branch
+can share a name on GitHub, and `release.yml` triggers on tags only.
 
 The `release` run then waits for the `pypi` approval as rc1 did. After it publishes, a plain
 `pip install openpptx` gets `1.0.0`, not the rc.
