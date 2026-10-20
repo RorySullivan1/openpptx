@@ -112,9 +112,11 @@ factory; `.claude/README.md` explains the layers.
 - **Version** (`.meta/version`) — the single unit of work in flight (the cursor). Start a
   version with `/version-set`, ship it with `/version-ship`; `advance-roadmap-step` drives a
   card end to end.
-- **Branch per version, named `vX.Y.Z`** (this overrides the `claude/<label>-<slug>` default
-  in `/version-set`). Expand a card with implementation detail when its branch opens; don't
-  implement a version whose card is still an overview.
+- **Branch per version, named `release/vX.Y.Z`** (this overrides the `claude/<label>-<slug>`
+  default in `/version-set`). Not plain `vX.Y.Z`: that is the version's tag, and a branch of the
+  same name makes `git push origin vX.Y.Z` ambiguous (versions up to v1.0.0 used it). Expand a
+  card with implementation detail when its branch opens; don't implement a version whose card is
+  still an overview.
 
 ## Memory
 

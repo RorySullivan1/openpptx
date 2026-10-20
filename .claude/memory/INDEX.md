@@ -46,6 +46,8 @@
   starts at 1.0.0 — same log
 - [2026-10-16] v1.0.0 step 2: the public modules ARE the `docs/api/*.rst` targets (tests/test_public_api.py parses them);
   internal-layer classes users get (`CorePropertiesPart` etc.) use explicit `:members:`. Regen: `python -m tests.test_public_api`
+- [2026-10-20] Owner: version branches are `release/vX.Y.Z` from 1.x (supersedes `vX.Y.Z`, which clashed with the tag).
+  Stale local + remote branches cleaned; only `main` remains — CLAUDE.md
 
 ## Threads          (open items; remove when closed)
 - Optional, unfiled (PR #130 notes): package check flagging a part with a content type but no inbound relationship.
