@@ -102,7 +102,9 @@ git push origin refs/tags/v1.0.0:refs/tags/v1.0.0
 
 **Push a version tag by its full name.** The version's branch has the same name (`v1.0.0`), so
 `git push origin v1.0.0` fails with "src refspec v1.0.0 matches more than one". A tag and a branch
-can share a name on GitHub, and `release.yml` triggers on tags only.
+can share a name on GitHub, and `release.yml` triggers on tags only. From 1.x, version branches
+are named `release/vX.Y.Z` (see `CLAUDE.md`), so the plain `git push origin vX.Y.Z` works again;
+the full refspec stays safe either way.
 
 The `release` run then waits for the `pypi` approval as rc1 did. After it publishes, a plain
 `pip install openpptx` gets `1.0.0`, not the rc.

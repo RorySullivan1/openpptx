@@ -3,7 +3,7 @@
 > Auto-surfaced at session start. Keep to ~one screen; detail lives in `stages/`.
 > The cursor (`←`) is the next version to build. Statuses: planned · in-progress · shipped.
 > Author/re-slice with `/roadmap-set`; reconcile with `/roadmap-status`. Each version is
-> built on a branch named after it (`vX.Y.Z`); its card is expanded with implementation
+> built on a branch named after it (`release/vX.Y.Z`); its card is expanded with implementation
 > detail when that branch opens — don't start a version whose card is still an overview.
 
 ## Objective
